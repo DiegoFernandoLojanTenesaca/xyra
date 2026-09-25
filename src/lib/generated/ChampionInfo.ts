@@ -4,4 +4,8 @@ export type ChampionInfo = { id: number, name: string, icon: string,
 /**
  * ARAM: Mayhem tier, 1 = best … 5.
  */
-tier: number | null, rank: number | null, };
+tier: number | null, rank: number | null, 
+/**
+ * The account can neither play it nor take it from the bench.
+ */
+locked: boolean, };

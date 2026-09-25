@@ -1,6 +1,6 @@
 use windows::{
-    core::{Result, HSTRING},
     Media::{Core::MediaSource, Playback::MediaPlayer, SpeechSynthesis::SpeechSynthesizer},
+    core::{HSTRING, Result},
 };
 use xyra_core::{cards::Card, i18n};
 
@@ -12,8 +12,8 @@ pub struct Voice {
 }
 
 impl Voice {
-    pub fn new() -> Option<Voice> {
-        Some(Voice { synthesizer: SpeechSynthesizer::new().ok()?, player: MediaPlayer::new().ok()? })
+    pub fn new() -> Result<Voice> {
+        Ok(Voice { synthesizer: SpeechSynthesizer::new()?, player: MediaPlayer::new()? })
     }
 
     /// Uses the first installed voice of `language`.

@@ -1,21 +1,34 @@
 <script lang="ts">
-  import '$lib/theme.css';
-  import { ChartColumn, CircleQuestionMark, Crown, Gamepad2, Hammer, House, Layers, Minus, Settings as SettingsIcon, Square, Tag, X } from '@lucide/svelte';
+  import '$lib/design/theme.css';
+  import {
+    ChartColumn,
+    CircleQuestionMark,
+    Crown,
+    ExternalLink,
+    Gamepad2,
+    Hammer,
+    House,
+    Layers,
+    Minus,
+    Settings as SettingsIcon,
+    Square,
+    Tag,
+    X,
+  } from '@lucide/svelte';
   import { getCurrentWindow } from '@tauri-apps/api/window';
-  import { onMount } from 'svelte';
-  import { app } from '$lib/app.svelte';
-  import Logo from '$lib/components/Logo.svelte';
-  import Augments from '$lib/pages/Augments.svelte';
-  import Build from '$lib/pages/Build.svelte';
-  import Champions from '$lib/pages/Champions.svelte';
-  import Game from '$lib/pages/Game.svelte';
-  import Home from '$lib/pages/Home.svelte';
-  import Labels from '$lib/pages/Labels.svelte';
-  import Settings from '$lib/pages/Settings.svelte';
-  import Stats from '$lib/pages/Stats.svelte';
+  import { onMount, type Component } from 'svelte';
+  import { app, type Page } from '$lib/app.svelte';
+  import { applyTokens } from '$lib/design/theme';
   import { openExternal, REPOSITORY } from '$lib/project';
-  import { applyTokens } from '$lib/theme';
-  import type { Page } from '$lib/types';
+  import Augments from '$lib/screens/Augments.svelte';
+  import Build from '$lib/screens/Build.svelte';
+  import Champions from '$lib/screens/Champions.svelte';
+  import Game from '$lib/screens/Game.svelte';
+  import Home from '$lib/screens/Home.svelte';
+  import Labels from '$lib/screens/Labels.svelte';
+  import Settings from '$lib/screens/Settings.svelte';
+  import Stats from '$lib/screens/Stats.svelte';
+  import Logo from '$lib/ui/Logo.svelte';
 
   applyTokens();
 
@@ -29,11 +42,20 @@
     { page: 'game', icon: Gamepad2 },
   ] as const satisfies { page: Page; icon: unknown }[];
 
-  const PAGES = { home: Home, build: Build, augments: Augments, champions: Champions, stats: Stats, labels: Labels, game: Game, settings: Settings };
+  const SCREENS: Record<Page, Component> = {
+    home: Home,
+    build: Build,
+    augments: Augments,
+    champions: Champions,
+    stats: Stats,
+    labels: Labels,
+    game: Game,
+    settings: Settings,
+  };
 
   const appWindow = getCurrentWindow();
   const t = $derived(app.t);
-  const CurrentPage = $derived(PAGES[app.page]);
+  const Screen = $derived(SCREENS[app.page]);
 
   $effect(() => {
     document.documentElement.lang = app.language;
@@ -44,22 +66,36 @@
 
 <div class="shell">
   <header class="titlebar" data-tauri-drag-region>
-    <div class="brand condensed" data-tauri-drag-region><Logo size={26} phase={app.ready ? app.state.phase : 'no_client'} />XYRA</div>
+    <div class="brand condensed" data-tauri-drag-region><Logo size={26} phase={app.ready ? app.state.phase : 'noClient'} />XYRA</div>
     {#if app.ready}
-      {@const phase = app.state.phase}
-      <span class="status cut-sm {phase}" data-tauri-drag-region>
-        <i></i>{t(`common:phases.${phase === 'no_client' ? 'noClient' : phase === 'champ_select' ? 'champSelect' : phase === 'in_game' ? 'inGame' : phase}`)}
-        {phase === 'in_game' && app.state.champion ? ` · ${app.state.champion} · ${app.state.mode ? t(`common:modes.${app.state.mode}`) : ''}` : ''}
+      {@const game = app.state.game}
+      <span class="status cut-sm {app.state.phase}" data-tauri-drag-region>
+        <i></i>
+        <span class="facts">
+          <span>{t(`common:phases.${app.state.phase}`)}</span>
+          {#if game?.champion}<span>{game.champion.name}</span>{/if}
+          {#if game}<span>{t(`common:modes.${game.mode}`)}</span>{/if}
+        </span>
       </span>
     {/if}
     <div class="end">
       {#if app.profile}
         <button class="profile" onclick={() => app.openSettings('profile')}>
           <img class="diamond" src={app.profile.icon} alt="" />
-          <span><b>{app.profile.name}</b><small>{t('common:level')} {app.profile.level}{app.profile.region ? ` · ${app.profile.region}` : ''}</small></span>
+          <span
+            ><b>{app.profile.name}</b><small class="facts"
+              ><span>{t('common:levelValue', { level: app.profile.level })}</span>{#if app.profile.region}<span>{app.profile.region}</span>{/if}</small
+            ></span
+          >
         </button>
       {/if}
-      <button class="settings" class:active={app.page === 'settings'} onclick={() => app.openSettings('general')} aria-label={t('common:nav.settings')} title={t('common:nav.settings')}>
+      <button
+        class="settings"
+        class:active={app.page === 'settings'}
+        onclick={() => app.openSettings('general')}
+        aria-label={t('common:nav.settings')}
+        title={t('common:nav.settings')}
+      >
         <SettingsIcon size={20} />
       </button>
       <div class="window-controls">
@@ -82,7 +118,10 @@
         <CircleQuestionMark size={16} />{t('settings:tabs.help')}
       </button>
       <button class="signature" onclick={() => openExternal(REPOSITORY)} title={REPOSITORY}>
-        {app.ready ? `v${app.state.version} · ` : ''}Xynitra × IndagaLab ↗
+        <span class="facts"
+          >{#if app.ready}<span>v{app.state.version}</span>{/if}<span>Xynitra × IndagaLab</span></span
+        >
+        <ExternalLink size={12} />
       </button>
     </div>
   </nav>
@@ -90,7 +129,7 @@
   <main>
     {#if app.ready}
       {#key app.page}
-        <div class="page"><CurrentPage /></div>
+        <div class="page"><Screen /></div>
       {/key}
     {/if}
   </main>
@@ -110,15 +149,15 @@
     gap: var(--space-4);
     padding-left: var(--space-5);
     background: var(--color-chrome);
-    border-bottom: 1px solid var(--color-line);
+    border-bottom: var(--border-hairline) solid var(--color-line);
   }
   .brand {
-    width: 192px;
+    width: var(--size-brand);
     display: flex;
     align-items: center;
     gap: var(--space-3);
     font-size: var(--text-xl);
-    letter-spacing: 5px;
+    letter-spacing: var(--tracking-widest);
     font-variation-settings: 'wdth' 78;
   }
   .status {
@@ -127,11 +166,11 @@
     gap: var(--space-2);
     padding: var(--space-1) var(--space-3);
     font-size: var(--text-sm);
-    letter-spacing: 1.5px;
+    letter-spacing: var(--tracking-relaxed);
     font-weight: 600;
     text-transform: uppercase;
     background: color-mix(in srgb, var(--color-white) 4%, transparent);
-    border: 1px solid var(--color-line);
+    border: var(--border-hairline) solid var(--color-line);
     white-space: nowrap;
   }
   .status i {
@@ -143,13 +182,13 @@
     background: var(--color-success);
     box-shadow: 0 0 var(--space-3) var(--color-success);
   }
-  .status.champ_select,
-  .status.in_game {
+  .status.champSelect,
+  .status.inGame {
     background: color-mix(in srgb, var(--color-accent) 12%, transparent);
     border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
   }
-  .status.champ_select i,
-  .status.in_game i {
+  .status.champSelect i,
+  .status.inGame i {
     background: var(--color-accentBright);
     box-shadow: 0 0 var(--space-3) var(--color-accentBright);
   }
@@ -176,14 +215,14 @@
     align-items: center;
     gap: var(--space-3);
     padding: 0 var(--space-4);
-    border-left: 1px solid var(--color-line);
+    border-left: var(--border-hairline) solid var(--color-line);
     text-align: left;
   }
   .profile img {
     width: var(--size-thumbSm);
     height: var(--size-thumbSm);
   }
-  .profile span {
+  .profile > span {
     display: flex;
     flex-direction: column;
   }
@@ -194,13 +233,13 @@
   }
   .profile small {
     font-size: var(--text-xs);
-    letter-spacing: 1px;
+    letter-spacing: var(--tracking-normal);
   }
   .end .settings {
     width: var(--size-titlebar);
     display: grid;
     place-items: center;
-    border-left: 1px solid var(--color-line);
+    border-left: var(--border-hairline) solid var(--color-line);
   }
   .end .settings.active {
     color: var(--color-accentBright);
@@ -208,7 +247,7 @@
   }
   .window-controls {
     display: flex;
-    border-left: 1px solid var(--color-line);
+    border-left: var(--border-hairline) solid var(--color-line);
   }
   .window-controls button {
     width: var(--size-titlebar);
@@ -222,10 +261,10 @@
   nav {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--space-1);
     padding: var(--space-6) 0 var(--space-4);
     background: var(--color-chrome);
-    border-right: 1px solid var(--color-line);
+    border-right: var(--border-hairline) solid var(--color-line);
   }
   nav button {
     position: relative;
@@ -238,7 +277,7 @@
     color: var(--color-textMuted);
     font-size: var(--text-md);
     font-weight: 600;
-    letter-spacing: 2px;
+    letter-spacing: var(--tracking-wide);
     text-transform: uppercase;
     text-align: left;
   }
@@ -255,7 +294,7 @@
     left: 0;
     top: 0;
     bottom: 0;
-    width: 3px;
+    width: var(--border-accent);
     background: var(--color-accent);
     box-shadow: 0 0 var(--space-3) var(--color-accent);
   }
@@ -264,16 +303,16 @@
   }
   .badge {
     margin-left: auto;
-    padding: 1px var(--space-2);
+    padding: 0 var(--space-2);
     font-size: var(--text-xs);
-    letter-spacing: 1px;
+    letter-spacing: var(--tracking-normal);
     background: var(--color-accent);
     color: var(--color-white);
   }
   .footer {
     margin-top: auto;
     padding: var(--space-3) 0 0;
-    border-top: 1px solid var(--color-line);
+    border-top: var(--border-hairline) solid var(--color-line);
   }
   .footer button {
     width: 100%;
@@ -281,9 +320,12 @@
     font-size: var(--text-sm);
   }
   .footer .signature {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
     padding-top: var(--space-1);
     font-size: var(--text-xs);
-    letter-spacing: 0.5px;
+    letter-spacing: var(--tracking-tight);
     text-transform: none;
     color: var(--color-textFaint);
   }

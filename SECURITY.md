@@ -21,12 +21,14 @@ aumentos dentro del juego) y nada más. Estas reglas son parte del proyecto: un 
   y reconoce el texto con el OCR que trae Windows.
 - **Dibuja encima** en una ventana propia, transparente, que deja pasar los clics y nunca toma el foco.
   Por eso necesita el juego en modo **Sin bordes**: en pantalla completa exclusiva Windows no deja mostrar nada encima.
-- **Consulta, solo lectura:**
-  - la [Live Client Data API](https://developer.riotgames.com/docs/lol#game-client-api) oficial del juego
-    (`127.0.0.1:2999`) para saber qué campeón juegas y en qué modo;
-  - el cliente local (LCU) para los nombres e íconos de aumentos y campeones, tu historial reciente de Caos y Arena
-    (para Estadísticas) y tu perfil: nombre, nivel, región, rango y maestrías (para Ajustes → Perfil). Solo tus propios
-    datos, que el cliente ya te muestra.
+- **Escucha al cliente local (LCU)** por su WebSocket, como hacen Blitz o Porofessor: se entera al instante de la fase
+  (selección, partida, fin), de tu campeón y de la cuenta con la que entras, sin consultarlo a cada rato. La conexión es
+  solo con `127.0.0.1` y verifica el certificado del cliente con la raíz oficial de Riot (`riotgames.pem`).
+- **Consulta, solo lectura,** los nombres e íconos de aumentos y campeones, qué campeones tiene tu cuenta (para no
+  recomendarte uno bloqueado), tu historial reciente de Caos y Arena (para Estadísticas) y tu perfil: nombre, nivel,
+  región, rango y maestrías (para Ajustes → Perfil). Solo tus propios datos, que el cliente ya te muestra.
+- **En la selección de la Grieta** mira los campeones rivales que el cliente ya muestra y te sugiere counters con
+  estadísticas públicas de OP.GG, como las webs de builds. No revela nada que el juego oculte.
 - **Escribe en el cliente solo cuando tocas "Importar"** en la página Build: crea una página de runas y un set de ítems
   para la tienda (lo mismo que hacen Blitz, OP.GG o Mobalytics). Nunca lo hace por su cuenta, nunca durante la partida y
   solo reemplaza las páginas y sets que él mismo creó (los que empiezan con "Xyra · ").
@@ -36,12 +38,13 @@ aumentos dentro del juego) y nada más. Estas reglas son parte del proyecto: un 
   rango de torres, minimapa): las mismas del menú Opciones del LoL, por la API del cliente, y solo las de una lista fija
   (`crates/xyra-core/src/game_settings.rs`). Los cronómetros son los que trae el propio juego: Xyra no dibuja cronómetros
   propios (Riot prohíbe, por ejemplo, los de definitivas enemigas).
-- **Se conecta a internet solo** con OP.GG (estadísticas públicas de aumentos) y CommunityDragon (íconos).
-  Sin telemetría, sin cuentas, sin servidores propios.
+- **Se conecta a internet solo** con OP.GG (estadísticas públicas de aumentos, builds y enfrentamientos) y
+  CommunityDragon (íconos), con la verificación de certificados normal de Windows. Sin telemetría, sin cuentas, sin
+  servidores propios.
 
 ## Datos en tu PC
 
-Todo queda en `%APPDATA%\com.indagalab.xyra\`: `config.json`, `stats.json` (tus partidas), `profile.json` (tu nombre,
+Todo queda en `%APPDATA%\com.indagalab.xyra\`: `config.json`, `stats.json` (tus partidas, separadas por cuenta), `profile.json` (tu nombre,
 nivel y maestrías, para verlos con el LoL cerrado), `catalog.json` (nombres e íconos), `xyra.log` (solo errores; se reinicia
 al pasar de 1 MB) y `screenshots\` (solo si activas "Guardar capturas"). Desde *Ajustes → Datos* puedes exportar tus
 partidas a CSV o borrarlo todo.
@@ -63,6 +66,7 @@ Abre un *issue* con la etiqueta `seguridad` o, si es sensible, escribe al manten
 Xyra only does what Riot-approved apps do. It **never** reads or writes game memory, injects code, hooks DirectX,
 opens the game process, simulates input, automates actions, reveals hidden information or shows ads. It captures the
 screen (like OBS) only during ARAM: Mayhem/Arena games with the game focused, recognizes text with Windows' built-in OCR,
-and draws on its own click-through window (requires **Borderless** mode). It reads the official Live Client Data API and
-the local client (read-only; it only writes a rune page or an item set when you click "Import"), and only talks to
-OP.GG and CommunityDragon over the internet. No telemetry.
+and draws on its own click-through window (requires **Borderless** mode). It listens to the local client over its
+WebSocket on `127.0.0.1`, verifying its certificate against Riot's root (read-only; it only writes a rune page or an
+item set when you click "Import"), suggests Summoner's Rift counters from public OP.GG stats, and only talks to OP.GG and
+CommunityDragon over the internet. No telemetry.

@@ -1,13 +1,14 @@
 use crate::{
-    commands::{apply_config, App},
+    commands::{App, apply_config},
     engine::Shared,
+    show_main_window,
 };
 use std::sync::Arc;
 use tauri::{
-    menu::{CheckMenuItem, IsMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu},
     AppHandle, Manager, Wry,
+    menu::{CheckMenuItem, IsMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu},
 };
-use xyra_core::{config::LABEL_STYLES, i18n};
+use xyra_core::{config::LabelStyle, i18n};
 
 pub const TRAY_ID: &str = "main";
 const STYLE_PREFIX: &str = "style:";
@@ -17,11 +18,18 @@ pub fn rebuild_menu(app: &AppHandle, shared: &Shared) {
     let language = shared.language();
     let t = |key: &str| i18n::t(language, key);
     let menu = (|| -> tauri::Result<Menu<Wry>> {
-        let styles: Vec<CheckMenuItem<Wry>> = LABEL_STYLES
-            .iter()
+        let styles: Vec<CheckMenuItem<Wry>> = LabelStyle::ALL
+            .into_iter()
             .map(|style| {
-                let label = t(&format!("labels:styles.{style}.name"));
-                CheckMenuItem::with_id(app, format!("{STYLE_PREFIX}{style}"), label, true, config.label_style == *style, None::<&str>)
+                let key = i18n::variant_key(style);
+                CheckMenuItem::with_id(
+                    app,
+                    format!("{STYLE_PREFIX}{key}"),
+                    t(&format!("labels:styles.{key}.name")),
+                    true,
+                    config.label_style == style,
+                    None::<&str>,
+                )
             })
             .collect::<Result<_, _>>()?;
         let style_items: Vec<&dyn IsMenuItem<Wry>> = styles.iter().map(|s| s as _).collect();
@@ -53,12 +61,12 @@ pub fn on_menu_event(app: &AppHandle, id: &str) {
     let shared: App = Arc::clone(app.state::<App>().inner());
     let mut config = shared.config();
     match id {
-        "open" => return crate::show_main_window(app),
+        "open" => return show_main_window(app),
         "quit" => return app.exit(0),
         "pause" => config.paused = !config.paused,
         "voice" => config.voice = !config.voice,
-        other => match other.strip_prefix(STYLE_PREFIX) {
-            Some(style) => config.label_style = style.into(),
+        other => match LabelStyle::ALL.into_iter().find(|style| other.strip_prefix(STYLE_PREFIX) == Some(i18n::variant_key(*style).as_str())) {
+            Some(style) => config.label_style = style,
             None => return,
         },
     }

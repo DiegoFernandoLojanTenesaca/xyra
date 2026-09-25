@@ -1,0 +1,47 @@
+{
+  "subtitle": "Official League options and what Xyra does for you.",
+  "options": "Game options",
+  "optionsHint": "The same ones in the League Options menu: Xyra just saves you the search.",
+  "noClient": "Open League to see and change these options.",
+  "settings": {
+    "borderless": {
+      "title": "Borderless",
+      "description": "Needed to see Xyra labels over the game."
+    },
+    "attackRange": {
+      "title": "Attack range",
+      "description": "Draws how far your basic attacks reach."
+    },
+    "minimapTimers": {
+      "title": "Minimap timers",
+      "description": "The objective and camp respawn timers built into the game."
+    },
+    "turretRange": {
+      "title": "Turret range",
+      "description": "Shows how far turrets shoot."
+    },
+    "flippedMinimap": {
+      "title": "Minimap on the left",
+      "description": "Moves the minimap to the other side of the screen."
+    },
+    "minimapScale": {
+      "title": "Minimap size",
+      "description": "Bigger reads better on large screens."
+    }
+  },
+  "automatic": "Automatic",
+  "automaticHint": "Turn it on once and Xyra takes care of it.",
+  "keepBorderless": {
+    "title": "Keep Borderless",
+    "description": "If the game goes back to fullscreen, Xyra sets Borderless again before your next game."
+  },
+  "autoImportRunes": {
+    "title": "Import runes by itself",
+    "description": "In champion select it imports the runes of the champion you got. It only replaces its own page."
+  },
+  "closeWindowInGame": {
+    "title": "Close the window while playing",
+    "description": "When the game starts the window closes and Xyra stays in the tray, using no memory."
+  },
+  "safe": "All of this uses options League already has: it never touches the game or plays for you."
+}

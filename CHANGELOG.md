@@ -1,9 +1,23 @@
-- Updated the README with a banner, badges and app screenshots.
-- Updated the codebase to English identifiers, files and folders.
-- Updated user-facing texts to per-language JSON files shared by the UI and the native overlay.
-- Added a single design tokens file used by the UI and the in-game overlay.
-- Added a shared engine state language resolved from the preference and the client locale.
-- Updated icons to Lucide.
-- Updated the log to record only errors.
+- Added counter picks in Summoner's Rift champion select, from the lane opponent's OP.GG matchups.
+- Added strong and weak matchups to Summoner's Rift builds.
+- Added a lock on champions the account does not own, and removed them from every recommendation.
+- Added stats per account, so each account sees its own games.
+- Added typed errors with their own texts in every language.
+- Added a smoke test that drives the running League client and OP.GG.
+- Added ESLint, Prettier, rustfmt and clippy to CI.
+- Added a voice test that uses the same Windows voice as the game labels.
+- Fixed the profile not following an account switch.
+- Fixed champions the account cannot play being recommended from the bench and the top list.
 - Fixed Summoner's Rift builds reporting the requested position instead of the loaded main position.
-- Removed per-page duplicated styles in favor of shared components.
+- Fixed OP.GG requests accepting invalid certificates: only the local client uses the Riot root certificate.
+- Fixed settings and stats files being overwritten when they could not be read; they are now set aside.
+- Updated the engine to follow the League client through its WebSocket and file events instead of polling it.
+- Updated the overlay to run on its own thread with a message loop.
+- Updated the codebase to English identifiers, files and folders, keeping the settings and games saved by 0.1.0.
+- Updated user-facing texts to per-language JSON files shared by the UI and the native overlay.
+- Updated numbers, percents and dates to the selected language.
+- Updated colors, spacing, type, tracking, borders and sizes to a single design tokens file.
+- Updated icons to Lucide.
+- Updated the creators to show their GitHub handles.
+- Updated the log to record only errors.
+- Removed the Live Client Data API polling; the client tells the engine when a game starts and ends.

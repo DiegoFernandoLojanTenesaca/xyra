@@ -1,0 +1,15 @@
+{
+  "license": "Licencia MIT",
+  "sources": "Datos de OP.GG · íconos de CommunityDragon.",
+  "riot": "Xyra no está respaldado por Riot Games ni refleja sus opiniones. League of Legends es marca de Riot Games, Inc.",
+  "whatsNew": "Novedades de esta versión",
+  "changes": {
+    "counters": "Counters en la selección de la Grieta y enfrentamientos en cada build.",
+    "ownership": "Solo te recomienda campeones que tienes o están gratis.",
+    "accounts": "Sigue a la cuenta con la que entres: perfil y estadísticas de cada una.",
+    "live": "Se entera al instante de lo que pasa en el cliente, sin consultarlo a cada rato."
+  },
+  "links": "Enlaces",
+  "builtWith": "Hecho con Rust, Tauri y Svelte. La capa del juego es nativa: no usa navegador y casi no gasta memoria.",
+  "madeBy": "Creado por"
+}

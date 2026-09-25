@@ -1,0 +1,67 @@
+{
+  "languageName": "Español",
+  "tagline": "Gratis y open source",
+  "levelValue": "NV {{level}}",
+  "phases": {
+    "noClient": "Esperando al LoL",
+    "client": "Listo · esperando partida",
+    "champSelect": "Selección de campeones",
+    "inGame": "En partida",
+    "paused": "En pausa"
+  },
+  "modes": {
+    "mayhem": "ARAM: Caos",
+    "arena": "Arena",
+    "aram": "ARAM",
+    "summonersRift": "Grieta",
+    "other": "Otro modo"
+  },
+  "rarity": {
+    "silver": "Plata",
+    "gold": "Oro",
+    "prismatic": "Prismático"
+  },
+  "leagues": {
+    "iron": "Hierro",
+    "bronze": "Bronce",
+    "silver": "Plata",
+    "gold": "Oro",
+    "platinum": "Platino",
+    "emerald": "Esmeralda",
+    "diamond": "Diamante",
+    "master": "Maestro",
+    "grandmaster": "Gran Maestro",
+    "challenger": "Retador"
+  },
+  "quality": {
+    "excellent": "EXCELENTE",
+    "great": "MUY BUENA",
+    "good": "BUENA",
+    "fair": "REGULAR",
+    "bad": "MALA",
+    "rarePick": "POCO USADA"
+  },
+  "reroll": "cámbiala",
+  "locked": "No lo tienes",
+  "on": "Activado",
+  "off": "Desactivado",
+  "window": {
+    "minimize": "Minimizar",
+    "maximize": "Maximizar",
+    "close": "Cerrar"
+  },
+  "nav": {
+    "home": "Inicio",
+    "build": "Build",
+    "augments": "Aumentos",
+    "champions": "Campeones",
+    "stats": "Estadísticas",
+    "labels": "Etiquetas",
+    "game": "Juego",
+    "settings": "Ajustes"
+  },
+  "searchChampion": "Buscar campeón…",
+  "games_one": "{{count, number}} partida",
+  "games_other": "{{count, number}} partidas",
+  "winRate": "{{value}} WR"
+}

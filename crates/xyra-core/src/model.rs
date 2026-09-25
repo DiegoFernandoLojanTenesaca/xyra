@@ -1,6 +1,117 @@
-use crate::cards::Card;
+use crate::{cards::Card, config::LabelStyle};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub enum GameMode {
+    #[serde(alias = "KIWI")]
+    Mayhem,
+    #[serde(alias = "CHERRY")]
+    Arena,
+    #[serde(alias = "ARAM")]
+    Aram,
+    #[serde(alias = "CLASSIC")]
+    SummonersRift,
+    Other,
+}
+
+impl GameMode {
+    pub const WITH_AUGMENTS: [GameMode; 2] = [GameMode::Mayhem, GameMode::Arena];
+
+    pub fn from_client(code: &str) -> GameMode {
+        match code {
+            "KIWI" => GameMode::Mayhem,
+            "CHERRY" => GameMode::Arena,
+            "ARAM" => GameMode::Aram,
+            "CLASSIC" => GameMode::SummonersRift,
+            _ => GameMode::Other,
+        }
+    }
+
+    pub fn has_augments(self) -> bool {
+        GameMode::WITH_AUGMENTS.contains(&self)
+    }
+
+    pub fn build_mode(self) -> BuildMode {
+        if self == GameMode::SummonersRift { BuildMode::Rift } else { BuildMode::Aram }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub enum BuildMode {
+    Aram,
+    Rift,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub enum Position {
+    Top,
+    Jungle,
+    Mid,
+    Adc,
+    Support,
+}
+
+impl Position {
+    pub const ALL: [Position; 5] = [Position::Top, Position::Jungle, Position::Mid, Position::Adc, Position::Support];
+
+    /// Parses the client's assigned position ("middle", "bottom", "utility"…).
+    pub fn from_client(name: &str) -> Option<Position> {
+        match name {
+            "top" => Some(Position::Top),
+            "jungle" => Some(Position::Jungle),
+            "middle" => Some(Position::Mid),
+            "bottom" => Some(Position::Adc),
+            "utility" => Some(Position::Support),
+            _ => None,
+        }
+    }
+
+    pub fn from_opgg(name: &str) -> Option<Position> {
+        Position::ALL.into_iter().find(|p| p.opgg().eq_ignore_ascii_case(name))
+    }
+
+    pub fn opgg(self) -> &'static str {
+        match self {
+            Position::Top => "top",
+            Position::Jungle => "jungle",
+            Position::Mid => "mid",
+            Position::Adc => "adc",
+            Position::Support => "support",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub enum Rarity {
+    #[serde(alias = "kSilver")]
+    Silver,
+    #[serde(alias = "kGold")]
+    Gold,
+    #[serde(alias = "kPrismatic")]
+    Prismatic,
+}
+
+impl Rarity {
+    pub const ALL: [Rarity; 3] = [Rarity::Prismatic, Rarity::Gold, Rarity::Silver];
+
+    pub fn from_client(code: &str) -> Option<Rarity> {
+        match code {
+            "kSilver" => Some(Rarity::Silver),
+            "kGold" => Some(Rarity::Gold),
+            "kPrismatic" => Some(Rarity::Prismatic),
+            _ => None,
+        }
+    }
+}
 
 #[derive(Clone, Debug, PartialEq, Serialize, TS)]
 #[ts(export)]
@@ -11,21 +122,49 @@ pub struct ChampionInfo {
     /// ARAM: Mayhem tier, 1 = best … 5.
     pub tier: Option<u8>,
     pub rank: Option<u32>,
+    /// The account can neither play it nor take it from the bench.
+    pub locked: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[ts(export)]
+pub struct Asset {
+    pub id: u32,
+    pub name: String,
+    pub icon: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[ts(export)]
+pub struct Matchup {
+    pub champion: Asset,
+    pub games: u32,
+    /// Win rate of the champion being looked at against `champion`, 0-100.
+    pub win_rate: f64,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, TS)]
 #[ts(export)]
 pub struct ChampSelect {
+    pub mode: GameMode,
+    pub position: Option<Position>,
     pub champion: Option<ChampionInfo>,
     pub bench: Vec<ChampionInfo>,
-    /// Client game mode: "ARAM", "KIWI" (ARAM: Mayhem), "CLASSIC" (Summoner's Rift), "CHERRY" (Arena)…
-    pub mode: String,
-    pub position: Option<String>,
+    pub lane_opponent: Option<ChampionInfo>,
+    /// Champions the account can pick that beat the lane opponent; `win_rate` is theirs.
+    pub counter_picks: Vec<Matchup>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, TS)]
-#[ts(export, rename_all = "snake_case")]
-#[serde(rename_all = "snake_case")]
+#[ts(export)]
+pub struct CurrentGame {
+    pub mode: GameMode,
+    pub champion: Option<ChampionInfo>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
 pub enum Phase {
     NoClient,
     Client,
@@ -38,10 +177,13 @@ pub enum Phase {
 #[ts(export)]
 pub struct EngineState {
     pub phase: Phase,
-    pub champion: Option<String>,
-    pub mode: Option<String>,
-    pub cards: Vec<Card>,
+    /// PUUID of the signed-in account.
+    pub account: Option<String>,
+    pub game: Option<CurrentGame>,
     pub champ_select: Option<ChampSelect>,
+    /// Build mode of the current champion select or game.
+    pub build_mode: Option<BuildMode>,
+    pub cards: Vec<Card>,
     /// None when the game settings could not be read.
     pub borderless: Option<bool>,
     pub client_locale: String,
@@ -53,12 +195,12 @@ pub struct EngineState {
 
 /// Events the engine pushes to the UI.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, TS)]
-#[ts(export, rename_all = "camelCase")]
+#[ts(export)]
 #[serde(rename_all = "camelCase")]
 pub enum AppEvent {
     State,
     Config,
-    Stats,
+    Data,
 }
 
 impl AppEvent {
@@ -66,17 +208,30 @@ impl AppEvent {
         match self {
             AppEvent::State => "state",
             AppEvent::Config => "config",
-            AppEvent::Stats => "stats",
+            AppEvent::Data => "data",
         }
     }
 }
 
+/// Fixed option lists the UI offers, declared once here.
 #[derive(Clone, Debug, Serialize, TS)]
 #[ts(export)]
-pub struct Asset {
-    pub id: u32,
-    pub name: String,
-    pub icon: String,
+pub struct Choices {
+    pub label_styles: Vec<LabelStyle>,
+    pub positions: Vec<Position>,
+    pub augment_modes: Vec<GameMode>,
+    pub rarities: Vec<Rarity>,
+}
+
+impl Choices {
+    pub fn all() -> Choices {
+        Choices {
+            label_styles: LabelStyle::ALL.to_vec(),
+            positions: Position::ALL.to_vec(),
+            augment_modes: GameMode::WITH_AUGMENTS.to_vec(),
+            rarities: Rarity::ALL.to_vec(),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
@@ -105,27 +260,19 @@ pub struct Build {
     pub skill_priority: Vec<String>,
     pub win_rate: f64,
     pub games: u32,
-    pub position: Option<String>,
+    pub position: Option<Position>,
     /// Positions the champion is played in, most played first.
-    pub positions: Vec<String>,
+    pub positions: Vec<Position>,
+    pub strong_against: Vec<Matchup>,
+    pub weak_against: Vec<Matchup>,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize, TS)]
-#[ts(export, rename_all = "snake_case")]
-#[serde(rename_all = "snake_case")]
-pub enum BuildMode {
-    Aram,
-    Rift,
-}
-
-impl BuildMode {
-    pub fn from_game_mode(mode: &str) -> BuildMode {
-        if mode == "CLASSIC" {
-            BuildMode::Rift
-        } else {
-            BuildMode::Aram
-        }
-    }
+#[derive(Clone, Copy, Debug, PartialEq, Deserialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub enum ImportTarget {
+    Runes,
+    Items,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
@@ -134,8 +281,7 @@ pub struct AugmentRow {
     pub id: u32,
     pub name: String,
     pub icon: String,
-    /// "kSilver" | "kGold" | "kPrismatic"
-    pub rarity: String,
+    pub rarity: Option<Rarity>,
     pub tier: u8,
     pub quality: Quality,
     pub grade: String,
@@ -145,7 +291,7 @@ pub struct AugmentRow {
 
 /// i18n key and color token of an augment tier.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, TS)]
-#[ts(export, rename_all = "camelCase")]
+#[ts(export)]
 #[serde(rename_all = "camelCase")]
 pub enum Quality {
     Excellent,
@@ -167,17 +313,6 @@ impl Quality {
             Some(2) => Quality::Good,
             Some(3) => Quality::Fair,
             Some(_) => Quality::Bad,
-        }
-    }
-
-    pub fn key(self) -> &'static str {
-        match self {
-            Quality::Excellent => "excellent",
-            Quality::Great => "great",
-            Quality::Good => "good",
-            Quality::Fair => "fair",
-            Quality::Bad => "bad",
-            Quality::RarePick => "rarePick",
         }
     }
 }

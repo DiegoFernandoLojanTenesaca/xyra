@@ -1,8 +1,9 @@
-use include_dir::{include_dir, Dir};
+use include_dir::{Dir, include_dir};
+use serde::Serialize;
 use serde_json::Value;
 use std::{collections::HashMap, sync::OnceLock};
 
-static LOCALES: Dir = include_dir!("$CARGO_MANIFEST_DIR/../../shared/locales");
+static LOCALES: Dir = include_dir!("$CARGO_MANIFEST_DIR/../../locales");
 pub const BASE_LANGUAGE: &str = "en";
 
 /// "language/namespace" -> parsed namespace file.
@@ -49,6 +50,11 @@ pub fn t_with(language: &str, key: &str, values: &[(&str, &str)]) -> String {
     values.iter().fold(t(language, key), |text, (name, value)| text.replace(&format!("{{{{{name}}}}}"), value))
 }
 
+/// Serialized name of an enum variant, which is also its i18n key.
+pub fn variant_key(variant: impl Serialize) -> String {
+    serde_json::to_value(variant).ok().and_then(|value| value.as_str().map(String::from)).unwrap_or_default()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -61,6 +67,7 @@ mod tests {
         assert_eq!(t("xx", "stats:victory"), "Victory");
         assert_eq!(t("es", "missing:key"), "missing:key");
         assert_eq!(t_with("en", "overlay:forChampion", &[("champion", "Brand")]), "for Brand");
+        assert_eq!(variant_key(crate::model::GameMode::SummonersRift), "summonersRift");
     }
 
     #[test]

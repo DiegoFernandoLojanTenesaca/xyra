@@ -3,4 +3,4 @@
 /**
  * Events the engine pushes to the UI.
  */
-export type AppEvent = "state" | "config" | "stats";
+export type AppEvent = "state" | "config" | "data";

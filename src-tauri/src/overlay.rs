@@ -1,39 +1,45 @@
-use std::{mem::size_of, ptr::null_mut, thread, time::Duration};
+use std::{
+    mem::size_of,
+    ptr::null_mut,
+    sync::mpsc::{self, Sender},
+    thread,
+    time::Duration,
+};
 use windows::{
-    core::{w, Result, HSTRING},
     Win32::{
         Foundation::{COLORREF, HWND, LPARAM, LRESULT, POINT, RECT, SIZE, WPARAM},
         Graphics::{
             Direct2D::{
-                Common::{
-                    D2D1_ALPHA_MODE_PREMULTIPLIED, D2D1_COLOR_F, D2D1_FIGURE_BEGIN_FILLED, D2D1_FIGURE_END_CLOSED, D2D1_PIXEL_FORMAT,
-                    D2D_RECT_F,
-                },
-                D2D1CreateFactory, ID2D1DCRenderTarget, ID2D1Factory, D2D1_DRAW_TEXT_OPTIONS_NONE, D2D1_FACTORY_TYPE_SINGLE_THREADED,
-                D2D1_FEATURE_LEVEL_DEFAULT, D2D1_RENDER_TARGET_PROPERTIES, D2D1_RENDER_TARGET_TYPE_DEFAULT, D2D1_RENDER_TARGET_USAGE_NONE,
-                D2D1_ROUNDED_RECT, D2D1_TEXT_ANTIALIAS_MODE_GRAYSCALE,
+                Common::{D2D_RECT_F, D2D1_ALPHA_MODE_PREMULTIPLIED, D2D1_COLOR_F, D2D1_FIGURE_BEGIN_FILLED, D2D1_FIGURE_END_CLOSED, D2D1_PIXEL_FORMAT},
+                D2D1_DRAW_TEXT_OPTIONS_NONE, D2D1_FACTORY_TYPE_SINGLE_THREADED, D2D1_FEATURE_LEVEL_DEFAULT, D2D1_RENDER_TARGET_PROPERTIES,
+                D2D1_RENDER_TARGET_TYPE_DEFAULT, D2D1_RENDER_TARGET_USAGE_NONE, D2D1_ROUNDED_RECT, D2D1_TEXT_ANTIALIAS_MODE_GRAYSCALE, D2D1CreateFactory,
+                ID2D1DCRenderTarget, ID2D1Factory,
             },
             DirectWrite::{
-                DWriteCreateFactory, IDWriteFactory, IDWriteTextLayout, DWRITE_FACTORY_TYPE_SHARED, DWRITE_FONT_STRETCH_SEMI_CONDENSED,
-                DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_WEIGHT, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_WEIGHT_EXTRA_BOLD,
-                DWRITE_FONT_WEIGHT_NORMAL, DWRITE_TEXT_METRICS,
+                DWRITE_FACTORY_TYPE_SHARED, DWRITE_FONT_STRETCH_SEMI_CONDENSED, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_WEIGHT, DWRITE_FONT_WEIGHT_BOLD,
+                DWRITE_FONT_WEIGHT_EXTRA_BOLD, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_TEXT_METRICS, DWriteCreateFactory, IDWriteFactory, IDWriteTextLayout,
             },
             Dxgi::Common::DXGI_FORMAT_B8G8R8A8_UNORM,
             Gdi::{
-                CreateCompatibleDC, CreateDIBSection, DeleteDC, DeleteObject, GetDC, ReleaseDC, SelectObject, AC_SRC_ALPHA, AC_SRC_OVER,
-                BITMAPINFO, BITMAPINFOHEADER, BI_RGB, BLENDFUNCTION, DIB_RGB_COLORS, HBITMAP, HDC, HGDIOBJ,
+                AC_SRC_ALPHA, AC_SRC_OVER, BI_RGB, BITMAPINFO, BITMAPINFOHEADER, BLENDFUNCTION, CreateCompatibleDC, CreateDIBSection, DIB_RGB_COLORS, DeleteDC,
+                DeleteObject, GetDC, HBITMAP, HDC, HGDIOBJ, ReleaseDC, SelectObject,
             },
         },
-        System::LibraryLoader::GetModuleHandleW,
+        System::{LibraryLoader::GetModuleHandleW, Threading::GetCurrentThreadId},
         UI::WindowsAndMessaging::{
-            CreateWindowExW, DefWindowProcW, DispatchMessageW, PeekMessageW, RegisterClassW, SetWindowPos, ShowWindow, TranslateMessage,
-            UpdateLayeredWindow, HWND_TOPMOST, MSG, PM_REMOVE, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_SHOWWINDOW, SW_HIDE, ULW_ALPHA,
+            CreateWindowExW, DefWindowProcW, DispatchMessageW, GetMessageW, HWND_TOPMOST, KillTimer, MSG, PostThreadMessageW, RegisterClassW, SW_HIDE,
+            SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_SHOWWINDOW, SetTimer, SetWindowPos, ShowWindow, ULW_ALPHA, UpdateLayeredWindow, WM_APP, WM_TIMER,
             WNDCLASSW, WS_EX_LAYERED, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_EX_TOPMOST, WS_EX_TRANSPARENT, WS_POPUP,
         },
     },
+    core::{HSTRING, Result, w},
 };
 use windows_numerics::Vector2;
-use xyra_core::{cards::Card, config::Config, i18n, theme};
+use xyra_core::{
+    cards::Card,
+    config::{Config, LabelStyle},
+    i18n, theme,
+};
 
 /// Card measurements taken from real captures at 1920x1200, scaled by the screen height.
 const REFERENCE_HEIGHT: f32 = 1200.0;
@@ -49,6 +55,7 @@ const TAB_HEIGHT: f32 = 30.0;
 const BADGE_RADIUS: f32 = 34.0;
 const BADGE_INSET: f32 = 14.0;
 const BADGE_PLATE_HEIGHT: f32 = 28.0;
+const BADGE_PLATE_GAP: f32 = 16.0;
 const RIBBON_HEIGHT: f32 = 38.0;
 const RIBBON_BOTTOM: f32 = 62.0;
 const RIBBON_INSET: f32 = 22.0;
@@ -62,10 +69,24 @@ const TEXT_MEDIUM: f32 = 15.0;
 const TEXT_SMALL: f32 = 14.0;
 const TEXT_TINY: f32 = 13.0;
 const PANEL_ALPHA: f32 = 0.94;
+const RIBBON_ALPHA: f32 = 0.95;
+const PLATE_PADDING: f32 = 13.0;
+const PLATE_GEM_INSET: f32 = 5.0;
+const PLATE_GEM_PADDING: f32 = 7.0;
+const PLATE_GEM_GAP: f32 = 9.0;
+const PLATE_GEM_ROOM: f32 = 8.0;
+const PLATE_CUT_RATIO: f32 = 0.3;
+const PLATE_STROKE: f32 = 2.0;
+const GEM_STROKE: f32 = 3.0;
+const GEM_TEXT_RATIO: f32 = 0.95;
+const MEDAL_LIFT: f32 = 2.0;
+const PODIUM_PLACES: u32 = 3;
 const SHADOW: [(f32, f32); 2] = [(4.0, 0.18), (2.0, 0.28)];
 const FADE_STEPS: [u8; 4] = [70, 140, 205, 255];
 const FADE_STEP: Duration = Duration::from_millis(25);
 const MAX_LAYOUT: (f32, f32) = (4000.0, 400.0);
+const DEMO_TIMER: usize = 1;
+const DEMO_DURATION_MS: u32 = 5000;
 
 /// Texts drawn over the cards, in one language.
 pub struct OverlayTexts {
@@ -83,12 +104,7 @@ impl OverlayTexts {
 }
 
 fn d2d_color(rgb: u32, alpha: f32) -> D2D1_COLOR_F {
-    D2D1_COLOR_F {
-        r: ((rgb >> 16) & 0xff) as f32 / 255.0,
-        g: ((rgb >> 8) & 0xff) as f32 / 255.0,
-        b: (rgb & 0xff) as f32 / 255.0,
-        a: alpha,
-    }
+    D2D1_COLOR_F { r: ((rgb >> 16) & 0xff) as f32 / 255.0, g: ((rgb >> 8) & 0xff) as f32 / 255.0, b: (rgb & 0xff) as f32 / 255.0, a: alpha }
 }
 
 fn blend(alpha: u8) -> BLENDFUNCTION {
@@ -100,7 +116,7 @@ fn rect(x0: f32, y0: f32, x1: f32, y1: f32) -> D2D_RECT_F {
 }
 
 unsafe extern "system" fn window_proc(hwnd: HWND, message: u32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
-    DefWindowProcW(hwnd, message, wparam, lparam)
+    unsafe { DefWindowProcW(hwnd, message, wparam, lparam) }
 }
 
 struct Span<'a> {
@@ -114,7 +130,7 @@ fn span(text: &str, size: f32, weight: DWRITE_FONT_WEIGHT, color: u32) -> Span<'
     Span { text, size, weight, color }
 }
 
-/// Click-through, never-focused layered window drawn with Direct2D; lives on the engine thread, which pumps its messages.
+/// Click-through, never-focused layered window drawn with Direct2D.
 pub struct Overlay {
     hwnd: HWND,
     d2d: ID2D1Factory,
@@ -151,24 +167,21 @@ impl Overlay {
         }
     }
 
-    pub fn pump_messages(&self) {
-        unsafe {
-            let mut message = MSG::default();
-            while PeekMessageW(&mut message, None, 0, 0, PM_REMOVE).as_bool() {
-                let _ = TranslateMessage(&message);
-                DispatchMessageW(&message);
-            }
-        }
-    }
-
     pub fn hide(&self) {
         unsafe {
-            let _ = ShowWindow(self.hwnd, SW_HIDE);
+            let _was_visible = ShowWindow(self.hwnd, SW_HIDE);
         }
     }
 
     /// Draws the labels into a screen-sized bitmap and hands `use_bitmap` the screen DC, the bitmap DC and its premultiplied BGRA pixels.
-    fn with_drawing<R>(&self, cards: &[Card], champion: &str, config: &Config, texts: &OverlayTexts, use_bitmap: impl FnOnce(HDC, HDC, &[u8]) -> R) -> Result<R> {
+    fn with_drawing<R>(
+        &self,
+        cards: &[Card],
+        champion: &str,
+        config: &Config,
+        texts: &OverlayTexts,
+        use_bitmap: impl FnOnce(HDC, HDC, &[u8]) -> R,
+    ) -> Result<R> {
         unsafe {
             let screen = GetDC(None);
             let dc = CreateCompatibleDC(Some(screen));
@@ -190,8 +203,8 @@ impl Overlay {
             let drawn = self.draw(dc, cards, champion, config, texts);
             let result = drawn.map(|_| use_bitmap(screen, dc, std::slice::from_raw_parts(bits as *const u8, (self.width * self.height * 4) as usize)));
             SelectObject(dc, previous);
-            let _ = DeleteObject(HGDIOBJ(bitmap.0));
-            let _ = DeleteDC(dc);
+            DeleteObject(HGDIOBJ(bitmap.0)).ok()?;
+            DeleteDC(dc).ok()?;
             ReleaseDC(None, screen);
             result
         }
@@ -215,9 +228,9 @@ impl Overlay {
         })?;
         if updated {
             unsafe {
-                let _ = SetWindowPos(self.hwnd, Some(HWND_TOPMOST), 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+                SetWindowPos(self.hwnd, Some(HWND_TOPMOST), 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_SHOWWINDOW)?;
                 for alpha in FADE_STEPS {
-                    let _ = UpdateLayeredWindow(self.hwnd, None, None, None, None, None, COLORREF(0), Some(&blend(alpha)), ULW_ALPHA);
+                    UpdateLayeredWindow(self.hwnd, None, None, None, None, None, COLORREF(0), Some(&blend(alpha)), ULW_ALPHA)?;
                     thread::sleep(FADE_STEP);
                 }
             }
@@ -263,6 +276,16 @@ impl Overlay {
             target.EndDraw(None, None)
         }
     }
+}
+
+/// An angular plate: where, how tall at the reference height, what it says and how it looks.
+struct Plate<'a> {
+    center: (f32, f32),
+    height: f32,
+    spans: &'a [Span<'a>],
+    background: (u32, f32),
+    stroke: Option<u32>,
+    gem: Option<(&'a str, u32)>,
 }
 
 struct Painter<'a> {
@@ -361,36 +384,33 @@ impl Painter<'_> {
     }
 
     fn ink_for(&self, background: u32, colors: &Palette) -> u32 {
-        if [colors.accent, colors.accent_bright, colors.muted].contains(&background) {
-            colors.white
-        } else {
-            colors.ink
-        }
+        if [colors.accent, colors.accent_bright, colors.muted].contains(&background) { colors.white } else { colors.ink }
     }
 
-    fn gem(&self, cx: f32, cy: f32, r: f32, label: &str, background: u32, stroke: Option<(u32, f32)>, colors: &Palette) -> Result<()> {
+    fn gem(&self, (cx, cy): (f32, f32), r: f32, label: &str, background: u32, stroke: Option<(u32, f32)>, colors: &Palette) -> Result<()> {
         self.polygon(&diamond(cx, cy, r), background, 1.0, stroke)?;
-        self.text(cx, cy, &span(label, r * 0.95, DWRITE_FONT_WEIGHT_EXTRA_BOLD, self.ink_for(background, colors)), true)?;
+        self.text(cx, cy, &span(label, r * GEM_TEXT_RATIO, DWRITE_FONT_WEIGHT_EXTRA_BOLD, self.ink_for(background, colors)), true)?;
         Ok(())
     }
 
-    /// Angular plate centered on (cx, cy) with an optional tier gem and a row of spans.
-    #[allow(clippy::too_many_arguments)]
-    fn plate(&self, cx: f32, cy: f32, k: f32, height: f32, spans: &[Span], background: (u32, f32), stroke: Option<u32>, gem: Option<(&str, u32)>, colors: &Palette) -> Result<()> {
-        let h = height * k;
-        let gem_radius = (height - 10.0) * k / 2.0;
-        let widths: Vec<f32> = spans.iter().map(|s| self.overlay.layout(s.text, s.size, s.weight).map(|l| l.1)).collect::<Result<_>>()?;
-        let width = widths.iter().sum::<f32>() + 26.0 * k + if gem.is_some() { 2.0 * gem_radius + 8.0 * k } else { 0.0 };
-        let shape = cut_corners(rect(cx - width / 2.0, cy - h / 2.0, cx + width / 2.0, cy + h / 2.0), h * 0.3);
+    /// Angular plate centered on `plate.center` with an optional tier gem and a row of spans.
+    fn plate(&self, plate: Plate, k: f32, colors: &Palette) -> Result<()> {
+        let (cx, cy) = plate.center;
+        let h = plate.height * k;
+        let gem_radius = h / 2.0 - PLATE_GEM_INSET * k;
+        let widths: Vec<f32> = plate.spans.iter().map(|s| self.overlay.layout(s.text, s.size, s.weight).map(|l| l.1)).collect::<Result<_>>()?;
+        let gem_width = if plate.gem.is_some() { 2.0 * gem_radius + PLATE_GEM_ROOM * k } else { 0.0 };
+        let width = widths.iter().sum::<f32>() + 2.0 * PLATE_PADDING * k + gem_width;
+        let shape = cut_corners(rect(cx - width / 2.0, cy - h / 2.0, cx + width / 2.0, cy + h / 2.0), h * PLATE_CUT_RATIO);
         self.shadow(&shape, k)?;
-        self.polygon(&shape, background.0, background.1, stroke.map(|s| (s, 2.0 * k)))?;
-        let mut x = cx - width / 2.0 + 13.0 * k;
-        if let Some((label, color)) = gem {
-            x = cx - width / 2.0 + 7.0 * k;
-            self.gem(x + gem_radius, cy, gem_radius, label, color, None, colors)?;
-            x += 2.0 * gem_radius + 9.0 * k;
+        self.polygon(&shape, plate.background.0, plate.background.1, plate.stroke.map(|s| (s, PLATE_STROKE * k)))?;
+        let mut x = cx - width / 2.0 + PLATE_PADDING * k;
+        if let Some((label, color)) = plate.gem {
+            let gem_x = cx - width / 2.0 + PLATE_GEM_PADDING * k + gem_radius;
+            self.gem((gem_x, cy), gem_radius, label, color, None, colors)?;
+            x = gem_x + gem_radius + PLATE_GEM_GAP * k;
         }
-        for (s, w) in spans.iter().zip(widths) {
+        for (s, w) in plate.spans.iter().zip(widths) {
             self.text(x, cy, s, false)?;
             x += w;
         }
@@ -411,28 +431,35 @@ impl Painter<'_> {
         let x = card.x as f32;
         let y = card.y as f32 + config.offset_y as f32 * self.unit;
         let (x0, y0, x1, y1) = (x - CARD_HALF_WIDTH * k, y - CARD_ABOVE_NAME * k, x + CARD_HALF_WIDTH * k, y + CARD_BELOW_NAME * k);
-        let quality = texts.get(&format!("common:quality.{}", card.quality.key()));
-        let quality_color = theme::color(&format!("quality.{}", card.quality.key()));
+        let quality_key = i18n::variant_key(card.quality);
+        let quality = texts.get(&format!("common:quality.{quality_key}"));
+        let quality_color = theme::color(&format!("quality.{quality_key}"));
         let for_champion = format!(" {}", i18n::t_with(texts.language, "overlay:forChampion", &[("champion", champion)]));
-        let best_pick = format!("★ {}", texts.get("overlay:bestPick"));
+        let best_pick = texts.get("overlay:bestPick");
         let (bold, regular) = (DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_WEIGHT_NORMAL);
         let body = (colors.panel, PANEL_ALPHA);
         let stroke = Some(if card.best { colors.accent_bright } else { colors.plate_border });
         let plate_spans = || [span(&quality, TEXT_LARGE * k, bold, quality_color), span(&for_champion, TEXT_SMALL * k, regular, colors.subtle)];
+        let below = (x, y1 + FRAME_GAP * k);
 
-        match config.label_style.as_str() {
-            "badge" => {
+        match config.label_style {
+            LabelStyle::Badge => {
                 if card.best {
                     self.highlight_frame(x0, y0, x1, y1, k, &colors)?;
                 }
                 let (cx, cy, r) = (x1 - BADGE_INSET * k, y0 + BADGE_INSET * k, BADGE_RADIUS * k);
                 self.shadow(&diamond(cx, cy, r), k)?;
-                self.gem(cx, cy, r, &card.grade, quality_color, Some((if card.best { colors.accent_bright } else { colors.ink }, 3.0 * k)), &colors)?;
-                let label = if card.best { format!("★ {quality}") } else { quality.clone() };
+                let ring = if card.best { colors.accent_bright } else { colors.ink };
+                self.gem((cx, cy), r, &card.grade, quality_color, Some((ring, GEM_STROKE * k)), &colors)?;
                 let (background, ink) = if card.best { ((colors.accent, 1.0), colors.white) } else { (body, quality_color) };
-                self.plate(cx, cy + r + 16.0 * k, k, BADGE_PLATE_HEIGHT, &[span(&label, TEXT_SMALL * k, bold, ink)], background, None, None, &colors)?;
+                let spans = [span(&quality, TEXT_SMALL * k, bold, ink)];
+                self.plate(
+                    Plate { center: (cx, cy + r + BADGE_PLATE_GAP * k), height: BADGE_PLATE_HEIGHT, spans: &spans, background, stroke: None, gem: None },
+                    k,
+                    &colors,
+                )?;
             }
-            "ribbon" => {
+            LabelStyle::Ribbon => {
                 if card.best {
                     self.highlight_frame(x0, y0, x1, y1, k, &colors)?;
                 }
@@ -440,7 +467,7 @@ impl Painter<'_> {
                 let background = if card.best { colors.accent } else { quality_color };
                 let shape = cut_corners(rect(x0 + RIBBON_INSET * k, cy - h / 2.0, x1 - RIBBON_INSET * k, cy + h / 2.0), RIBBON_CUT * k);
                 self.shadow(&shape, k)?;
-                self.polygon(&shape, background, 0.95, None)?;
+                self.polygon(&shape, background, RIBBON_ALPHA, None)?;
                 let main = if card.best { format!("{best_pick} · {quality}") } else { quality.clone() };
                 let main_width = self.overlay.layout(&main, TEXT_MEDIUM * k, bold)?.1;
                 let rest_width = self.overlay.layout(&for_champion, TEXT_TINY * k, regular)?.1;
@@ -449,46 +476,162 @@ impl Painter<'_> {
                 self.text(start, cy, &span(&main, TEXT_MEDIUM * k, bold, ink), false)?;
                 self.text(start + main_width, cy, &span(&for_champion, TEXT_TINY * k, regular, ink), false)?;
             }
-            "podium" => {
+            LabelStyle::Podium => {
                 if card.best {
                     self.highlight_frame(x0, y0, x1, y1, k, &colors)?;
                 }
-                let medal = theme::color(&format!("podium.{}", if card.rank <= 3 { card.rank.to_string() } else { "other".into() }));
-                let (r, cy) = (MEDAL_RADIUS * k, y0 - 2.0 * k);
+                let medal = theme::color(&format!("podium.{}", if card.rank <= PODIUM_PLACES { card.rank.to_string() } else { "other".into() }));
+                let (r, cy) = (MEDAL_RADIUS * k, y0 - MEDAL_LIFT * k);
                 self.shadow(&diamond(x, cy, r), k)?;
-                self.gem(x, cy, r, &card.rank.to_string(), medal, Some((colors.ink, 3.0 * k)), &colors)?;
-                self.plate(x, y1 + FRAME_GAP * k, k, PLATE_HEIGHT, &plate_spans(), body, stroke, Some((&card.grade, quality_color)), &colors)?;
+                self.gem((x, cy), r, &card.rank.to_string(), medal, Some((colors.ink, GEM_STROKE * k)), &colors)?;
+                let spans = plate_spans();
+                self.plate(
+                    Plate { center: below, height: PLATE_HEIGHT, spans: &spans, background: body, stroke, gem: Some((&card.grade, quality_color)) },
+                    k,
+                    &colors,
+                )?;
             }
-            "focus" => {
+            LabelStyle::Focus => {
                 if card.best {
                     self.highlight_frame(x0, y0, x1, y1, k, &colors)?;
                     let pick_this = texts.get("overlay:pickThis");
                     let detail = format!(" · {}", quality.to_lowercase());
-                    let spans = [
-                        span("★ ", TEXT_MEDIUM * k, bold, colors.white),
-                        span(&pick_this, TEXT_MEDIUM * k, bold, colors.white),
-                        span(&detail, TEXT_TINY * k, regular, colors.white),
-                    ];
-                    self.plate(x, y1 + FRAME_GAP * k, k, FOCUS_PLATE_HEIGHT, &spans, (colors.accent, 1.0), None, None, &colors)?;
+                    let spans = [span(&pick_this, TEXT_MEDIUM * k, bold, colors.white), span(&detail, TEXT_TINY * k, regular, colors.white)];
+                    self.plate(
+                        Plate { center: below, height: FOCUS_PLATE_HEIGHT, spans: &spans, background: (colors.accent, 1.0), stroke: None, gem: None },
+                        k,
+                        &colors,
+                    )?;
                 } else {
                     self.fill_rounded(rect(x0, y0, x1, y1), BADGE_INSET * k, 0, FOCUS_DIM)?;
                     let spans = [span(&quality, TEXT_TINY * k, bold, quality_color)];
-                    self.plate(x, y1 + FRAME_GAP * k, k, FOCUS_DIM_PLATE_HEIGHT, &spans, body, None, Some((&card.grade, quality_color)), &colors)?;
+                    let gem = Some((card.grade.as_str(), quality_color));
+                    self.plate(Plate { center: below, height: FOCUS_DIM_PLATE_HEIGHT, spans: &spans, background: body, stroke: None, gem }, k, &colors)?;
                 }
             }
-            _ => {
+            LabelStyle::Plate => {
                 if card.best {
                     self.highlight_frame(x0, y0, x1, y1, k, &colors)?;
-                    self.plate(x, y0 - FRAME_GAP * k, k, TAB_HEIGHT, &[span(&best_pick, TEXT_MEDIUM * k, bold, colors.white)], (colors.accent, 1.0), None, None, &colors)?;
+                    let spans = [span(&best_pick, TEXT_MEDIUM * k, bold, colors.white)];
+                    let tab =
+                        Plate { center: (x, y0 - FRAME_GAP * k), height: TAB_HEIGHT, spans: &spans, background: (colors.accent, 1.0), stroke: None, gem: None };
+                    self.plate(tab, k, &colors)?;
                 }
-                let reroll = format!("  ↻ {}", texts.get("common:reroll"));
+                let reroll = format!("  {}", texts.get("common:reroll"));
                 let mut spans: Vec<Span> = plate_spans().into_iter().collect();
                 if card.reroll {
                     spans.push(span(&reroll, TEXT_SMALL * k, bold, colors.warning));
                 }
-                self.plate(x, y1 + FRAME_GAP * k, k, PLATE_HEIGHT, &spans, body, stroke, Some((&card.grade, quality_color)), &colors)?;
+                self.plate(
+                    Plate { center: below, height: PLATE_HEIGHT, spans: &spans, background: body, stroke, gem: Some((&card.grade, quality_color)) },
+                    k,
+                    &colors,
+                )?;
             }
         }
         Ok(())
+    }
+}
+
+enum Command {
+    Show(Labels),
+    Demo(Labels),
+    Hide,
+}
+
+/// What to draw: the rated cards, for whom, how and in which language.
+pub struct Labels {
+    pub cards: Vec<Card>,
+    pub champion: String,
+    pub config: Config,
+    pub language: &'static str,
+}
+
+/// The overlay on its own thread, which sleeps in its message loop until it gets a command.
+pub struct OverlayHandle {
+    commands: Sender<Command>,
+    thread: u32,
+}
+
+impl OverlayHandle {
+    pub fn spawn(width: i32, height: i32, report: impl Fn(windows::core::Error) + Send + 'static) -> Result<OverlayHandle> {
+        let (commands, received) = mpsc::channel::<Command>();
+        let (ready, started) = mpsc::channel();
+        thread::spawn(move || {
+            let created = Overlay::new(width, height).map(|overlay| (overlay, unsafe { GetCurrentThreadId() }));
+            let overlay = match created {
+                Ok((overlay, thread)) if ready.send(Ok(thread)).is_ok() => overlay,
+                Ok(_) => return,
+                Err(error) => return ready.send(Err(error)).unwrap_or_default(),
+            };
+            let mut message = MSG::default();
+            while unsafe { GetMessageW(&mut message, None, 0, 0) }.0 > 0 {
+                let outcome = match message.message {
+                    WM_APP => received.try_iter().try_for_each(|command| overlay.apply(command)),
+                    WM_TIMER => overlay.end_demo(),
+                    _ => {
+                        unsafe { DispatchMessageW(&message) };
+                        Ok(())
+                    }
+                };
+                if let Err(error) = outcome {
+                    report(error);
+                }
+            }
+        });
+        let thread = started.recv().map_err(|_| windows::core::Error::from_thread())??;
+        Ok(OverlayHandle { commands, thread })
+    }
+
+    fn send(&self, command: Command) {
+        if self.commands.send(command).is_ok() {
+            unsafe { PostThreadMessageW(self.thread, WM_APP, WPARAM(0), LPARAM(0)) }.ok();
+        }
+    }
+
+    pub fn show(&self, labels: Labels) {
+        self.send(Command::Show(labels));
+    }
+
+    /// Shows the labels for a few seconds, to try the style outside a game.
+    pub fn demo(&self, labels: Labels) {
+        self.send(Command::Demo(labels));
+    }
+
+    pub fn hide(&self) {
+        self.send(Command::Hide);
+    }
+}
+
+impl Overlay {
+    fn apply(&self, command: Command) -> Result<()> {
+        match command {
+            Command::Show(labels) => {
+                self.stop_demo_timer();
+                self.show(&labels.cards, &labels.champion, &labels.config, &OverlayTexts::new(labels.language))
+            }
+            Command::Demo(labels) => {
+                self.show(&labels.cards, &labels.champion, &labels.config, &OverlayTexts::new(labels.language))?;
+                match unsafe { SetTimer(Some(self.hwnd), DEMO_TIMER, DEMO_DURATION_MS, None) } {
+                    0 => Err(windows::core::Error::from_thread()),
+                    _ => Ok(()),
+                }
+            }
+            Command::Hide => {
+                self.stop_demo_timer();
+                self.hide();
+                Ok(())
+            }
+        }
+    }
+
+    fn end_demo(&self) -> Result<()> {
+        self.hide();
+        unsafe { KillTimer(Some(self.hwnd), DEMO_TIMER) }
+    }
+
+    /// Cancels the timer that ends a demo.
+    fn stop_demo_timer(&self) {
+        let _no_timer_running = unsafe { KillTimer(Some(self.hwnd), DEMO_TIMER) };
     }
 }

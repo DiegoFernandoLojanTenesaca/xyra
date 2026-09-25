@@ -6,7 +6,7 @@ const config = {
   preprocess: vitePreprocess(),
   kit: {
     adapter: adapter({ fallback: '200.html' }),
-    alias: { $shared: 'shared' },
+    alias: { $locales: 'locales', $design: 'design' },
   },
 };
 

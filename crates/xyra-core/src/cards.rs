@@ -1,5 +1,5 @@
 use crate::{
-    model::{grade, Quality},
+    model::{Quality, grade},
     opgg::AugmentStat,
 };
 use serde::Serialize;
@@ -44,10 +44,7 @@ pub fn find_candidates(lines: &[OcrLine], names: &HashMap<String, Vec<u32>>, dx:
             if text.chars().count() < MIN_NAME_CHARS {
                 return None;
             }
-            let (name, similarity) = names
-                .keys()
-                .map(|known| (known, strsim::normalized_levenshtein(&text, known)))
-                .max_by(|a, b| a.1.total_cmp(&b.1))?;
+            let (name, similarity) = names.keys().map(|known| (known, strsim::normalized_levenshtein(&text, known))).max_by(|a, b| a.1.total_cmp(&b.1))?;
             (similarity >= MIN_NAME_SIMILARITY).then(|| Candidate { ids: names[name].clone(), x: dx + (line.x0 + line.x1) / 2.0, y: dy + line.y1 })
         })
         .collect()
@@ -68,11 +65,7 @@ pub fn card_row(candidates: &[Candidate], screen_height: f64) -> Vec<Candidate> 
             largest = row;
         }
     }
-    if largest.len() >= MIN_ROW_CARDS {
-        largest
-    } else {
-        Vec::new()
-    }
+    if largest.len() >= MIN_ROW_CARDS { largest } else { Vec::new() }
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, TS)]
@@ -119,9 +112,7 @@ pub fn rate_cards(candidates: &[Candidate], stats: &HashMap<u32, AugmentStat>, a
     let mut order: Vec<usize> = (0..cards.len()).collect();
     order.sort_by(|&a, &b| {
         let (x, y) = (&cards[a], &cards[b]);
-        (x.tier.is_none(), x.tier.unwrap_or(0))
-            .cmp(&(y.tier.is_none(), y.tier.unwrap_or(0)))
-            .then(y.performance.total_cmp(&x.performance))
+        (x.tier.is_none(), x.tier.unwrap_or(0)).cmp(&(y.tier.is_none(), y.tier.unwrap_or(0))).then(y.performance.total_cmp(&x.performance))
     });
     for (position, &index) in order.iter().enumerate() {
         cards[index].rank = position as u32 + 1;
@@ -150,10 +141,7 @@ pub struct CardTracker {
 }
 
 fn same_cards(a: &[Candidate], b: &[Candidate]) -> bool {
-    a.len() == b.len()
-        && a.iter()
-            .zip(b)
-            .all(|(a, b)| a.ids == b.ids && (a.x - b.x).abs() < STILL_TOLERANCE_PX && (a.y - b.y).abs() < STILL_TOLERANCE_PX)
+    a.len() == b.len() && a.iter().zip(b).all(|(a, b)| a.ids == b.ids && (a.x - b.x).abs() < STILL_TOLERANCE_PX && (a.y - b.y).abs() < STILL_TOLERANCE_PX)
 }
 
 impl CardTracker {
@@ -213,12 +201,8 @@ mod tests {
 
     #[test]
     fn finds_filters_and_rates_cards() {
-        let names: HashMap<String, Vec<u32>> = [
-            (normalize("¡BONK!"), vec![2111]),
-            (normalize("Tirador Mágico"), vec![129, 1129]),
-            (normalize("Golpe Místico"), vec![1058]),
-        ]
-        .into();
+        let names: HashMap<String, Vec<u32>> =
+            [(normalize("¡BONK!"), vec![2111]), (normalize("Tirador Mágico"), vec![129, 1129]), (normalize("Golpe Místico"), vec![1058])].into();
         let ocr = [
             line("BONK!", 100.0, 480.0),
             line("TIRADOR MAGICO", 500.0, 482.0),
@@ -229,11 +213,8 @@ mod tests {
         let row = card_row(&find_candidates(&ocr, &names, 0.0, 0.0), 1200.0);
         assert_eq!(row.iter().map(|c| c.ids.clone()).collect::<Vec<_>>(), vec![vec![2111], vec![129, 1129], vec![1058]]);
 
-        let stats: HashMap<u32, AugmentStat> = [
-            (2111, AugmentStat { tier: 1, performance: 91.0, pick_rate: 1.0 }),
-            (1129, AugmentStat { tier: 0, performance: 92.0, pick_rate: 1.0 }),
-        ]
-        .into();
+        let stats: HashMap<u32, AugmentStat> =
+            [(2111, AugmentStat { tier: 1, performance: 91.0, pick_rate: 1.0 }), (1129, AugmentStat { tier: 0, performance: 92.0, pick_rate: 1.0 })].into();
         let rated = rate_cards(&row, &stats, &HashMap::new());
         let summary: Vec<_> = rated.iter().map(|c| (c.id, c.tier, c.rank, c.best, c.reroll)).collect();
         assert_eq!(summary, vec![(2111, Some(1), 2, false, false), (1129, Some(0), 1, true, false), (1058, None, 3, false, true)]);

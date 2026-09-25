@@ -2,4 +2,4 @@
 import type { Mastery } from "./Mastery";
 import type { Rank } from "./Rank";
 
-export type Profile = { name: string, tag: string, level: number, icon: string, region: string, rank: Rank | null, masteries: Array<Mastery>, };
+export type Profile = { account: string, name: string, tag: string, level: number, icon: string, region: string, rank: Rank | null, masteries: Array<Mastery>, };

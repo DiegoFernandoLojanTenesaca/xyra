@@ -8,8 +8,8 @@
 </p>
 
 <p align="center"><b>Companion de escritorio para League of Legends.</b> Mira tus cartas de aumento y te marca la mejor para tu
-campeón en el momento en que salen, con estadísticas de OP.GG. Además: builds y runas que se importan con un clic, tier
-lists y tus estadísticas. Liviano, en español e inglés, y sin tocar el juego.</p>
+campeón en el momento en que salen, con estadísticas de OP.GG. Además: builds y runas que se importan con un clic,
+counters para la Grieta, tier lists y tus estadísticas. Liviano, en español e inglés, y sin tocar el juego.</p>
 
 <p align="center"><img src="docs/labels-preview.jpg" alt="Etiquetas de Xyra sobre las cartas de aumento en una partida de ARAM: Caos" width="92%"></p>
 
@@ -36,20 +36,26 @@ lists y tus estadísticas. Liviano, en español e inglés, y sin tocar el juego.
 
 - **Etiquetas sobre las cartas:** en ARAM: Caos y Arena, en 5 estilos (Placa, Insignia, Cinta, Podio, Enfoque). La mejor
   queda marcada en rojo y las malas te sugieren cambiarlas, en el momento en que salen.
-- **Titular directo:** "Elige ¡Comienza a Emocionarte!" en partida; en la selección, "Toma a Jinx de la banca".
+- **Titular directo:** "Elige ¡Comienza a Emocionarte!" en partida; en la selección, "Toma a Jinx de la banca" o, en la
+  Grieta, "Contra Yasuo, toma a Malzahar".
+- **Solo campeones que puedes jugar:** las recomendaciones (banca, top y counters) saltan los que tu cuenta no tiene ni
+  están gratis.
 - **Build:** runas, hechizos, ítems y orden de habilidades para ARAM: Caos y para la Grieta (normales, por posición), con
-  botones para importar las runas y el set de ítems a tu cliente.
+  enfrentamientos (a quién le gana y contra quién le cuesta) y botones para importar las runas y el set de ítems a tu
+  cliente.
 - **Juego:** activa en un clic opciones oficiales del LoL (rango de ataque, cronómetros del minimapa, rango de torres,
   tamaño del minimapa) y automatiza lo aburrido (mantener Sin bordes, importar runas solas, cerrar la ventana al jugar).
 - **Tier lists:** aumentos por campeón y campeones de ARAM: Caos.
-- **Tus datos:** winrate por campeón, mejores aumentos, nivel, rango y maestrías; exportación a CSV.
+- **Tus datos:** winrate por campeón, mejores aumentos, nivel, rango y maestrías, separados por cuenta; exportación a CSV.
 - **Extras:** aviso por voz, calibración para otras resoluciones y capturas para reportar fallos.
 - **Liviano:** vive en la bandeja del sistema y solo trabaja durante tus partidas.
 
 ## Cómo funciona
 
-Lee la zona de las cartas con el OCR que trae Windows (solo con el juego al frente) => la califica con OP.GG => dibuja las
-etiquetas en una capa nativa de Direct2D que deja pasar los clics y nunca toma el foco. Sin navegador mientras juegas.
+Escucha al cliente del LoL por su WebSocket (con el certificado de Riot verificado) => sabe al instante si estás en la
+selección o en partida y con qué campeón => durante la partida lee la zona de las cartas con el OCR que trae Windows (solo
+con el juego al frente) => las califica con OP.GG => dibuja las etiquetas en una capa nativa de Direct2D que deja pasar
+los clics y nunca toma el foco. Sin navegador mientras juegas.
 
 ## Seguridad
 
@@ -69,8 +75,8 @@ idioma de Windows).
 
 | | | |
 |---|---|---|
-| <img src="https://github.com/DiegoFernandoLojanTenesaca.png" width="48"> | **Diego Fernando:** [@DiegoFernandoLojanTenesaca](https://github.com/DiegoFernandoLojanTenesaca) | Creador (IndagaLab) |
-| <img src="https://github.com/jahirxtrap.png" width="48"> | **[@jahirxtrap](https://github.com/jahirxtrap):** cocreador | Cocreador (Xynitra) |
+| <img src="https://github.com/DiegoFernandoLojanTenesaca.png" width="48"> | **[@DiegoFernandoLojanTenesaca](https://github.com/DiegoFernandoLojanTenesaca):** creador | IndagaLab |
+| <img src="https://github.com/jahirxtrap.png" width="48"> | **[@jahirxtrap](https://github.com/jahirxtrap):** cocreador | Xynitra |
 
 Gracias a OP.GG por las estadísticas y a CommunityDragon por los íconos. Para contribuir, mira [CLAUDE.md](CLAUDE.md).
 
@@ -85,10 +91,11 @@ Riot Games, Inc. Sin relación con OP.GG. Úsalo bajo tu responsabilidad.
 
 **Xyra** labels **ARAM: Mayhem** and **Arena** augment cards with how good each one is **for your champion**, using OP.GG
 stats. The best card is highlighted and bad ones suggest a reroll. Lightweight, Windows only, Spanish and English. By
-**Diego Fernando** (IndagaLab) and **@jahirxtrap** (Xynitra).
+**@DiegoFernandoLojanTenesaca** (IndagaLab) and **@jahirxtrap** (Xynitra).
 
 - **Labels:** 5 styles, shown the moment the cards appear.
-- **Build:** runes, spells, items and skills for ARAM: Mayhem and Summoner's Rift, with rune and item set import.
+- **Build:** runes, spells, items, skills and matchups for ARAM: Mayhem and Summoner's Rift, with rune and item set import.
+- **Counters:** in Summoner's Rift champion select, the champions you own that beat your lane opponent.
 - **Game:** official League options in one click, plus automations.
 - **Safe:** screen reading and a native click-through overlay only; no memory access, no injection, no simulated input
   ([SECURITY.md](SECURITY.md)).

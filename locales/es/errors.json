@@ -1,0 +1,13 @@
+{
+  "clientClosed": "Abre el LoL e inténtalo de nuevo.",
+  "gameInProgress": "Termina la partida y vuelve a intentarlo.",
+  "noFreeRunePage": "No tienes páginas de runas libres: borra una y vuelve a intentar.",
+  "noSummoner": "No se pudo leer tu cuenta del cliente.",
+  "noData": "OP.GG todavía no tiene datos para esto.",
+  "emptyCatalog": "El cliente aún no termina de cargar sus datos: espera unos segundos.",
+  "network": "No se pudo conectar con OP.GG: {{detail}}",
+  "client": "El cliente del LoL respondió con un error: {{detail}}",
+  "storage": "No se pudo guardar en tu PC: {{detail}}",
+  "platform": "Windows no permitió la acción: {{detail}}",
+  "unknown": "Algo salió mal: {{detail}}"
+}

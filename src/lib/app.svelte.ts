@@ -1,60 +1,66 @@
-import { invoke } from '@tauri-apps/api/core';
-import { listen } from '@tauri-apps/api/event';
-import i18next from 'i18next';
-import { BASE_LANGUAGE, translator } from './i18n';
-import type { AppEvent, BuildMode, ChampionInfo, Config, EngineState, Page, Profile, SettingsTab, StatsSummary } from './types';
+import { onEvent, getChoices, getConfig, getState, setConfig } from './services/engine';
+import { getStats } from './services/data';
+import { toAppError } from './services/errors';
+import { getChampions, getProfile, importBuild } from './services/league';
+import { BASE_LANGUAGE, formatter, translator } from './i18n';
+import type { BuildMode, ChampionInfo, Choices, Config, EngineState, ImportTarget, Position, Profile, StatsSummary } from './types';
 
-const on = <T>(event: AppEvent, handler: (payload: T) => void) => listen<T>(event, (e) => handler(e.payload));
+export const PAGES = ['home', 'build', 'augments', 'champions', 'stats', 'labels', 'game', 'settings'] as const;
+export type Page = (typeof PAGES)[number];
+
+export const SETTINGS_TABS = ['general', 'profile', 'data', 'security', 'help', 'about'] as const;
+export type SettingsTab = (typeof SETTINGS_TABS)[number];
 
 class App {
   state = $state<EngineState>(null!);
   config = $state<Config>(null!);
-  ready = $derived(!!this.state && !!this.config);
+  choices = $state<Choices>(null!);
+  ready = $derived(!!this.state && !!this.config && !!this.choices);
   stats = $state<StatsSummary | null>(null);
   champions = $state<ChampionInfo[]>([]);
   profile = $state<Profile | null>(null);
-  labelStyles = $state<string[]>([]);
   page = $state<Page>('home');
   settingsTab = $state<SettingsTab>('general');
   selectedChampion = $state<number | null>(null);
   buildMode = $state<BuildMode>('aram');
   /** null = the champion's most played position. */
-  position = $state<string | null>(null);
+  position = $state<Position | null>(null);
   newGames = $state(0);
   language = $derived(this.state?.language ?? BASE_LANGUAGE);
   t = $derived(translator(this.language));
+  format = $derived(formatter(this.language));
 
   init = () => {
-    invoke<EngineState>('get_state').then((s) => (this.state = s));
-    invoke<Config>('get_config').then((c) => (this.config = c));
-    invoke<string[]>('get_label_styles').then((s) => (this.labelStyles = s));
+    getState().then((state) => (this.state = state));
+    getConfig().then((config) => (this.config = config));
+    getChoices().then((choices) => (this.choices = choices));
     this.reloadData();
     this.loadProfile();
     const listeners = [
-      on<EngineState>('state', (next) => {
-        if (this.state?.phase === 'no_client' && next.phase !== 'no_client') this.loadProfile();
+      onEvent<EngineState>('state', (next) => {
+        if (this.state && next.account !== this.state.account) this.loadProfile();
         this.state = next;
       }),
-      on<Config>('config', (next) => (this.config = next)),
-      on<null>('stats', () => this.reloadData()),
+      onEvent<Config>('config', (next) => (this.config = next)),
+      onEvent<null>('data', () => this.reloadData()),
     ];
-    return () => listeners.forEach((l) => void l.then((stop) => stop()));
+    return () => listeners.forEach((listener) => void listener.then((stop) => stop()));
   };
 
   reloadData = async () => {
     const previous = this.stats?.games;
-    const stats = await invoke<StatsSummary>('get_stats');
+    const stats = await getStats();
     if (previous !== undefined && stats.games > previous && this.page !== 'stats') this.newGames += stats.games - previous;
     this.stats = stats;
-    this.champions = await invoke<ChampionInfo[]>('get_champions');
+    this.champions = await getChampions();
   };
 
   loadProfile = async () => {
-    this.profile = await invoke<Profile | null>('get_profile').catch(() => this.profile);
+    this.profile = await getProfile().catch(() => this.profile);
   };
 
   saveConfig = async (changes: Partial<Config>) => {
-    this.config = await invoke<Config>('set_config', { config: { ...this.config, ...changes } });
+    this.config = await setConfig({ ...this.config, ...changes });
   };
 
   goTo = (page: Page) => {
@@ -78,30 +84,29 @@ class App {
     this.goTo('settings');
   };
 
-  /** Build mode and position from the current champion select or game (Summoner's Rift for normals and ranked). */
+  /** Build mode and position of the current champion select or game. */
   followGame = () => {
-    const mode = this.state.champ_select?.mode || this.state.mode;
-    if (!mode) return;
-    this.buildMode = mode === 'CLASSIC' ? 'rift' : 'aram';
+    if (!this.state.build_mode) return;
+    this.buildMode = this.state.build_mode;
     this.position = this.state.champ_select?.position ?? null;
   };
 
   /** Champion select pick, current game champion, most played or the tier list leader. */
   pickDefaultChampion = () => {
     if (this.selectedChampion !== null || !this.champions.length) return;
-    const inGame = this.champions.find((c) => c.name === this.state.champion)?.id;
-    this.selectedChampion = this.state.champ_select?.champion?.id ?? inGame ?? this.stats?.champions[0]?.id ?? this.champions[0].id;
+    const current = this.state.champ_select?.champion ?? this.state.game?.champion;
+    this.selectedChampion = current?.id ?? this.stats?.champions[0]?.id ?? this.champions[0].id;
     this.followGame();
   };
 
   errorText = (error: unknown) => {
-    const key = `common:errors.${String(error)}`;
-    return i18next.exists(key, { lng: this.language }) ? this.t(key) : this.t('common:errors.unknown', { detail: String(error) });
+    const failure = toAppError(error);
+    return this.t(`errors:${failure.code}`, { detail: 'detail' in failure ? failure.detail : '' });
   };
 
-  importBuild = async (champion: number, target: 'runes' | 'items') => {
+  importBuild = async (champion: number, target: ImportTarget) => {
     try {
-      await invoke('import_build', { champion, target, mode: this.buildMode, position: this.position });
+      await importBuild(champion, target, this.buildMode, this.buildMode === 'rift' ? this.position : null);
       return this.t(target === 'runes' ? 'build:runesImported' : 'build:itemsImported');
     } catch (error) {
       return this.errorText(error);
@@ -111,4 +116,5 @@ class App {
 
 export const app = new App();
 
-export const percent = (part: number, total: number) => (total ? Math.round((100 * part) / total) : 0);
+/** Share of `part` in `total`, 0-100. */
+export const percent = (part: number, total: number) => (total ? (100 * part) / total : 0);

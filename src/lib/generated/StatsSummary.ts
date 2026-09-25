@@ -2,4 +2,8 @@
 import type { RecentGame } from "./RecentGame";
 import type { StatRow } from "./StatRow";
 
-export type StatsSummary = { games: number, wins: number, champions: Array<StatRow>, augments: Array<StatRow>, recent: Array<RecentGame>, };
+export type StatsSummary = { games: number, 
+/**
+ * Games an augment needs before it is ranked.
+ */
+min_augment_games: number, wins: number, champions: Array<StatRow>, augments: Array<StatRow>, recent: Array<RecentGame>, };

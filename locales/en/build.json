@@ -1,0 +1,38 @@
+{
+  "subtitle": "Runes, spells, items and skills for ARAM: Mayhem and Summoner's Rift, with OP.GG data.",
+  "runes": "Runes",
+  "shards": "Shards",
+  "spells": "Spells",
+  "items": "Items",
+  "blocks": {
+    "starting": "Starting items",
+    "boots": "Boots",
+    "core": "Core",
+    "situational": "Situational"
+  },
+  "skills": "Skills",
+  "maxFirst": "Max first",
+  "matchups": "Matchups",
+  "strongAgainst": "Strong against",
+  "weakAgainst": "Weak against",
+  "noMatchups": "No matchup data for this position.",
+  "importRunes": "Import runes",
+  "importItems": "Import items",
+  "runesImported": "Done: the rune page is now active in your client.",
+  "itemsImported": "Done: the set shows up in the in-game shop for this champion.",
+  "loading": "Loading OP.GG build…",
+  "pickRate": "{{value}} pick rate",
+  "note": "Only imported when you ask: Xyra never touches your client on its own.",
+  "noCatalog": "Open League once to see names and icons.",
+  "modes": {
+    "aram": "ARAM: Mayhem",
+    "rift": "Summoner's Rift"
+  },
+  "positions": {
+    "top": "Top",
+    "jungle": "Jungle",
+    "mid": "Mid",
+    "adc": "Bot",
+    "support": "Support"
+  }
+}

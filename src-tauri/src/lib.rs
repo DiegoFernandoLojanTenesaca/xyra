@@ -2,23 +2,21 @@ mod commands;
 mod engine;
 mod overlay;
 mod previews;
+mod riot_install;
 mod screen;
 mod tray;
 mod voice;
 
 use commands::App;
-use engine::{Shared, MAIN_WINDOW};
-use std::{
-    sync::{atomic::Ordering, Arc},
-    thread,
-};
+use engine::{EngineEvent, MAIN_WINDOW, Shared};
+use std::{sync::Arc, thread};
 use tauri::{
+    AppHandle, Manager, RunEvent, Theme, WebviewUrl, WebviewWindowBuilder,
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     window::Color,
-    AppHandle, Manager, RunEvent, Theme, WebviewUrl, WebviewWindowBuilder,
 };
 use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
-use xyra_core::{lol, theme};
+use xyra_core::{storage::Storage, theme};
 
 const HIDDEN_FLAG: &str = "--hidden";
 const DEMO_FLAG: &str = "--demo";
@@ -34,11 +32,12 @@ fn background_color() -> Color {
     Color((rgb >> 16) as u8, (rgb >> 8) as u8, rgb as u8, 255)
 }
 
-/// The main window is created on open and destroyed on close: no browser runs while you play.
+/// Shows the main window, creating it when it was closed.
 pub fn show_main_window(app: &AppHandle) {
     if let Some(window) = app.get_webview_window(MAIN_WINDOW) {
-        let _ = window.unminimize();
-        let _ = window.set_focus();
+        if let Err(e) = window.unminimize().and_then(|()| window.set_focus()) {
+            app.state::<App>().log_error("main window", e);
+        }
         return;
     }
     let created = WebviewWindowBuilder::new(app, MAIN_WINDOW, WebviewUrl::App("index.html".into()))
@@ -65,7 +64,11 @@ pub fn run() {
     let args: Vec<String> = std::env::args().collect();
     if let Some(i) = args.iter().position(|a| a == PREVIEWS_FLAG) {
         let arg = |n: usize, default: &'static str| args.get(i + n).map_or(default, |s| s.as_str());
-        if let Err(e) = previews::render_style_previews(arg(1, DEFAULT_PREVIEW_BACKGROUND).as_ref(), arg(2, DEFAULT_PREVIEW_OUTPUT).as_ref(), arg(3, DEFAULT_PREVIEW_LANGUAGE)) {
+        if let Err(e) = previews::render_style_previews(
+            arg(1, DEFAULT_PREVIEW_BACKGROUND).as_ref(),
+            arg(2, DEFAULT_PREVIEW_OUTPUT).as_ref(),
+            arg(3, DEFAULT_PREVIEW_LANGUAGE),
+        ) {
             eprintln!("previews: {e}");
         }
         return;
@@ -75,7 +78,8 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec![HIDDEN_FLAG])))
         .setup(|app| {
-            let shared: App = Arc::new(Shared::new(app.path().app_data_dir()?));
+            let (shared, events) = Shared::new(Storage::open(app.path().app_data_dir()?)?, riot_install::find());
+            let shared: App = Arc::new(shared);
             app.manage(Arc::clone(&shared));
             if shared.config().autostart && !app.autolaunch().is_enabled().unwrap_or(false) {
                 app.autolaunch().enable()?;
@@ -93,20 +97,19 @@ pub fn run() {
                 .build(app)?;
             tray::rebuild_menu(app.handle(), &shared);
             if flag(DEMO_FLAG) {
-                shared.demo_requested.store(true, Ordering::Relaxed);
+                shared.send(EngineEvent::ShowDemo);
             }
-            let start_hidden = flag(HIDDEN_FLAG) || flag(DEMO_FLAG) || lol::read_live_game(&shared.http).is_some();
-            if !start_hidden {
+            if !flag(HIDDEN_FLAG) && !flag(DEMO_FLAG) {
                 show_main_window(app.handle());
             }
             let handle = app.handle().clone();
-            thread::spawn(move || engine::run(handle, shared));
+            thread::spawn(move || engine::run(handle, shared, events));
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             commands::get_state,
             commands::get_config,
-            commands::get_label_styles,
+            commands::get_choices,
             commands::set_config,
             commands::get_stats,
             commands::get_champions,
@@ -116,10 +119,11 @@ pub fn run() {
             commands::import_build,
             commands::get_game_settings,
             commands::set_game_setting,
-            commands::get_data_size,
+            commands::get_data_usage,
             commands::export_csv,
             commands::delete_data,
             commands::test_overlay,
+            commands::test_voice,
             commands::set_borderless,
             commands::open_folder
         ])

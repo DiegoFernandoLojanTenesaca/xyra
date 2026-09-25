@@ -3,7 +3,7 @@ use std::sync::OnceLock;
 
 fn tokens() -> &'static Value {
     static TOKENS: OnceLock<Value> = OnceLock::new();
-    TOKENS.get_or_init(|| serde_json::from_str(include_str!("../../../shared/tokens.json")).expect("valid tokens.json"))
+    TOKENS.get_or_init(|| serde_json::from_str(include_str!("../../../design/tokens.json")).expect("valid tokens.json"))
 }
 
 const MISSING_COLOR: u32 = 0xff00ff;

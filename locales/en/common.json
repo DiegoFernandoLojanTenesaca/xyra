@@ -1,0 +1,67 @@
+{
+  "languageName": "English",
+  "tagline": "Free and open source",
+  "levelValue": "LV {{level}}",
+  "phases": {
+    "noClient": "Waiting for League",
+    "client": "Ready · waiting for a game",
+    "champSelect": "Champion select",
+    "inGame": "In game",
+    "paused": "Paused"
+  },
+  "modes": {
+    "mayhem": "ARAM: Mayhem",
+    "arena": "Arena",
+    "aram": "ARAM",
+    "summonersRift": "Summoner's Rift",
+    "other": "Other mode"
+  },
+  "rarity": {
+    "silver": "Silver",
+    "gold": "Gold",
+    "prismatic": "Prismatic"
+  },
+  "leagues": {
+    "iron": "Iron",
+    "bronze": "Bronze",
+    "silver": "Silver",
+    "gold": "Gold",
+    "platinum": "Platinum",
+    "emerald": "Emerald",
+    "diamond": "Diamond",
+    "master": "Master",
+    "grandmaster": "Grandmaster",
+    "challenger": "Challenger"
+  },
+  "quality": {
+    "excellent": "EXCELLENT",
+    "great": "GREAT",
+    "good": "GOOD",
+    "fair": "OKAY",
+    "bad": "BAD",
+    "rarePick": "RARE PICK"
+  },
+  "reroll": "reroll",
+  "locked": "You do not own it",
+  "on": "On",
+  "off": "Off",
+  "window": {
+    "minimize": "Minimize",
+    "maximize": "Maximize",
+    "close": "Close"
+  },
+  "nav": {
+    "home": "Home",
+    "build": "Build",
+    "augments": "Augments",
+    "champions": "Champions",
+    "stats": "Stats",
+    "labels": "Labels",
+    "game": "Game",
+    "settings": "Settings"
+  },
+  "searchChampion": "Search champion…",
+  "games_one": "{{count, number}} game",
+  "games_other": "{{count, number}} games",
+  "winRate": "{{value}} WR"
+}

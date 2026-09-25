@@ -1,38 +1,65 @@
 use crate::i18n;
 use serde::{Deserialize, Serialize};
-use std::{fs, path::Path};
 use ts_rs::TS;
 
-pub const LABEL_STYLES: [&str; 5] = ["plate", "badge", "ribbon", "podium", "focus"];
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub enum LabelStyle {
+    #[default]
+    #[serde(alias = "placa")]
+    Plate,
+    #[serde(alias = "insignia")]
+    Badge,
+    #[serde(alias = "cinta")]
+    Ribbon,
+    #[serde(alias = "podio")]
+    Podium,
+    #[serde(alias = "enfoque")]
+    Focus,
+}
 
-#[derive(Clone, PartialEq, Serialize, Deserialize, TS)]
+impl LabelStyle {
+    pub const ALL: [LabelStyle; 5] = [LabelStyle::Plate, LabelStyle::Badge, LabelStyle::Ribbon, LabelStyle::Podium, LabelStyle::Focus];
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
 #[serde(default)]
 pub struct Config {
-    pub label_style: String,
+    #[serde(alias = "estilo")]
+    pub label_style: LabelStyle,
+    #[serde(alias = "voz")]
     pub voice: bool,
     pub arena: bool,
+    #[serde(alias = "pausado")]
     pub paused: bool,
-    /// "auto" follows the client locale.
-    pub language: String,
+    /// Language code; None follows the client locale.
+    #[serde(alias = "idioma")]
+    pub language: Option<String>,
     /// Vertical offset of the labels, in pixels at a 1200 px tall screen.
     pub offset_y: f64,
+    #[serde(alias = "escala")]
     pub scale: f64,
+    #[serde(alias = "grabar")]
     pub record_screenshots: bool,
     pub autostart: bool,
+    #[serde(alias = "auto_bordes")]
     pub keep_borderless: bool,
+    #[serde(alias = "auto_runas")]
     pub auto_import_runes: bool,
+    #[serde(alias = "cerrar_en_partida")]
     pub close_window_in_game: bool,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Config {
-            label_style: LABEL_STYLES[0].into(),
+            label_style: LabelStyle::default(),
             voice: false,
             arena: true,
             paused: false,
-            language: "auto".into(),
+            language: None,
             offset_y: 0.0,
             scale: 1.0,
             record_screenshots: false,
@@ -45,18 +72,7 @@ impl Default for Config {
 }
 
 impl Config {
-    pub fn load(path: &Path) -> Config {
-        fs::read_to_string(path).ok().and_then(|text| serde_json::from_str(&text).ok()).unwrap_or_default()
-    }
-
-    pub fn save(&self, path: &Path) -> Result<(), String> {
-        if let Some(dir) = path.parent() {
-            fs::create_dir_all(dir).map_err(|e| e.to_string())?;
-        }
-        fs::write(path, serde_json::to_string_pretty(self).map_err(|e| e.to_string())?).map_err(|e| e.to_string())
-    }
-
     pub fn effective_language(&self, client_locale: &str) -> &'static str {
-        i18n::resolve(if self.language == "auto" { client_locale } else { &self.language })
+        i18n::resolve(self.language.as_deref().unwrap_or(client_locale))
     }
 }

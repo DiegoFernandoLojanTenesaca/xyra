@@ -1,0 +1,12 @@
+build
+.svelte-kit
+target
+src-tauri
+src/lib/generated
+locales
+design
+mockups
+icon-drafts
+pnpm-lock.yaml
+*.md
+crates

@@ -8,12 +8,14 @@ export const LINKS = {
   releases: `${REPOSITORY}/releases`,
 };
 
-/** Creator photos ship with the app, so Xyra never contacts GitHub to show them. */
+/** Creators, with their photos bundled in the app. */
 export const CREATORS = [
-  { name: 'Diego Fernando', user: 'DiegoFernandoLojanTenesaca', team: 'IndagaLab', role: 'creator', photo: '/creators/diego.jpg' },
-  { name: '@jahirxtrap', user: 'jahirxtrap', team: 'Xynitra', role: 'coCreator', photo: '/creators/jahir.jpg' },
+  { user: 'DiegoFernandoLojanTenesaca', team: 'IndagaLab', role: 'creator', photo: '/creators/diego.jpg' },
+  { user: 'jahirxtrap', team: 'Xynitra', role: 'coCreator', photo: '/creators/jahir.jpg' },
 ] as const;
 
 export const githubProfile = (user: string) => `https://github.com/${user}`;
+
+export const githubHandle = (user: string) => `@${user}`;
 
 export const openExternal = (url: string) => void openUrl(url);

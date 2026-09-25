@@ -1,0 +1,15 @@
+{
+  "license": "MIT license",
+  "sources": "Data from OP.GG · icons from CommunityDragon.",
+  "riot": "Xyra isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games. League of Legends is a trademark of Riot Games, Inc.",
+  "whatsNew": "What's new in this version",
+  "changes": {
+    "counters": "Counters in Summoner's Rift champion select and matchups in every build.",
+    "ownership": "Only recommends champions you own or have for free.",
+    "accounts": "Follows the account you sign in with: profile and stats for each one.",
+    "live": "Learns what happens in the client the moment it happens, without asking over and over."
+  },
+  "links": "Links",
+  "builtWith": "Made with Rust, Tauri and Svelte. The in-game overlay is native: no browser, almost no memory.",
+  "madeBy": "Made by"
+}

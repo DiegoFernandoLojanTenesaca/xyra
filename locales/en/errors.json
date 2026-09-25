@@ -1,0 +1,13 @@
+{
+  "clientClosed": "Open League and try again.",
+  "gameInProgress": "Finish the game and try again.",
+  "noFreeRunePage": "You have no free rune pages: delete one and try again.",
+  "noSummoner": "Could not read your account from the client.",
+  "noData": "OP.GG has no data for this yet.",
+  "emptyCatalog": "The client is still loading its data: wait a few seconds.",
+  "network": "Could not reach OP.GG: {{detail}}",
+  "client": "The League client answered with an error: {{detail}}",
+  "storage": "Could not save on your PC: {{detail}}",
+  "platform": "Windows did not allow it: {{detail}}",
+  "unknown": "Something went wrong: {{detail}}"
+}

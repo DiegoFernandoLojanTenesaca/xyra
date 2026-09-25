@@ -1,0 +1,11 @@
+{
+  "subtitle": "Tier list de aumentos para cada campeón, con datos de OP.GG.",
+  "all": "Todas",
+  "loading": "Cargando datos de OP.GG…",
+  "performance": "Rendimiento",
+  "pickRate": "Elegida",
+  "noData": "No hay datos para este campeón en este modo.",
+  "pickChampion": "Elige un campeón para ver sus aumentos.",
+  "augmentCount_one": "{{count, number}} aumento",
+  "augmentCount_other": "{{count, number}} aumentos"
+}
