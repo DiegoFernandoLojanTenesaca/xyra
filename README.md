@@ -1,32 +1,59 @@
-# Xyra
+<p align="center"><img src="docs/banner.png" alt="Xyra" width="100%"></p>
 
-**Xyra** etiqueta las cartas de aumento de **ARAM: Caos** (ARAM: Mayhem) y **Arena** en League of Legends con qué tan
-buenas son **para tu campeón**, con estadísticas de OP.GG. La mejor queda marcada y las malas te sugieren cambiarlas.
-Liviano, solo para Windows, en español e inglés.
+<p align="center">
+  <a href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases/latest"><img alt="Descargar" src="https://img.shields.io/github/v/release/DiegoFernandoLojanTenesaca/xyra?style=for-the-badge&label=descargar&color=e5132b"></a>
+  <img alt="Windows 10 y 11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-131315?style=for-the-badge">
+  <a href="https://github.com/DiegoFernandoLojanTenesaca/xyra/actions/workflows/ci.yml"><img alt="Pruebas" src="https://img.shields.io/github/actions/workflow/status/DiegoFernandoLojanTenesaca/xyra/ci.yml?branch=main&style=for-the-badge&label=pruebas"></a>
+  <a href="LICENSE"><img alt="Licencia MIT" src="https://img.shields.io/github/license/DiegoFernandoLojanTenesaca/xyra?style=for-the-badge&color=1f1f22"></a>
+</p>
 
-Un proyecto de **Xynitra · IndagaLab**.
+<p align="center"><b>Companion de escritorio para League of Legends.</b> Mira tus cartas de aumento y te marca la mejor para tu
+campeón en el momento en que salen, con estadísticas de OP.GG. Además: builds y runas que se importan con un clic, tier
+lists y tus estadísticas. Liviano, en español e inglés, y sin tocar el juego.</p>
 
-![Placa](docs/placa.jpg)
+<p align="center"><img src="docs/placa.jpg" alt="Etiquetas de Xyra sobre las cartas de aumento en una partida de ARAM: Caos" width="92%"></p>
 
 *English version below.*
 
+## Así se ve
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/capturas/inicio.jpg" alt="Inicio"><br><b>Inicio</b> · qué carta tomar, tu resumen y el top de ARAM: Caos</td>
+    <td width="50%"><img src="docs/capturas/build.jpg" alt="Build"><br><b>Build</b> · runas, hechizos, ítems y habilidades, listos para importar</td>
+  </tr>
+  <tr>
+    <td><img src="docs/capturas/etiquetas.jpg" alt="Etiquetas"><br><b>Etiquetas</b> · 5 estilos para las marcas sobre las cartas</td>
+    <td><img src="docs/capturas/juego.jpg" alt="Juego"><br><b>Juego</b> · opciones oficiales del LoL y automatizaciones</td>
+  </tr>
+  <tr>
+    <td><img src="docs/capturas/aumentos.jpg" alt="Aumentos"><br><b>Aumentos</b> · tier list por campeón, ARAM: Caos y Arena</td>
+    <td><img src="docs/capturas/estadisticas.jpg" alt="Estadísticas"><br><b>Estadísticas</b> · tu winrate y tus mejores aumentos</td>
+  </tr>
+</table>
+
 ## Qué hace
 
-- **Etiquetas sobre las cartas**, en 5 estilos (Placa, Insignia, Cinta, Podio, Enfoque), y un titular directo en la
-  app: *"Elige ¡Comienza a Emocionarte!"*.
-- **Sugiere cambiar** las cartas malas cuando en la mesa hay una buena.
-- **Selección de campeones**: tier de tu campeón y de la banca, y te avisa si en la banca hay uno mejor.
-- **Build**: runas, hechizos, ítems y orden de habilidades para ARAM: Caos y para la Grieta (normales, por posición),
+- **Etiquetas sobre las cartas** de ARAM: Caos y Arena, en 5 estilos (Placa, Insignia, Cinta, Podio, Enfoque). La mejor
+  queda marcada en rojo y las malas te sugieren cambiarlas, en el momento en que salen.
+- **Titular directo** en la app: *"Elige ¡Comienza a Emocionarte!"*; en la selección, *"Toma a Jinx de la banca"*.
+- **Build** para ARAM: Caos y para la Grieta (normales, por posición): runas, hechizos, ítems y orden de habilidades,
   con botones para importar las runas y el set de ítems a tu cliente.
 - **Juego**: activa en un clic opciones oficiales del LoL (rango de ataque, cronómetros del minimapa, rango de torres,
   tamaño del minimapa) y automatiza lo aburrido: mantener Sin bordes, importar runas solas, cerrar la ventana al jugar.
 - **Tier lists** de aumentos por campeón y de campeones en ARAM: Caos.
-- **Aviso por voz** opcional: "Elige la de la derecha".
-- **Tus estadísticas y tu perfil**: winrate por campeón, tus mejores aumentos, nivel, rango y maestrías.
-- **Tus datos**: exportar tus partidas a CSV o borrarlo todo desde Ajustes.
-- **Arena (beta)**: califica los aumentos por su puesto promedio en OP.GG.
-- **Calibración** de altura y tamaño para otras resoluciones, y modo "guardar capturas" para reportar fallos.
+- **Tus estadísticas y tu perfil**: winrate por campeón, mejores aumentos, nivel, rango y maestrías; exportación a CSV.
+- **Aviso por voz** opcional, **calibración** para otras resoluciones y modo "guardar capturas" para reportar fallos.
 - Vive en la **bandeja del sistema** y solo trabaja durante tus partidas.
+
+### Cómo funciona
+
+| Pieza | Qué hace |
+|---|---|
+| Lectura de pantalla | Captura solo la zona de las cartas y la lee con el OCR que trae Windows, únicamente con el juego al frente. |
+| Capa nativa | Una ventana transparente dibujada con Direct2D, que deja pasar los clics y nunca toma el foco. Sin navegador. |
+| Datos | OP.GG (tiers de aumentos, builds), CommunityDragon (íconos) y el cliente del LoL (nombres en tu idioma, historial). |
+| Interfaz | Tauri 2 + Svelte 5: la ventana se crea al abrirla y se destruye al cerrarla. |
 
 ## Seguridad
 
