@@ -23,8 +23,8 @@ class App {
   settingsTab = $state<SettingsTab>('general');
   selectedChampion = $state<number | null>(null);
   buildMode = $state<BuildMode>('aram');
-  /** null = the champion's most played position. */
-  position = $state<Position | null>(null);
+  positionOverride = $state<Position | null>(null);
+  profileError = $state('');
   newGames = $state(0);
   language = $derived(this.state?.language ?? BASE_LANGUAGE);
   t = $derived(translator(this.language));
@@ -56,7 +56,12 @@ class App {
   };
 
   loadProfile = async () => {
-    this.profile = await getProfile().catch(() => this.profile);
+    try {
+      this.profile = await getProfile();
+      this.profileError = '';
+    } catch (error) {
+      this.profileError = this.errorText(error);
+    }
   };
 
   saveConfig = async (changes: Partial<Config>) => {
@@ -84,14 +89,12 @@ class App {
     this.goTo('settings');
   };
 
-  /** Build mode and position of the current champion select or game. */
   followGame = () => {
     if (!this.state.build_mode) return;
     this.buildMode = this.state.build_mode;
-    this.position = this.state.champ_select?.position ?? null;
+    this.positionOverride = this.state.champ_select?.position ?? null;
   };
 
-  /** Champion select pick, current game champion, most played or the tier list leader. */
   pickDefaultChampion = () => {
     if (this.selectedChampion !== null || !this.champions.length) return;
     const current = this.state.champ_select?.champion ?? this.state.game?.champion;
@@ -106,7 +109,7 @@ class App {
 
   importBuild = async (champion: number, target: ImportTarget) => {
     try {
-      await importBuild(champion, target, this.buildMode, this.buildMode === 'rift' ? this.position : null);
+      await importBuild(champion, target, this.buildMode, this.buildMode === 'rift' ? this.positionOverride : null);
       return this.t(target === 'runes' ? 'build:runesImported' : 'build:itemsImported');
     } catch (error) {
       return this.errorText(error);
@@ -116,5 +119,4 @@ class App {
 
 export const app = new App();
 
-/** Share of `part` in `total`, 0-100. */
 export const percent = (part: number, total: number) => (total ? (100 * part) / total : 0);

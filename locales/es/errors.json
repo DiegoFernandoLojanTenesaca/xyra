@@ -6,8 +6,9 @@
   "noData": "OP.GG todavía no tiene datos para esto.",
   "emptyCatalog": "El cliente aún no termina de cargar sus datos: espera unos segundos.",
   "network": "No se pudo conectar con OP.GG: {{detail}}",
+  "opggFormat": "OP.GG cambió su forma de responder y esta versión de Xyra no puede leerla: {{detail}}",
   "client": "El cliente del LoL respondió con un error: {{detail}}",
+  "clientFormat": "El cliente del LoL respondió de una forma que esta versión de Xyra no puede leer: {{detail}}",
   "storage": "No se pudo guardar en tu PC: {{detail}}",
-  "platform": "Windows no permitió la acción: {{detail}}",
-  "unknown": "Algo salió mal: {{detail}}"
+  "platform": "Windows no permitió la acción: {{detail}}"
 }

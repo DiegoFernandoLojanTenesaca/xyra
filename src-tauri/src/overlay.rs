@@ -38,7 +38,8 @@ use windows_numerics::Vector2;
 use xyra_core::{
     cards::Card,
     config::{Config, LabelStyle},
-    i18n, theme,
+    i18n,
+    theme::{self, tokens},
 };
 
 /// Card measurements taken from real captures at 1920x1200, scaled by the screen height.
@@ -80,7 +81,6 @@ const PLATE_STROKE: f32 = 2.0;
 const GEM_STROKE: f32 = 3.0;
 const GEM_TEXT_RATIO: f32 = 0.95;
 const MEDAL_LIFT: f32 = 2.0;
-const PODIUM_PLACES: u32 = 3;
 const SHADOW: [(f32, f32); 2] = [(4.0, 0.18), (2.0, 0.28)];
 const FADE_STEPS: [u8; 4] = [70, 140, 205, 255];
 const FADE_STEP: Duration = Duration::from_millis(25);
@@ -162,7 +162,7 @@ impl Overlay {
             )?;
             let d2d: ID2D1Factory = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, None)?;
             let dwrite: IDWriteFactory = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED)?;
-            let font = HSTRING::from(theme::token("font.native").unwrap_or_default());
+            let font = HSTRING::from(tokens::FONT_NATIVE);
             Ok(Overlay { hwnd, d2d, dwrite, font, width, height })
         }
     }
@@ -317,15 +317,15 @@ struct Palette {
 
 fn palette() -> Palette {
     Palette {
-        accent: theme::color("color.accent"),
-        accent_bright: theme::color("color.accentBright"),
-        ink: theme::color("color.textOnLight"),
-        panel: theme::color("color.panel"),
-        white: theme::color("color.white"),
-        subtle: theme::color("color.textSubtle"),
-        muted: theme::color("color.textMuted"),
-        warning: theme::color("color.warning"),
-        plate_border: theme::color("color.line"),
+        accent: tokens::COLOR_ACCENT,
+        accent_bright: tokens::COLOR_ACCENT_BRIGHT,
+        ink: tokens::COLOR_TEXT_ON_LIGHT,
+        panel: tokens::COLOR_PANEL,
+        white: tokens::COLOR_WHITE,
+        subtle: tokens::COLOR_TEXT_SUBTLE,
+        muted: tokens::COLOR_TEXT_MUTED,
+        warning: tokens::COLOR_WARNING,
+        plate_border: tokens::COLOR_LINE,
     }
 }
 
@@ -433,7 +433,7 @@ impl Painter<'_> {
         let (x0, y0, x1, y1) = (x - CARD_HALF_WIDTH * k, y - CARD_ABOVE_NAME * k, x + CARD_HALF_WIDTH * k, y + CARD_BELOW_NAME * k);
         let quality_key = i18n::variant_key(card.quality);
         let quality = texts.get(&format!("common:quality.{quality_key}"));
-        let quality_color = theme::color(&format!("quality.{quality_key}"));
+        let quality_color = theme::quality_color(card.quality);
         let for_champion = format!(" {}", i18n::t_with(texts.language, "overlay:forChampion", &[("champion", champion)]));
         let best_pick = texts.get("overlay:bestPick");
         let (bold, regular) = (DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_WEIGHT_NORMAL);
@@ -480,7 +480,7 @@ impl Painter<'_> {
                 if card.best {
                     self.highlight_frame(x0, y0, x1, y1, k, &colors)?;
                 }
-                let medal = theme::color(&format!("podium.{}", if card.rank <= PODIUM_PLACES { card.rank.to_string() } else { "other".into() }));
+                let medal = theme::podium_color(card.rank);
                 let (r, cy) = (MEDAL_RADIUS * k, y0 - MEDAL_LIFT * k);
                 self.shadow(&diamond(x, cy, r), k)?;
                 self.gem((x, cy), r, &card.rank.to_string(), medal, Some((colors.ink, GEM_STROKE * k)), &colors)?;

@@ -23,7 +23,9 @@
 
   const build = resource(
     () =>
-      app.selectedChampion === null ? null : { champion: app.selectedChampion, mode: app.buildMode, position: app.buildMode === 'rift' ? app.position : null },
+      app.selectedChampion === null
+        ? null
+        : { champion: app.selectedChampion, mode: app.buildMode, position: app.buildMode === 'rift' ? app.positionOverride : null },
     ({ champion, mode, position }) => {
       notice = '';
       return getBuild(champion, mode, position);
@@ -94,7 +96,7 @@
   {#if app.buildMode === 'rift'}
     <SegmentedControl
       options={app.choices.positions.map((p) => [p, t(`build:positions.${p}`)] as [Position, string])}
-      bind:value={() => app.position ?? current?.position ?? app.choices.positions[0], (p) => (app.position = p)}
+      bind:value={() => app.positionOverride ?? current?.position ?? app.choices.positions[0], (p) => (app.positionOverride = p)}
     />
   {/if}
 </div>

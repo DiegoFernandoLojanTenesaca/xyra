@@ -14,7 +14,9 @@ pub enum AppError {
     NoData,
     EmptyCatalog,
     Network(String),
+    OpggFormat(String),
     Client(String),
+    ClientFormat(String),
     Storage(String),
     Platform(String),
 }
@@ -28,6 +30,14 @@ impl AppError {
 
     pub fn platform(error: impl fmt::Display) -> AppError {
         AppError::Platform(error.to_string())
+    }
+
+    pub fn opgg_format(source: &str, error: impl fmt::Display) -> AppError {
+        AppError::OpggFormat(format!("{source}: {error}"))
+    }
+
+    pub fn client_format(source: &str, error: impl fmt::Display) -> AppError {
+        AppError::ClientFormat(format!("{source}: {error}"))
     }
 }
 

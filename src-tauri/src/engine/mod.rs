@@ -1,12 +1,14 @@
 mod card_reader;
-mod champ_select;
+mod catalog_loader;
+mod history_importer;
 mod watch;
 
 pub use card_reader::demo_cards;
 
 use crate::screen;
 use card_reader::CardReader;
-use champ_select::ChampSelectTracker;
+use catalog_loader::CatalogLoader;
+use history_importer::HistoryImporter;
 use notify::RecommendedWatcher;
 use serde::Serialize;
 use serde_json::Value;
@@ -23,7 +25,8 @@ use std::{
 use tauri::{AppHandle, Emitter, Manager};
 use xyra_core::{
     catalog::Catalog,
-    champ_select as client_champ_select, client_import,
+    champ_select::{self, ChampSelectTracker},
+    client_import,
     config::Config,
     errors::{AppError, Result},
     game_settings::{self, GameOption, SettingValue},
@@ -36,7 +39,7 @@ use xyra_core::{
 };
 
 pub const MAIN_WINDOW: &str = "main";
-const SUBSCRIPTIONS: [&str; 4] = [profile::CURRENT_SUMMONER, gameflow::SESSION, client_champ_select::SESSION, stats::END_OF_GAME];
+const SUBSCRIPTIONS: [&str; 4] = [profile::CURRENT_SUMMONER, gameflow::SESSION, champ_select::SESSION, stats::END_OF_GAME];
 const RECONNECT_DELAY: Duration = Duration::from_secs(2);
 const MAX_RECONNECTS: u32 = 5;
 const BORDERLESS_FIX_COOLDOWN: Duration = Duration::from_secs(10);
@@ -147,9 +150,8 @@ impl Shared {
     }
 
     pub fn champion_info(&self, id: u32) -> ChampionInfo {
-        let champion = self.catalog().champion(id);
         let tier = self.champion_tiers.read().unwrap().get(&id).copied();
-        ChampionInfo { id, name: champion.name, icon: champion.icon, tier: tier.map(|t| t.0), rank: tier.map(|t| t.1), locked: !self.is_available(id) }
+        ChampionInfo::new(self.catalog().champion(id), tier, !self.is_available(id))
     }
 
     /// Every champion, ranked ones first by their ARAM: Mayhem rank, then by name.
@@ -207,11 +209,6 @@ pub fn update_state(app: &AppHandle, shared: &Shared, change: impl FnOnce(&mut E
     }
 }
 
-struct ClientSession {
-    lcu: Lcu,
-    catalog_ready: bool,
-}
-
 struct GameTracking {
     mode: GameMode,
     champion: Option<u32>,
@@ -221,13 +218,14 @@ struct GameTracking {
 struct Engine {
     app: AppHandle,
     shared: Arc<Shared>,
-    client: Option<ClientSession>,
+    client: Option<Lcu>,
     generation: u64,
     reconnect: Option<(Instant, u32)>,
     account: Option<String>,
     mode: GameMode,
     game: Option<GameTracking>,
-    history_pending: bool,
+    catalog: CatalogLoader,
+    history: HistoryImporter,
     borderless: Option<bool>,
     borderless_fixed_at: Option<Instant>,
     champ_select: ChampSelectTracker,
@@ -273,7 +271,8 @@ impl Engine {
             account: None,
             mode: GameMode::Other,
             game: None,
-            history_pending: false,
+            catalog: CatalogLoader::default(),
+            history: HistoryImporter::default(),
             borderless: league::is_borderless(&shared.installation),
             borderless_fixed_at: None,
             champ_select: ChampSelectTracker::default(),
@@ -296,7 +295,7 @@ impl Engine {
     }
 
     fn lcu(&self) -> Option<&Lcu> {
-        self.client.as_ref().map(|c| &c.lcu)
+        self.client.as_ref()
     }
 
     fn fetch_champion_tiers(&self) {
@@ -355,7 +354,7 @@ impl Engine {
 
     fn connect(&mut self) {
         let Ok(lcu) = self.shared.lcu() else { return };
-        if self.client.as_ref().is_some_and(|c| c.lcu.same_session(&lcu)) {
+        if self.client.as_ref().is_some_and(|client| client.same_session(&lcu)) {
             return;
         }
         self.generation += 1;
@@ -364,7 +363,8 @@ impl Engine {
             let result = listener.listen(&SUBSCRIPTIONS, |event| shared.send(EngineEvent::Client { generation, event }));
             shared.send(EngineEvent::ClientClosed { generation, error: result.err() });
         });
-        self.client = Some(ClientSession { lcu, catalog_ready: false });
+        self.client = Some(lcu);
+        self.catalog.reset();
         self.on_connected();
     }
 
@@ -372,7 +372,7 @@ impl Engine {
     fn on_connected(&mut self) {
         let Some(lcu) = self.lcu().cloned() else { return };
         if let Ok(summoner) = lcu.get(profile::CURRENT_SUMMONER) {
-            self.set_account(profile::account(&summoner));
+            self.on_summoner(&summoner);
         }
         self.on_gameflow(lcu.get(gameflow::SESSION).ok());
         if self.shared.champion_tiers.read().unwrap().is_empty() {
@@ -399,15 +399,23 @@ impl Engine {
     }
 
     fn on_client_event(&mut self, event: LcuEvent) {
-        match event.uri.as_str() {
-            profile::CURRENT_SUMMONER => self.set_account(event.data.as_ref().and_then(profile::account)),
-            gameflow::SESSION => self.on_gameflow(event.data),
-            client_champ_select::SESSION => self.on_champ_select(event.data),
-            stats::END_OF_GAME if event.data.is_some() => {
-                self.history_pending = self.mode.has_augments();
+        match (event.uri.as_str(), event.data) {
+            (profile::CURRENT_SUMMONER, Some(summoner)) => self.on_summoner(&summoner),
+            (profile::CURRENT_SUMMONER, None) => self.set_account(None),
+            (gameflow::SESSION, data) => self.on_gameflow(data),
+            (champ_select::SESSION, data) => self.on_champ_select(data),
+            (stats::END_OF_GAME, Some(_)) => {
+                self.history.expect_games_of(self.mode);
                 self.import_games();
             }
             _ => {}
+        }
+    }
+
+    fn on_summoner(&mut self, summoner: &Value) {
+        match profile::account(summoner) {
+            Ok(account) => self.set_account(account),
+            Err(e) => self.shared.log_error("current summoner", e),
         }
     }
 
@@ -420,13 +428,7 @@ impl Engine {
         *self.shared.available.write().unwrap() = None;
         if let Some(account) = self.account.clone() {
             self.refresh_available();
-            let mut games = self.shared.games.lock().unwrap();
-            if stats::claim_unowned(&mut games, &account)
-                && let Err(e) = self.shared.storage.save_games(&games)
-            {
-                self.shared.log_error("save stats", e);
-            }
-            drop(games);
+            self.history.claim_unowned(&account, &self.shared);
             self.import_games();
         }
         self.publish();
@@ -441,25 +443,16 @@ impl Engine {
         }
     }
 
-    /// Reads the game data catalog once per client session.
     fn load_catalog(&mut self) {
-        let Some(client) = self.client.as_mut().filter(|c| !c.catalog_ready) else { return };
-        match Catalog::read(&client.lcu) {
-            Ok(catalog) => {
-                client.catalog_ready = true;
-                if let Err(e) = self.shared.storage.save_catalog(&catalog) {
-                    self.shared.log_error("save catalog", e);
-                }
-                *self.shared.catalog.write().unwrap() = Arc::new(catalog);
-                self.emit(AppEvent::Data);
-            }
-            Err(AppError::EmptyCatalog | AppError::Client(_)) => {}
-            Err(e) => self.shared.log_error("catalog", e),
+        if let Some(lcu) = &self.client
+            && self.catalog.load(lcu, &self.shared)
+        {
+            self.emit(AppEvent::Data);
         }
     }
 
     fn on_gameflow(&mut self, session: Option<Value>) {
-        let flow = session.map(|s| gameflow::parse(&s, self.account.as_deref()));
+        let flow = session.and_then(|s| gameflow::parse(&s, self.account.as_deref()).map_err(|e| self.shared.log_error("gameflow", e)).ok());
         let phase = flow.as_ref().map_or(GameflowPhase::None, |f| f.phase);
         if let Some(flow) = &flow {
             self.mode = flow.mode;
@@ -477,15 +470,15 @@ impl Engine {
             _ => {}
         }
         if phase == GameflowPhase::ChampSelect {
-            self.history_pending = false;
+            self.history.cancel();
             if !self.champ_select.is_active() {
-                let session = self.lcu().and_then(|lcu| lcu.get(client_champ_select::SESSION).ok());
+                let session = self.lcu().and_then(|lcu| lcu.get(champ_select::SESSION).ok());
                 self.on_champ_select(session);
             }
         } else {
             self.champ_select.clear();
         }
-        if self.history_pending {
+        if self.history.is_pending() {
             self.import_games();
         }
         self.load_catalog();
@@ -505,18 +498,26 @@ impl Engine {
 
     fn on_game_ended(&mut self) {
         self.cards.stop();
-        self.history_pending = self.mode.has_augments();
+        self.history.expect_games_of(self.mode);
         self.check_borderless();
     }
 
     fn on_champ_select(&mut self, session: Option<Value>) {
-        let Some(parsed) = session.as_ref().and_then(client_champ_select::parse) else {
+        let parsed = session.map_or(Ok(None), |s| champ_select::parse(&s)).map_err(|e| self.shared.log_error("champion select", e));
+        let Ok(Some(parsed)) = parsed else {
             return self.champ_select.clear();
         };
         if !self.champ_select.is_active() {
             self.refresh_available();
         }
-        let pickable = self.lcu().and_then(|lcu| client_champ_select::read_pickable(lcu).ok());
+        let pickable = self.lcu().and_then(|lcu| match champ_select::read_pickable(lcu) {
+            Ok(pickable) => Some(pickable),
+            Err(e @ AppError::ClientFormat(_)) => {
+                self.shared.log_error("pickable champions", e);
+                None
+            }
+            Err(_) => None,
+        });
         let auto_runes = self.shared.config().auto_import_runes;
         for (enemy, position) in self.champ_select.update(parsed, pickable, self.mode, auto_runes) {
             let shared = Arc::clone(&self.shared);
@@ -531,25 +532,8 @@ impl Engine {
     }
 
     fn import_games(&mut self) {
-        let (Some(lcu), Some(account)) = (self.lcu(), self.account.as_deref()) else { return };
-        let added = {
-            let mut games = self.shared.games.lock().unwrap();
-            match stats::import_recent(lcu, account, &mut games) {
-                Ok(0) => 0,
-                Ok(added) => {
-                    if let Err(e) = self.shared.storage.save_games(&games) {
-                        self.shared.log_error("save stats", e);
-                    }
-                    added
-                }
-                Err(e) => {
-                    self.shared.log_error("match history", e);
-                    0
-                }
-            }
-        };
-        if added > 0 {
-            self.history_pending = false;
+        let (Some(lcu), Some(account)) = (&self.client, self.account.as_deref()) else { return };
+        if self.history.import(lcu, account, &self.shared) {
             self.emit(AppEvent::Data);
         }
     }
@@ -578,7 +562,7 @@ impl Engine {
             None => self.cards.stop(),
         }
         let paused = self.shared.config().paused;
-        let champ_select = self.champ_select.view(&self.shared, self.mode);
+        let champ_select = self.champ_select.view(self.mode, |id| self.shared.champion_info(id));
         let game = self.game.as_ref().map(|g| CurrentGame { mode: g.mode, champion: g.champion.map(|id| self.shared.champion_info(id)) });
         let phase = match () {
             _ if paused => Phase::Paused,

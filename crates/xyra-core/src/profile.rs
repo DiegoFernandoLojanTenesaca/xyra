@@ -1,11 +1,14 @@
 use crate::{
     catalog::{Catalog, named},
     errors::{AppError, Result},
-    league::{Lcu, asset_url},
+    league::{Lcu, asset_url, parse},
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::{cmp::Reverse, collections::HashSet};
+use std::{
+    cmp::Reverse,
+    collections::{HashMap, HashSet},
+};
 use ts_rs::TS;
 
 pub const CURRENT_SUMMONER: &str = "/lol-summoner/v1/current-summoner";
@@ -75,66 +78,108 @@ pub struct Profile {
     pub masteries: Vec<Mastery>,
 }
 
-/// PUUID of the account in a current-summoner payload.
-pub fn account(summoner: &Value) -> Option<String> {
-    summoner["puuid"].as_str().filter(|puuid| !puuid.is_empty()).map(String::from)
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Summoner {
+    puuid: String,
+    game_name: String,
+    tag_line: String,
+    summoner_level: u32,
+    profile_icon_id: u32,
 }
 
-fn rank(stats: &Value) -> Option<Rank> {
-    let queue = &stats["queueMap"][SOLO_QUEUE];
-    let tier_code = queue["tier"].as_str()?;
-    let division = queue["division"].as_str().filter(|d| *d != NO_DIVISION).unwrap_or_default();
+#[derive(Deserialize)]
+struct SignedIn {
+    puuid: String,
+}
+
+#[derive(Deserialize)]
+struct RegionLocale {
+    region: String,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct RankedStats {
+    queue_map: HashMap<String, RankedQueue>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct RankedQueue {
+    tier: String,
+    division: String,
+    league_points: i64,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ChampionMastery {
+    champion_id: u32,
+    champion_level: u32,
+    champion_points: u64,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct OwnedChampion {
+    id: u32,
+    ownership: Ownership,
+    free_to_play: bool,
+}
+
+#[derive(Deserialize)]
+struct Ownership {
+    owned: bool,
+}
+
+/// PUUID of the account in a current-summoner payload.
+pub fn account(summoner: &Value) -> Result<Option<String>> {
+    let signed_in: SignedIn = parse(CURRENT_SUMMONER, summoner)?;
+    Ok(Some(signed_in.puuid).filter(|puuid| !puuid.is_empty()))
+}
+
+fn rank(stats: &RankedStats) -> Option<Rank> {
+    let queue = stats.queue_map.get(SOLO_QUEUE)?;
     Some(Rank {
-        tier: LeagueTier::from_client(tier_code)?,
-        division: division.into(),
-        lp: queue["leaguePoints"].as_i64().unwrap_or(0),
-        crest: format!("{RANKED_CRESTS}/{}.svg", tier_code.to_lowercase()),
+        tier: LeagueTier::from_client(&queue.tier)?,
+        division: if queue.division == NO_DIVISION { String::new() } else { queue.division.clone() },
+        lp: queue.league_points,
+        crest: format!("{RANKED_CRESTS}/{}.svg", queue.tier.to_lowercase()),
     })
 }
 
 pub fn read(lcu: &Lcu, catalog: &Catalog) -> Result<Profile> {
-    let summoner = lcu.get(CURRENT_SUMMONER)?;
-    let region = lcu.get(REGION)?["region"].as_str().unwrap_or_default().to_string();
-    let mut masteries: Vec<Mastery> = lcu
-        .get(MASTERIES)?
-        .as_array()
-        .into_iter()
-        .flatten()
-        .filter_map(|m| {
-            let champion = named(&catalog.champions, m["championId"].as_u64()? as u32);
-            Some(Mastery {
-                id: champion.id,
-                name: champion.name,
-                icon: champion.icon,
-                level: m["championLevel"].as_u64().unwrap_or(0) as u32,
-                points: m["championPoints"].as_u64().unwrap_or(0),
-            })
-        })
-        .collect();
-    masteries.sort_by_key(|m| Reverse(m.points));
+    let summoner: Summoner = lcu.get_as(CURRENT_SUMMONER)?;
+    if summoner.puuid.is_empty() {
+        return Err(AppError::NoSummoner);
+    }
+    let region: RegionLocale = lcu.get_as(REGION)?;
+    let mut masteries: Vec<ChampionMastery> = lcu.get_as(MASTERIES)?;
+    masteries.sort_by_key(|m| Reverse(m.champion_points));
     masteries.truncate(TOP_MASTERIES);
     Ok(Profile {
-        account: account(&summoner).ok_or(AppError::NoSummoner)?,
-        name: summoner["gameName"].as_str().unwrap_or_default().into(),
-        tag: summoner["tagLine"].as_str().unwrap_or_default().into(),
-        level: summoner["summonerLevel"].as_u64().unwrap_or(0) as u32,
-        icon: asset_url(&format!("/lol-game-data/assets/v1/profile-icons/{}.jpg", summoner["profileIconId"].as_u64().unwrap_or(0))),
-        region,
-        rank: rank(&lcu.get(RANKED_STATS)?),
-        masteries,
+        account: summoner.puuid,
+        name: summoner.game_name,
+        tag: summoner.tag_line,
+        level: summoner.summoner_level,
+        icon: asset_url(&format!("/lol-game-data/assets/v1/profile-icons/{}.jpg", summoner.profile_icon_id)),
+        region: region.region,
+        rank: rank(&lcu.get_as(RANKED_STATS)?),
+        masteries: masteries
+            .into_iter()
+            .map(|m| {
+                let champion = named(&catalog.champions, m.champion_id);
+                Mastery { id: champion.id, name: champion.name, icon: champion.icon, level: m.champion_level, points: m.champion_points }
+            })
+            .collect(),
     })
 }
 
 /// Champions the account owns or has free this week.
 pub fn read_available_champions(lcu: &Lcu) -> Result<HashSet<u32>> {
-    Ok(lcu
-        .get(OWNED_CHAMPIONS)?
-        .as_array()
-        .into_iter()
-        .flatten()
-        .filter(|c| c["ownership"]["owned"] == true || c["freeToPlay"] == true)
-        .filter_map(|c| c["id"].as_u64().map(|id| id as u32))
-        .collect())
+    let champions: Vec<OwnedChampion> = lcu.get_as(OWNED_CHAMPIONS)?;
+    Ok(champions.into_iter().filter(|c| c.ownership.owned || c.free_to_play).map(|c| c.id).collect())
 }
 
 #[cfg(test)]
@@ -142,14 +187,37 @@ mod tests {
     use super::*;
     use serde_json::json;
 
+    fn ranked(queue: Value) -> RankedStats {
+        parse(RANKED_STATS, &json!({ "queueMap": { SOLO_QUEUE: queue } })).unwrap()
+    }
+
     #[test]
     fn reads_solo_queue_rank() {
-        let stats = json!({ "queueMap": { "RANKED_SOLO_5x5": { "tier": "PLATINUM", "division": "II", "leaguePoints": 18 } } });
-        let solo = rank(&stats).unwrap();
+        let solo = rank(&ranked(json!({ "tier": "PLATINUM", "division": "II", "leaguePoints": 18 }))).unwrap();
         assert_eq!((solo.tier, solo.division.as_str(), solo.lp), (LeagueTier::Platinum, "II", 18));
         assert!(solo.crest.ends_with("/platinum.svg"));
-        assert!(rank(&json!({ "queueMap": { "RANKED_SOLO_5x5": { "tier": "NONE" } } })).is_none());
-        assert_eq!(account(&json!({ "puuid": "abc" })), Some("abc".into()));
-        assert_eq!(account(&json!({ "puuid": "" })), None);
+        let master = rank(&ranked(json!({ "tier": "MASTER", "division": "NA", "leaguePoints": 120 }))).unwrap();
+        assert_eq!(master.division, "");
+        assert!(rank(&ranked(json!({ "tier": "NONE", "division": "NA", "leaguePoints": 0 }))).is_none());
+        assert!(matches!(parse::<RankedStats>(RANKED_STATS, &json!({ "queueMap": { SOLO_QUEUE: { "tier": "GOLD" } } })), Err(AppError::ClientFormat(_))));
+    }
+
+    #[test]
+    fn reads_the_signed_in_account() {
+        assert_eq!(account(&json!({ "puuid": "abc", "gameName": "Xyra" })), Ok(Some("abc".into())));
+        assert_eq!(account(&json!({ "puuid": "" })), Ok(None));
+        assert!(matches!(account(&json!({ "accountId": 1 })), Err(AppError::ClientFormat(_))));
+    }
+
+    #[test]
+    fn keeps_owned_and_free_champions() {
+        let list = json!([
+            { "id": 1, "ownership": { "owned": true }, "freeToPlay": false },
+            { "id": 2, "ownership": { "owned": false }, "freeToPlay": true },
+            { "id": 3, "ownership": { "owned": false }, "freeToPlay": false }
+        ]);
+        let champions: Vec<OwnedChampion> = parse(OWNED_CHAMPIONS, &list).unwrap();
+        let available: HashSet<u32> = champions.into_iter().filter(|c| c.ownership.owned || c.free_to_play).map(|c| c.id).collect();
+        assert_eq!(available, HashSet::from([1, 2]));
     }
 }

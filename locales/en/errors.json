@@ -6,8 +6,9 @@
   "noData": "OP.GG has no data for this yet.",
   "emptyCatalog": "The client is still loading its data: wait a few seconds.",
   "network": "Could not reach OP.GG: {{detail}}",
+  "opggFormat": "OP.GG changed how it answers and this version of Xyra cannot read it: {{detail}}",
   "client": "The League client answered with an error: {{detail}}",
+  "clientFormat": "The League client answered in a way this version of Xyra cannot read: {{detail}}",
   "storage": "Could not save on your PC: {{detail}}",
-  "platform": "Windows did not allow it: {{detail}}",
-  "unknown": "Something went wrong: {{detail}}"
+  "platform": "Windows did not allow it: {{detail}}"
 }

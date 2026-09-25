@@ -5,10 +5,9 @@ use crate::{
     model::{Asset, Rarity},
 };
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use std::{collections::HashMap, ops::Range};
 
-const PLAYABLE_CHAMPION_IDS: Range<u64> = 1..10_000;
+const PLAYABLE_CHAMPION_IDS: Range<i64> = 1..10_000;
 const AUGMENTS: &str = "/lol-game-data/assets/v1/cherry-augments.json";
 const CHAMPIONS: &str = "/lol-game-data/assets/v1/champion-summary.json";
 const ITEMS: &str = "/lol-game-data/assets/v1/items.json";
@@ -30,42 +29,63 @@ pub struct Catalog {
     pub spells: NamedAssets,
 }
 
-fn asset_list(value: &Value) -> NamedAssets {
-    let list = value.as_array().or_else(|| value["styles"].as_array()).cloned().unwrap_or_default();
-    list.iter()
-        .filter_map(|entry| {
-            let id = entry["id"].as_u64()? as u32;
-            Some((id, (entry["name"].as_str()?.to_string(), asset_url(entry["iconPath"].as_str().unwrap_or_default()))))
-        })
-        .collect()
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct NamedEntry {
+    id: u32,
+    name: String,
+    icon_path: String,
+}
+
+#[derive(Deserialize)]
+struct RuneStyles {
+    styles: Vec<NamedEntry>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct AugmentEntry {
+    id: u32,
+    #[serde(rename = "nameTRA")]
+    name: String,
+    augment_small_icon_path: String,
+    rarity: String,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ChampionEntry {
+    id: i64,
+    name: String,
+    square_portrait_path: String,
+}
+
+fn assets(entries: Vec<NamedEntry>) -> NamedAssets {
+    entries.into_iter().map(|entry| (entry.id, (entry.name, asset_url(&entry.icon_path)))).collect()
 }
 
 impl Catalog {
     pub fn read(lcu: &Lcu) -> Result<Catalog> {
         let mut catalog = Catalog::default();
-        for augment in lcu.get(AUGMENTS)?.as_array().into_iter().flatten() {
-            let (Some(id), Some(name)) = (augment["id"].as_u64().map(|id| id as u32), augment["nameTRA"].as_str().filter(|n| !n.is_empty())) else {
-                continue;
-            };
-            catalog.augment_names.entry(normalize(name)).or_default().push(id);
-            catalog.augments.insert(id, (name.to_string(), asset_url(augment["augmentSmallIconPath"].as_str().unwrap_or_default())));
-            if let Some(rarity) = Rarity::from_client(augment["rarity"].as_str().unwrap_or_default()) {
-                catalog.rarity.insert(id, rarity);
+        let augments: Vec<AugmentEntry> = lcu.get_as(AUGMENTS)?;
+        for augment in augments.into_iter().filter(|a| !a.name.is_empty()) {
+            catalog.augment_names.entry(normalize(&augment.name)).or_default().push(augment.id);
+            if let Some(rarity) = Rarity::from_client(&augment.rarity) {
+                catalog.rarity.insert(augment.id, rarity);
             }
+            catalog.augments.insert(augment.id, (augment.name, asset_url(&augment.augment_small_icon_path)));
         }
-        for champion in lcu.get(CHAMPIONS)?.as_array().into_iter().flatten() {
-            let (Some(id), Some(name)) = (champion["id"].as_u64().filter(|id| PLAYABLE_CHAMPION_IDS.contains(id)), champion["name"].as_str()) else {
-                continue;
-            };
-            catalog.champions.insert(id as u32, (name.to_string(), asset_url(champion["squarePortraitPath"].as_str().unwrap_or_default())));
+        let champions: Vec<ChampionEntry> = lcu.get_as(CHAMPIONS)?;
+        for champion in champions.into_iter().filter(|c| PLAYABLE_CHAMPION_IDS.contains(&c.id)) {
+            catalog.champions.insert(champion.id as u32, (champion.name, asset_url(&champion.square_portrait_path)));
         }
         if catalog.augment_names.is_empty() || catalog.champions.is_empty() {
             return Err(AppError::EmptyCatalog);
         }
-        catalog.items = asset_list(&lcu.get(ITEMS)?);
-        catalog.runes = asset_list(&lcu.get(RUNES)?);
-        catalog.runes.extend(asset_list(&lcu.get(RUNE_STYLES)?));
-        catalog.spells = asset_list(&lcu.get(SPELLS)?);
+        catalog.items = assets(lcu.get_as(ITEMS)?);
+        catalog.runes = assets(lcu.get_as(RUNES)?);
+        catalog.runes.extend(assets(lcu.get_as::<RuneStyles>(RUNE_STYLES)?.styles));
+        catalog.spells = assets(lcu.get_as(SPELLS)?);
         Ok(catalog)
     }
 
@@ -87,15 +107,17 @@ pub fn named(assets: &NamedAssets, id: u32) -> Asset {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::league::parse;
     use serde_json::json;
 
     #[test]
     fn reads_asset_lists_and_placeholders() {
         let styles = json!({ "styles": [{ "id": 8100, "name": "Domination", "iconPath": "/lol-game-data/assets/v1/perk-images/Styles/7200_Domination.png" }] });
-        let assets = asset_list(&styles);
+        let assets = assets(parse::<RuneStyles>(RUNE_STYLES, &styles).unwrap().styles);
         assert_eq!(assets[&8100].0, "Domination");
         assert!(assets[&8100].1.ends_with("/v1/perk-images/styles/7200_domination.png"));
         assert_eq!(named(&assets, 9), Asset { id: 9, name: "#9".into(), icon: String::new() });
         assert!(Catalog::default().is_empty());
+        assert!(matches!(parse::<Vec<NamedEntry>>(ITEMS, &json!([{ "id": 1001, "name": "Boots" }])), Err(AppError::ClientFormat(_))));
     }
 }

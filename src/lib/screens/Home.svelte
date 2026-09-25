@@ -1,11 +1,12 @@
 <script lang="ts">
-  import { Check, Download, Hammer, Layers, Lock, Pause, Play, Radio, RefreshCw, Star, Swords, TriangleAlert } from '@lucide/svelte';
+  import { Check, Download, Hammer, Layers, Pause, Play, Radio, RefreshCw, Star, Swords, TriangleAlert } from '@lucide/svelte';
   import { app, percent } from '../app.svelte';
   import { championTierColor, qualityColor } from '../design/theme';
   import { around } from '../i18n';
   import { setBorderless, testOverlay } from '../services/engine';
   import type { ChampionInfo } from '../types';
   import Button from '../ui/Button.svelte';
+  import ChampionPortrait from '../ui/ChampionPortrait.svelte';
   import EmptyState from '../ui/EmptyState.svelte';
   import Logo from '../ui/Logo.svelte';
   import StatTile from '../ui/StatTile.svelte';
@@ -28,15 +29,10 @@
   const best = $derived(cards.find((c) => c.best) ?? null);
   const select = $derived(engine.champ_select);
   const mine = $derived(select?.champion ?? null);
-  /** The best ranked bench champion the account can take, only when it beats yours. */
-  const betterOnBench = $derived.by(() => {
-    const ranked = (select?.bench ?? []).filter((c) => c.rank !== null && !c.locked).sort((a, b) => a.rank! - b.rank!);
-    const top = ranked[0];
-    return top && (!mine?.rank || top.rank! < mine.rank) ? top : null;
-  });
+  const benchPick = $derived(select?.bench_pick ?? null);
   const counter = $derived(select?.counter_picks[0] ?? null);
   const opponent = $derived(select?.lane_opponent ?? null);
-  const topChampions = $derived(app.champions.filter((c) => c.rank !== null && !c.locked).slice(0, TOP_CHAMPIONS));
+  const topChampions = $derived(app.champions.filter((c) => c.recommendable).slice(0, TOP_CHAMPIONS));
 
   const hero = $derived.by(() => {
     const game = engine.game;
@@ -60,9 +56,9 @@
           text,
         };
       }
-      if (betterOnBench) {
-        const text = t('home:strongerThan', { champion: mine?.name ?? '', rank: betterOnBench.rank });
-        return { ...base, icon: betterOnBench.icon, title: t('home:takeFromBench', { champion: betterOnBench.name }), strong: betterOnBench.name, text };
+      if (benchPick) {
+        const text = t('home:strongerThan', { champion: mine?.name ?? '', rank: benchPick.rank });
+        return { ...base, icon: benchPick.icon, title: t('home:takeFromBench', { champion: benchPick.name }), strong: benchPick.name, text };
       }
       const text = mine?.rank && select.mode !== 'summonersRift' ? t('home:yourChampion', { rank: mine.rank }) : t('home:riftChampion');
       return { ...base, icon: mine?.icon, title: mine?.name ?? t('common:phases.champSelect'), strong: mine?.name ?? '', text };
@@ -91,21 +87,12 @@
 </script>
 
 {#snippet portrait(champion: ChampionInfo, highlighted: boolean)}
-  <button
-    class="portrait"
-    class:best={highlighted}
-    class:locked={champion.locked}
-    onclick={() => app.openAugments(champion.id)}
-    title={champion.locked ? t('common:locked') : champion.name}
-  >
-    <img src={champion.icon} alt={champion.name} />
-    <span class="badge">
-      {#if champion.locked}<Lock size={14} />{:else}<TierBadge
-          label={champion.tier ? `T${champion.tier}` : '—'}
-          color={championTierColor(champion.tier)}
-          size="var(--size-thumbSm)"
-        />{/if}
-    </span>
+  <button class="portrait" class:best={highlighted} onclick={() => app.openAugments(champion.id)}>
+    <ChampionPortrait {champion} size="var(--size-thumbLg)">
+      {#snippet badge()}
+        <TierBadge label={champion.tier ? `T${champion.tier}` : '—'} color={championTierColor(champion.tier)} size="var(--size-thumbSm)" />
+      {/snippet}
+    </ChampionPortrait>
   </button>
 {/snippet}
 
@@ -233,7 +220,7 @@
         <div class="bench">
           {#if mine}{@render portrait(mine, false)}{/if}
           {#each select.bench as champion (champion.id)}
-            {@render portrait(champion, champion.id === betterOnBench?.id)}
+            {@render portrait(champion, champion.id === benchPick?.id)}
           {/each}
         </div>
         {#if !select.bench.length}<p class="muted">{t('home:emptyBench')}</p>{/if}
@@ -517,22 +504,9 @@
   .portrait.best {
     opacity: 1;
   }
-  .portrait.locked img {
-    filter: grayscale(1);
-  }
-  .portrait img {
-    width: var(--size-thumbLg);
-    height: var(--size-thumbLg);
-  }
-  .portrait.best img {
+  .portrait.best :global(img) {
     box-shadow:
       0 0 0 var(--border-thick) var(--color-accentBright),
       0 0 var(--space-4) var(--color-accent);
-  }
-  .portrait .badge {
-    position: absolute;
-    color: var(--color-textMuted);
-    right: calc(-1 * var(--space-2));
-    bottom: calc(-1 * var(--space-2));
   }
 </style>

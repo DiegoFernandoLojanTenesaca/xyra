@@ -3,12 +3,15 @@ import type { Quality, Rarity } from '../types';
 
 type TokenTree = { [key: string]: string | TokenTree };
 
-/** Publishes every token as a CSS custom property: color.accent -> --color-accent. */
+const ALIAS = /^\{(.+)\}$/;
+
+const property = (path: string) => `--${path.replaceAll('.', '-')}`;
+
 export function applyTokens(root: HTMLElement = document.documentElement) {
   const walk = (node: TokenTree, prefix: string) => {
     for (const [key, value] of Object.entries(node)) {
-      if (typeof value === 'string') root.style.setProperty(`--${prefix}${key}`, value);
-      else walk(value, `${prefix}${key}-`);
+      if (typeof value !== 'string') walk(value, `${prefix}${key}.`);
+      else root.style.setProperty(property(`${prefix}${key}`), value.replace(ALIAS, (_, alias) => `var(${property(alias)})`));
     }
   };
   walk(tokens as TokenTree, '');

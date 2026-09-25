@@ -3,4 +3,4 @@
 /**
  * Failure reasons the UI renders as `errors:<code>`.
  */
-export type AppError = { "code": "clientClosed" } | { "code": "gameInProgress" } | { "code": "noFreeRunePage" } | { "code": "noSummoner" } | { "code": "noData" } | { "code": "emptyCatalog" } | { "code": "network", "detail": string } | { "code": "client", "detail": string } | { "code": "storage", "detail": string } | { "code": "platform", "detail": string };
+export type AppError = { "code": "clientClosed" } | { "code": "gameInProgress" } | { "code": "noFreeRunePage" } | { "code": "noSummoner" } | { "code": "noData" } | { "code": "emptyCatalog" } | { "code": "network", "detail": string } | { "code": "opggFormat", "detail": string } | { "code": "client", "detail": string } | { "code": "clientFormat", "detail": string } | { "code": "storage", "detail": string } | { "code": "platform", "detail": string };

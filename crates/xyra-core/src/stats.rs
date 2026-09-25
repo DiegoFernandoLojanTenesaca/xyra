@@ -6,7 +6,7 @@ use crate::{
     model::{Asset, GameMode},
 };
 use serde::{Deserialize, Serialize};
-use std::{cmp::Reverse, collections::HashMap, fs, ops::RangeInclusive, path::Path};
+use std::{cmp::Reverse, collections::HashMap, fs, path::Path};
 use ts_rs::TS;
 
 const MATCH_HISTORY: &str = "/lol-match-history/v1/products/lol/current-summoner/matches?begIndex=0&endIndex=19";
@@ -14,7 +14,6 @@ pub const END_OF_GAME: &str = "/lol-end-of-game/v1/eog-stats-block";
 const MIN_AUGMENT_GAMES: u32 = 2;
 const TOP_AUGMENTS: usize = 15;
 const RECENT_GAMES: usize = 10;
-const AUGMENT_SLOTS: RangeInclusive<u32> = 1..=6;
 const UTF8_BOM: char = '\u{feff}';
 const CSV_LINE_END: &str = "\r\n";
 
@@ -37,29 +36,79 @@ pub struct StoredGame {
     pub augments: Vec<u32>,
 }
 
+#[derive(Deserialize)]
+struct MatchHistory {
+    games: HistoryPage,
+}
+
+#[derive(Deserialize)]
+struct HistoryPage {
+    games: Vec<HistoryGame>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct HistoryGame {
+    game_id: u64,
+    game_mode: String,
+    game_creation_date: String,
+    participants: Vec<Participant>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Participant {
+    champion_id: u32,
+    stats: ParticipantStats,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ParticipantStats {
+    win: bool,
+    player_augment_1: Option<u32>,
+    player_augment_2: Option<u32>,
+    player_augment_3: Option<u32>,
+    player_augment_4: Option<u32>,
+    player_augment_5: Option<u32>,
+    player_augment_6: Option<u32>,
+}
+
+impl ParticipantStats {
+    fn augments(&self) -> Vec<u32> {
+        [self.player_augment_1, self.player_augment_2, self.player_augment_3, self.player_augment_4, self.player_augment_5, self.player_augment_6]
+            .into_iter()
+            .flatten()
+            .filter(|&augment| augment > 0)
+            .collect()
+    }
+}
+
 /// Adds the ARAM: Mayhem and Arena games of the account's recent match history that are not stored yet.
 pub fn import_recent(lcu: &Lcu, account: &str, games: &mut Vec<StoredGame>) -> Result<usize> {
-    let history = lcu.get(MATCH_HISTORY)?;
+    Ok(add_new_games(lcu.get_as(MATCH_HISTORY)?, account, games))
+}
+
+fn add_new_games(history: MatchHistory, account: &str, games: &mut Vec<StoredGame>) -> usize {
     let before = games.len();
-    for game in history["games"]["games"].as_array().into_iter().flatten() {
-        let mode = GameMode::from_client(game["gameMode"].as_str().unwrap_or_default());
-        let (Some(id), Some(champion)) = (game["gameId"].as_u64(), game["participants"][0]["championId"].as_u64()) else { continue };
-        if !mode.has_augments() || games.iter().any(|g| g.game_id == id) {
+    for game in history.games.games {
+        let mode = GameMode::from_client(&game.game_mode);
+        let Some(player) = game.participants.first() else { continue };
+        if !mode.has_augments() || games.iter().any(|g| g.game_id == game.game_id) {
             continue;
         }
-        let stats = &game["participants"][0]["stats"];
         games.push(StoredGame {
-            game_id: id,
+            game_id: game.game_id,
             account: account.into(),
-            date: game["gameCreationDate"].as_str().unwrap_or_default().into(),
-            champion: champion as u32,
+            champion: player.champion_id,
             mode,
-            win: stats["win"].as_bool().unwrap_or(false),
-            augments: AUGMENT_SLOTS.filter_map(|slot| stats[format!("playerAugment{slot}")].as_u64()).filter(|&a| a > 0).map(|a| a as u32).collect(),
+            win: player.stats.win,
+            augments: player.stats.augments(),
+            date: game.game_creation_date,
         });
     }
     games.sort_by_key(|g| Reverse(g.game_id));
-    Ok(games.len() - before)
+    games.len() - before
 }
 
 /// Games stored before accounts were tracked belong to the first account seen.
@@ -191,6 +240,8 @@ pub fn write_csv(path: &Path, games: &[StoredGame], catalog: &Catalog, language:
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{errors::AppError, league::parse};
+    use serde_json::json;
 
     fn game(id: u64, account: &str, win: bool) -> StoredGame {
         StoredGame {
@@ -224,5 +275,24 @@ mod tests {
         let legacy: StoredGame =
             serde_json::from_str(r#"{"game_id":5,"fecha":"2026-09-01T20:15","campeon":103,"modo":"KIWI","victoria":true,"aumentos":[1]}"#).unwrap();
         assert_eq!((legacy.mode, legacy.account.as_str(), legacy.champion), (GameMode::Mayhem, "", 103));
+    }
+
+    #[test]
+    fn imports_new_augment_games_and_refuses_a_changed_history() {
+        let history = json!({ "games": { "games": [
+            { "gameId": 11, "gameMode": "KIWI", "gameCreationDate": "2026-09-25T10:00:00.000Z",
+              "participants": [{ "championId": 103, "stats": { "win": true, "playerAugment1": 7, "playerAugment2": 0, "playerAugment3": 9 } }] },
+            { "gameId": 10, "gameMode": "CLASSIC", "gameCreationDate": "2026-09-25T09:00:00.000Z",
+              "participants": [{ "championId": 1, "stats": { "win": false } }] },
+            { "gameId": 3, "gameMode": "CHERRY", "gameCreationDate": "2026-09-24T09:00:00.000Z",
+              "participants": [{ "championId": 1, "stats": { "win": false } }] }
+        ]}});
+        let mut games = vec![game(3, "me", true)];
+        assert_eq!(add_new_games(parse(MATCH_HISTORY, &history).unwrap(), "me", &mut games), 1);
+        assert_eq!((games[0].game_id, games[0].champion, games[0].win, games[0].augments.as_slice()), (11, 103, true, [7, 9].as_slice()));
+        assert!(games[1].win);
+
+        let renamed = json!({ "games": { "games": [{ "gameId": 12, "gameMode": "KIWI", "gameCreationDate": "", "participants": [{ "championId": 1, "stats": { "victory": true } }] }] }});
+        assert!(matches!(parse::<MatchHistory>(MATCH_HISTORY, &renamed), Err(AppError::ClientFormat(_))));
     }
 }

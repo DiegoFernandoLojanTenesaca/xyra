@@ -19,7 +19,7 @@
   import { onMount, type Component } from 'svelte';
   import { app, type Page } from '$lib/app.svelte';
   import { applyTokens } from '$lib/design/theme';
-  import { openExternal, REPOSITORY } from '$lib/project';
+  import { APP_NAME, openExternal, REPOSITORY, STUDIOS } from '$lib/project';
   import Augments from '$lib/screens/Augments.svelte';
   import Build from '$lib/screens/Build.svelte';
   import Champions from '$lib/screens/Champions.svelte';
@@ -66,7 +66,7 @@
 
 <div class="shell">
   <header class="titlebar" data-tauri-drag-region>
-    <div class="brand condensed" data-tauri-drag-region><Logo size={26} phase={app.ready ? app.state.phase : 'noClient'} />XYRA</div>
+    <div class="brand condensed" data-tauri-drag-region><Logo size={26} phase={app.ready ? app.state.phase : 'noClient'} />{APP_NAME}</div>
     {#if app.ready}
       {@const game = app.state.game}
       <span class="status cut-sm {app.state.phase}" data-tauri-drag-region>
@@ -119,7 +119,7 @@
       </button>
       <button class="signature" onclick={() => openExternal(REPOSITORY)} title={REPOSITORY}>
         <span class="facts"
-          >{#if app.ready}<span>v{app.state.version}</span>{/if}<span>Xynitra × IndagaLab</span></span
+          >{#if app.ready}<span>v{app.state.version}</span>{/if}<span>{STUDIOS}</span></span
         >
         <ExternalLink size={12} />
       </button>

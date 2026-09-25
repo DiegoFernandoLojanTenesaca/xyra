@@ -97,8 +97,8 @@ mod tests {
     use crate::{catalog::Catalog, opgg};
 
     fn build() -> Build {
-        let data: Value = serde_json::from_str(include_str!("fixtures/opgg-aram-ahri.json")).unwrap();
-        opgg::parse_build(&data["data"], 103, &Catalog::default())
+        let data = opgg::decode("fixture", include_str!("fixtures/opgg-aram-ahri.json")).unwrap();
+        opgg::parse_build(&data, 103, &Catalog::default()).unwrap()
     }
 
     #[test]

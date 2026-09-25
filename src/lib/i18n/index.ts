@@ -31,7 +31,6 @@ export const languageName = (language: string) => translator(language)('common:l
 
 export { formatter, type Formatter } from './format';
 
-/** Splits a translated sentence around an interpolated value so the value can be emphasized. */
 export function around(text: string, value: string): [string, string] {
   const index = text.indexOf(value);
   return index < 0 ? [text, ''] : [text.slice(0, index), text.slice(index + value.length)];

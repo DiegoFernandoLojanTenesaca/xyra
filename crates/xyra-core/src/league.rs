@@ -3,11 +3,13 @@ use crate::{
     game_settings::WindowMode,
 };
 use base64::Engine;
-use reqwest::{Method, blocking::Client, header::AUTHORIZATION};
+pub use reqwest::Method;
+use reqwest::{blocking::Client, header::AUTHORIZATION};
 use rustls::{
     ClientConfig, ClientConnection, RootCertStore, StreamOwned,
     pki_types::{CertificateDer, ServerName, pem::PemObject},
 };
+use serde::de::DeserializeOwned;
 use serde_json::{Value, json};
 use std::{
     fs,
@@ -86,6 +88,10 @@ pub struct LcuEvent {
     pub data: Option<Value>,
 }
 
+pub fn parse<T: DeserializeOwned>(endpoint: &str, value: &Value) -> Result<T> {
+    T::deserialize(value).map_err(|e| AppError::client_format(endpoint, e))
+}
+
 fn event_name(endpoint: &str) -> String {
     format!("{EVENT_PREFIX}{}", endpoint.replace('/', "_"))
 }
@@ -128,6 +134,10 @@ impl Lcu {
 
     pub fn get(&self, endpoint: &str) -> Result<Value> {
         self.request(Method::GET, endpoint, None)
+    }
+
+    pub fn get_as<T: DeserializeOwned>(&self, endpoint: &str) -> Result<T> {
+        parse(endpoint, &self.get(endpoint)?)
     }
 
     pub fn request(&self, method: Method, endpoint: &str, body: Option<&Value>) -> Result<Value> {

@@ -1,9 +1,7 @@
 //! Smoke test against the running League client and OP.GG.
 
-use reqwest::Method;
 use std::{
     env,
-    path::PathBuf,
     sync::mpsc,
     thread,
     time::{Duration, Instant},
@@ -13,31 +11,50 @@ use xyra_core::{
     champ_select, client_import,
     errors::AppError,
     game_settings, gameflow,
-    league::{Installation, Lcu},
-    model::BuildMode,
+    league::{Lcu, Method},
+    model::{BuildMode, GameMode, Position},
     opgg, profile, stats,
 };
+use xyra_lib::riot_install;
 
-const DEFAULT_DIR: &str = r"C:\Riot Games\League of Legends";
 const EVERY_EVENT: &str = "";
 const EVENT_WAIT: Duration = Duration::from_secs(10);
 const AHRI: u32 = 103;
+const CHAMPIONS: [u32; 5] = [AHRI, 157, 222, 412, 64];
 const RUNE_PAGES: &str = "/lol-perks/v1/pages";
 
-fn installation() -> Installation {
-    Installation { dir: PathBuf::from(env::var("XYRA_LEAGUE_DIR").unwrap_or(DEFAULT_DIR.into())), locale: "en_US".into() }
+#[test]
+#[ignore]
+fn reads_every_opgg_answer() {
+    let http = opgg::client();
+    let catalog = Catalog::default();
+    let tiers = opgg::fetch_champion_tiers(&http).expect("ARAM: Mayhem champion tiers");
+    assert!(!tiers.is_empty());
+    for champion in CHAMPIONS {
+        for mode in GameMode::WITH_AUGMENTS {
+            let augments = opgg::fetch_augments(&http, champion, mode).expect("augment stats");
+            println!("{champion} {mode:?}: {} augments", augments.len());
+        }
+        let aram = opgg::fetch_build(&http, champion, BuildMode::Aram, None, &catalog).expect("ARAM build");
+        let rift = opgg::fetch_build(&http, champion, BuildMode::Rift, None, &catalog).expect("Rift build");
+        assert!(aram.games > 0 && rift.games > 0 && !rift.positions.is_empty());
+        let position = rift.position.expect("main position");
+        let counters = opgg::fetch_counter_picks(&http, champion, position, &catalog).expect("counter picks").expect("plays its main position");
+        println!("{champion}: ARAM {:.1} % over {} games, {position:?} with {} counters", aram.win_rate, aram.games, counters.len());
+    }
+    assert_eq!(opgg::fetch_counter_picks(&http, AHRI, Position::Support, &catalog).expect("off-position counters"), None);
 }
 
 #[test]
 #[ignore]
 fn talks_to_the_running_client() {
-    let lcu = Lcu::connect(&installation()).expect("League client running");
+    let lcu = Lcu::connect(&riot_install::find()).expect("League client running");
     let summoner = lcu.get(profile::CURRENT_SUMMONER).expect("current summoner over verified TLS");
-    let account = profile::account(&summoner).expect("signed in");
+    let account = profile::account(&summoner).expect("current summoner shape").expect("signed in");
     println!("account {account}");
 
     let flow = gameflow::parse(&lcu.get(gameflow::SESSION).unwrap_or_default(), Some(&account));
-    println!("gameflow {:?} in {:?}", flow.phase, flow.mode);
+    println!("gameflow {flow:?}");
 
     let available = profile::read_available_champions(&lcu).expect("owned champions");
     assert!(!available.is_empty());
@@ -50,13 +67,14 @@ fn talks_to_the_running_client() {
     println!("game settings {settings:?}");
 
     let profile = profile::read(&lcu, &catalog).expect("profile");
-    println!("profile {} #{} level {}", profile.name, profile.tag, profile.level);
+    println!("profile {} #{} level {} rank {:?}", profile.name, profile.tag, profile.level, profile.rank.map(|r| r.tier));
 
     let mut games = Vec::new();
     println!("{} recent games with augments", stats::import_recent(&lcu, &account, &mut games).expect("match history"));
 
-    if let Ok(pickable) = champ_select::read_pickable(&lcu) {
-        println!("{} pickable champions in champion select", pickable.len());
+    if let Ok(session) = lcu.get(champ_select::SESSION) {
+        println!("champion select {:?}", champ_select::parse(&session).expect("champion select shape"));
+        println!("{} pickable champions", champ_select::read_pickable(&lcu).expect("pickable champions").len());
     }
 
     let (sender, events) = mpsc::channel();

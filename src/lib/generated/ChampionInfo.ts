@@ -8,4 +8,4 @@ tier: number | null, rank: number | null,
 /**
  * The account can neither play it nor take it from the bench.
  */
-locked: boolean, };
+locked: boolean, recommendable: boolean, };

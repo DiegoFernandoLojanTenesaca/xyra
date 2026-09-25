@@ -2,7 +2,7 @@ mod commands;
 mod engine;
 mod overlay;
 mod previews;
-mod riot_install;
+pub mod riot_install;
 mod screen;
 mod tray;
 mod voice;
@@ -16,7 +16,7 @@ use tauri::{
     window::Color,
 };
 use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
-use xyra_core::{storage::Storage, theme};
+use xyra_core::{storage::Storage, theme::tokens};
 
 const HIDDEN_FLAG: &str = "--hidden";
 const DEMO_FLAG: &str = "--demo";
@@ -28,7 +28,7 @@ const WINDOW_SIZE: (f64, f64) = (1180.0, 760.0);
 const WINDOW_MIN_SIZE: (f64, f64) = (960.0, 620.0);
 
 fn background_color() -> Color {
-    let rgb = theme::color("color.background");
+    let rgb = tokens::COLOR_BACKGROUND;
     Color((rgb >> 16) as u8, (rgb >> 8) as u8, rgb as u8, 255)
 }
 

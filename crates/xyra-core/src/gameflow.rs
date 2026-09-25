@@ -1,9 +1,8 @@
-use crate::model::GameMode;
+use crate::{errors::Result, league::parse as parse_client, model::GameMode};
 use serde::Deserialize;
 use serde_json::Value;
 
 pub const SESSION: &str = "/lol-gameflow/v1/session";
-const PLAYER_LISTS: [&str; 3] = ["teamOne", "teamTwo", "playerChampionSelections"];
 
 #[derive(Clone, Copy, Debug, PartialEq, Deserialize)]
 pub enum GameflowPhase {
@@ -39,42 +38,68 @@ pub struct Gameflow {
     pub champion: Option<u32>,
 }
 
-pub fn parse(session: &Value, account: Option<&str>) -> Gameflow {
-    let data = &session["gameData"];
-    let champion = account.and_then(|me| {
-        PLAYER_LISTS
-            .iter()
-            .flat_map(|list| data[*list].as_array().into_iter().flatten())
-            .filter(|player| player["puuid"].as_str() == Some(me))
-            .find_map(|player| player["championId"].as_u64().filter(|&id| id > 0))
-            .map(|id| id as u32)
-    });
-    Gameflow {
-        phase: GameflowPhase::deserialize(&session["phase"]).unwrap_or(GameflowPhase::Unknown),
-        mode: GameMode::from_client(data["queue"]["gameMode"].as_str().unwrap_or_default()),
-        champion,
-    }
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Session {
+    phase: GameflowPhase,
+    game_data: GameData,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct GameData {
+    queue: Queue,
+    team_one: Vec<Player>,
+    team_two: Vec<Player>,
+    player_champion_selections: Vec<Player>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Queue {
+    game_mode: String,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Player {
+    puuid: Option<String>,
+    champion_id: u32,
+}
+
+pub fn parse(session: &Value, account: Option<&str>) -> Result<Gameflow> {
+    let session: Session = parse_client(SESSION, session)?;
+    let data = session.game_data;
+    let players = data.team_one.iter().chain(&data.team_two).chain(&data.player_champion_selections);
+    let champion = account.and_then(|me| players.filter(|p| p.puuid.as_deref() == Some(me)).map(|p| p.champion_id).find(|&id| id > 0));
+    Ok(Gameflow { phase: session.phase, mode: GameMode::from_client(&data.queue.game_mode), champion })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::errors::AppError;
     use serde_json::json;
 
-    #[test]
-    fn reads_phase_mode_and_own_champion() {
-        let session = json!({
-            "phase": "InProgress",
+    fn session(phase: &str) -> Value {
+        json!({
+            "phase": phase,
             "gameData": {
                 "queue": { "gameMode": "KIWI" },
                 "teamOne": [{ "puuid": "other", "championId": 1 }, { "puuid": "me", "championId": 103 }],
-                "teamTwo": []
+                "teamTwo": [],
+                "playerChampionSelections": [{ "championId": 1 }]
             }
-        });
-        let flow = parse(&session, Some("me"));
+        })
+    }
+
+    #[test]
+    fn reads_phase_mode_and_own_champion() {
+        let flow = parse(&session("InProgress"), Some("me")).unwrap();
         assert_eq!(flow, Gameflow { phase: GameflowPhase::InProgress, mode: GameMode::Mayhem, champion: Some(103) });
         assert!(flow.phase.is_in_game());
-        assert_eq!(parse(&session, None).champion, None);
-        assert_eq!(parse(&json!({ "phase": "Brand new" }), None).phase, GameflowPhase::Unknown);
+        assert_eq!(parse(&session("InProgress"), None).unwrap().champion, None);
+        assert_eq!(parse(&session("Brand new"), None).unwrap().phase, GameflowPhase::Unknown);
+        assert!(matches!(parse(&json!({ "phase": "Lobby" }), None), Err(AppError::ClientFormat(_))));
     }
 }

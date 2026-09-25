@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { Crown, Lock } from '@lucide/svelte';
+  import { Crown } from '@lucide/svelte';
   import { app } from '../app.svelte';
   import { championTierColor } from '../design/theme';
+  import ChampionPortrait from '../ui/ChampionPortrait.svelte';
   import EmptyState from '../ui/EmptyState.svelte';
   import PageHeader from '../ui/PageHeader.svelte';
   import SearchInput from '../ui/SearchInput.svelte';
@@ -31,14 +32,8 @@
     </div>
     <div class="grid">
       {#each group.champions as champion (champion.id)}
-        <button
-          class="champion"
-          class:locked={champion.locked}
-          onclick={() => app.openBuild(champion.id)}
-          title={champion.locked ? t('common:locked') : champion.name}
-        >
-          <img src={champion.icon} alt="" loading="lazy" />
-          {#if champion.locked}<span class="lock"><Lock size={12} /></span>{/if}
+        <button class="champion" onclick={() => app.openBuild(champion.id)}>
+          <ChampionPortrait {champion} size="var(--size-portrait)" />
           <span>{champion.name}</span>
         </button>
       {/each}
@@ -89,21 +84,7 @@
     background: color-mix(in srgb, var(--color-accent) 10%, transparent);
     border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
   }
-  .champion img {
-    width: var(--size-portrait);
-    height: var(--size-portrait);
-  }
-  .champion.locked img {
-    filter: grayscale(1);
-    opacity: 0.55;
-  }
-  .champion .lock {
-    position: absolute;
-    top: var(--space-2);
-    right: var(--space-2);
-    color: var(--color-textMuted);
-  }
-  .champion span {
+  .champion > span {
     font-size: var(--text-xs);
     color: var(--color-textMuted);
     max-width: var(--size-championTile);

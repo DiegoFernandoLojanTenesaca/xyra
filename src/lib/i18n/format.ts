@@ -1,6 +1,5 @@
 const BYTES_PER_KILOBYTE = 1024;
 
-/** Number, percent and date formats of one language. */
 export function formatter(language: string) {
   const numbers = (options: Intl.NumberFormatOptions) => new Intl.NumberFormat(language, options);
   const dates = new Intl.DateTimeFormat(language, { dateStyle: 'medium', timeStyle: 'short' });

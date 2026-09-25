@@ -1,7 +1,7 @@
 <script lang="ts">
   import { CircleQuestionMark, Download, ExternalLink, Square } from '@lucide/svelte';
   import { app } from '../../app.svelte';
-  import { CREATORS, githubHandle, githubProfile, LINKS, openExternal } from '../../project';
+  import { APP_NAME, CREATORS, githubHandle, githubProfile, LINKS, openExternal } from '../../project';
   import Button from '../../ui/Button.svelte';
   import Logo from '../../ui/Logo.svelte';
 
@@ -12,7 +12,7 @@
 <section class="card highlight cut">
   <Logo size={92} phase={app.state.phase} />
   <div class="text">
-    <h2 class="condensed">XYRA <small>v{app.state.version}</small></h2>
+    <h2 class="condensed">{APP_NAME} <small>v{app.state.version}</small></h2>
     <p class="muted facts"><span>{t('common:tagline')}</span><span>{t('about:license')}</span></p>
   </div>
   <div class="signatures">

@@ -4,7 +4,7 @@ use crate::{
     model::{AugmentRow, Build, BuildMode, GameMode, Matchup, Position, Quality, RunePage, grade},
 };
 pub use reqwest::blocking::Client;
-use serde_json::Value;
+use serde::{Deserialize, de::DeserializeOwned};
 use std::{collections::HashMap, sync::Once, time::Duration};
 
 const API: &str = "https://lol-api-champion.op.gg/api";
@@ -26,6 +26,114 @@ pub struct AugmentStat {
     pub pick_rate: f64,
 }
 
+#[derive(Deserialize)]
+struct Response<T> {
+    data: Option<T>,
+}
+
+pub(crate) fn decode<T: DeserializeOwned>(source: &str, text: &str) -> Result<T> {
+    let response: Response<T> = serde_json::from_str(text).map_err(|e| AppError::opgg_format(source, e))?;
+    response.data.ok_or(AppError::NoData)
+}
+
+#[derive(Deserialize)]
+struct MayhemAugment {
+    id: u32,
+    tier: Option<u8>,
+    performance: f64,
+    popular: f64,
+}
+
+#[derive(Deserialize)]
+struct ArenaData {
+    augment_group: Vec<ArenaGroup>,
+}
+
+#[derive(Deserialize)]
+struct ArenaGroup {
+    augments: Vec<ArenaAugment>,
+}
+
+#[derive(Deserialize)]
+struct ArenaAugment {
+    id: u32,
+    play: f64,
+    total_place: f64,
+    pick_rate: f64,
+}
+
+#[derive(Deserialize)]
+struct ChampionTier {
+    id: u32,
+    tier: u8,
+    rank: u32,
+}
+
+#[derive(Deserialize)]
+pub(crate) struct BuildData {
+    summary: Summary,
+    runes: Vec<RuneStats>,
+    summoner_spells: Vec<IdSet>,
+    starter_items: Vec<IdSet>,
+    boots: Vec<IdSet>,
+    core_items: Vec<IdSet>,
+    last_items: Vec<IdSet>,
+    skills: Vec<SkillOrder>,
+    skill_masteries: Vec<SkillPriority>,
+    counters: Vec<Counter>,
+}
+
+#[derive(Deserialize)]
+struct Summary {
+    average_stats: AverageStats,
+    positions: Option<Vec<PositionStats>>,
+}
+
+#[derive(Deserialize)]
+struct AverageStats {
+    play: u32,
+    win_rate: f64,
+}
+
+#[derive(Deserialize)]
+struct PositionStats {
+    name: String,
+}
+
+#[derive(Deserialize)]
+struct RuneStats {
+    primary_page_id: u32,
+    secondary_page_id: u32,
+    primary_rune_ids: Vec<u32>,
+    secondary_rune_ids: Vec<u32>,
+    stat_mod_ids: Vec<u32>,
+    play: f64,
+    win: f64,
+    pick_rate: f64,
+}
+
+#[derive(Deserialize)]
+struct IdSet {
+    ids: Vec<u32>,
+}
+
+#[derive(Deserialize)]
+struct SkillOrder {
+    order: Vec<String>,
+}
+
+#[derive(Deserialize)]
+struct SkillPriority {
+    ids: Vec<String>,
+}
+
+#[derive(Deserialize)]
+struct Counter {
+    champion_id: u32,
+    play: f64,
+    win: f64,
+}
+
 /// HTTP client for OP.GG, verified against the system's certificate authorities.
 pub fn client() -> Client {
     static CRYPTO: Once = Once::new();
@@ -33,46 +141,35 @@ pub fn client() -> Client {
     Client::builder().timeout(HTTP_TIMEOUT).build().expect("OP.GG HTTP client")
 }
 
-fn fetch_json(http: &Client, path: &str) -> Result<Value> {
-    Ok(http.get(format!("{API}/{path}")).send()?.error_for_status()?.json()?)
+fn fetch<T: DeserializeOwned>(http: &Client, path: &str) -> Result<T> {
+    decode(path, &http.get(format!("{API}/{path}")).send()?.error_for_status()?.text()?)
 }
 
 pub fn fetch_augments(http: &Client, champion: u32, mode: GameMode) -> Result<HashMap<u32, AugmentStat>> {
-    if mode == GameMode::Arena { fetch_arena_augments(http, champion) } else { fetch_mayhem_augments(http, champion) }
+    if mode == GameMode::Arena {
+        Ok(arena_stats(fetch(http, &format!("global/champions/arena/{champion}"))?))
+    } else {
+        Ok(mayhem_stats(fetch(http, &format!("contents/stats/champions/{champion}/aram-augments"))?))
+    }
 }
 
-fn fetch_mayhem_augments(http: &Client, champion: u32) -> Result<HashMap<u32, AugmentStat>> {
-    let value = fetch_json(http, &format!("contents/stats/champions/{champion}/aram-augments"))?;
-    Ok(value["data"]
-        .as_array()
-        .ok_or(AppError::NoData)?
-        .iter()
-        .filter_map(|augment| {
-            let stat = AugmentStat {
-                tier: augment["tier"].as_u64()? as u8,
-                performance: augment["performance"].as_f64().unwrap_or(0.0),
-                pick_rate: augment["popular"].as_f64().unwrap_or(0.0),
-            };
-            Some((augment["id"].as_u64()? as u32, stat))
-        })
-        .collect())
+fn mayhem_stats(augments: Vec<MayhemAugment>) -> HashMap<u32, AugmentStat> {
+    augments
+        .into_iter()
+        .filter_map(|augment| Some((augment.id, AugmentStat { tier: augment.tier?, performance: augment.performance, pick_rate: augment.popular })))
+        .collect()
 }
 
-fn fetch_arena_augments(http: &Client, champion: u32) -> Result<HashMap<u32, AugmentStat>> {
-    let value = fetch_json(http, &format!("global/champions/arena/{champion}"))?;
-    let mut placements: Vec<(u32, f64, f64)> = value["data"]["augment_group"]
-        .as_array()
-        .ok_or(AppError::NoData)?
-        .iter()
-        .flat_map(|group| group["augments"].as_array().cloned().unwrap_or_default())
-        .filter_map(|augment| {
-            let games = augment["play"].as_f64().filter(|&games| games >= MIN_ARENA_GAMES)?;
-            let average_place = augment["total_place"].as_f64()? / games;
-            Some((augment["id"].as_u64()? as u32, average_place, augment["pick_rate"].as_f64().unwrap_or(0.0) * 100.0))
-        })
+fn arena_stats(data: ArenaData) -> HashMap<u32, AugmentStat> {
+    let mut placements: Vec<(u32, f64, f64)> = data
+        .augment_group
+        .into_iter()
+        .flat_map(|group| group.augments)
+        .filter(|augment| augment.play >= MIN_ARENA_GAMES)
+        .map(|augment| (augment.id, augment.total_place / augment.play, augment.pick_rate * 100.0))
         .collect();
     placements.sort_by(|a, b| a.1.total_cmp(&b.1));
-    Ok(tiers_by_percentile(&placements))
+    tiers_by_percentile(&placements)
 }
 
 fn tiers_by_percentile(sorted: &[(u32, f64, f64)]) -> HashMap<u32, AugmentStat> {
@@ -113,28 +210,22 @@ pub fn augment_rows(stats: HashMap<u32, AugmentStat>, catalog: &Catalog) -> Vec<
 
 /// ARAM: Mayhem champion tier list: id -> (tier 1 = best … 5, rank).
 pub fn fetch_champion_tiers(http: &Client) -> Result<HashMap<u32, (u8, u32)>> {
-    let value = fetch_json(http, "contents/tiers?type=aram_mayhem")?;
-    Ok(value["data"]
-        .as_array()
-        .ok_or(AppError::NoData)?
-        .iter()
-        .filter_map(|c| Some((c["id"].as_u64()? as u32, (c["tier"].as_u64()? as u8, c["rank"].as_u64()? as u32))))
-        .collect())
+    let tiers: Vec<ChampionTier> = fetch(http, "contents/tiers?type=aram_mayhem")?;
+    Ok(tiers.into_iter().map(|c| (c.id, (c.tier, c.rank))).collect())
 }
 
-fn fetch_rift(http: &Client, champion: u32, position: Position) -> Result<Value> {
-    Ok(fetch_json(http, &format!("global/champions/ranked/{champion}/{}", position.opgg()))?["data"].take())
+fn fetch_rift(http: &Client, champion: u32, position: Position) -> Result<BuildData> {
+    fetch(http, &format!("global/champions/ranked/{champion}/{}", position.opgg()))
 }
 
-fn main_position(data: &Value) -> Option<Position> {
-    data["summary"]["positions"][0]["name"].as_str().and_then(Position::from_opgg)
+fn main_position(data: &BuildData) -> Option<Position> {
+    data.summary.positions.as_deref()?.first().and_then(|p| Position::from_opgg(&p.name))
 }
 
 /// ARAM builds are the ones OP.GG also shows for ARAM: Mayhem; Rift builds default to the most played position.
 pub fn fetch_build(http: &Client, champion: u32, mode: BuildMode, position: Option<Position>, catalog: &Catalog) -> Result<Build> {
     if mode == BuildMode::Aram {
-        let data = fetch_json(http, &format!("global/champions/aram/{champion}/none"))?;
-        return Ok(parse_build(&data["data"], champion, catalog));
+        return parse_build(&fetch(http, &format!("global/champions/aram/{champion}/none"))?, champion, catalog);
     }
     let requested = position.unwrap_or(DEFAULT_RIFT_POSITION);
     let mut data = fetch_rift(http, champion, requested)?;
@@ -142,23 +233,18 @@ pub fn fetch_build(http: &Client, champion: u32, mode: BuildMode, position: Opti
     if played != requested {
         data = fetch_rift(http, champion, played)?;
     }
-    let mut build = parse_build(&data, champion, catalog);
+    let mut build = parse_build(&data, champion, catalog)?;
     build.position = Some(played);
     Ok(build)
 }
 
 /// Opponents of the champion in the position with enough games: (id, games, the champion's win rate).
-fn matchups(data: &Value) -> Vec<(u32, u32, f64)> {
-    let games = data["summary"]["average_stats"]["play"].as_f64().unwrap_or(0.0);
-    data["counters"]
-        .as_array()
-        .into_iter()
-        .flatten()
-        .filter_map(|counter| {
-            let (played, won) = (counter["play"].as_f64()?, counter["win"].as_f64()?);
-            let id = counter["champion_id"].as_u64()? as u32;
-            (played > 0.0 && played >= games * MIN_MATCHUP_SHARE).then_some((id, played as u32, 100.0 * won / played))
-        })
+fn matchups(data: &BuildData) -> Vec<(u32, u32, f64)> {
+    let games = f64::from(data.summary.average_stats.play);
+    data.counters
+        .iter()
+        .filter(|counter| counter.play > 0.0 && counter.play >= games * MIN_MATCHUP_SHARE)
+        .map(|counter| (counter.champion_id, counter.play as u32, 100.0 * counter.win / counter.play))
         .collect()
 }
 
@@ -177,32 +263,19 @@ pub fn fetch_counter_picks(http: &Client, enemy: u32, position: Position, catalo
     Ok(Some(picks.into_iter().map(|(id, games, win_rate)| Matchup { champion: catalog.champion(id), games, win_rate }).collect()))
 }
 
-fn ids(value: &Value) -> Vec<u32> {
-    value.as_array().into_iter().flatten().filter_map(|x| x.as_u64()).map(|x| x as u32).collect()
-}
-
-fn strings(value: &Value) -> Vec<String> {
-    value.as_array().into_iter().flatten().filter_map(|x| x.as_str().map(String::from)).collect()
-}
-
 /// OP.GG lists are sorted by games played.
-fn most_played<'a>(data: &'a Value, key: &str) -> &'a Value {
-    &data[key][0]
+fn most_played(sets: &[IdSet]) -> Vec<u32> {
+    sets.first().map(|set| set.ids.clone()).unwrap_or_default()
 }
 
-fn win_rate(entry: &Value) -> f64 {
-    let (wins, games) = (entry["win"].as_f64().unwrap_or(0.0), entry["play"].as_f64().unwrap_or(0.0));
-    if games > 0.0 { 100.0 * wins / games } else { 0.0 }
-}
-
-pub(crate) fn parse_build(data: &Value, champion: u32, catalog: &Catalog) -> Build {
+pub(crate) fn parse_build(data: &BuildData, champion: u32, catalog: &Catalog) -> Result<Build> {
     let item = |id| named(&catalog.items, id);
     let rune = |id| named(&catalog.runes, id);
-    let runes = most_played(data, "runes");
-    let boots = ids(&most_played(data, "boots")["ids"]);
-    let core = ids(&most_played(data, "core_items")["ids"]);
+    let runes = data.runes.first().ok_or(AppError::NoData)?;
+    let boots = most_played(&data.boots);
+    let core = most_played(&data.core_items);
     let mut situational: Vec<u32> = Vec::new();
-    for id in data["last_items"].as_array().into_iter().flatten().flat_map(|entry| ids(&entry["ids"])) {
+    for id in data.last_items.iter().flat_map(|set| set.ids.iter().copied()) {
         if !core.contains(&id) && !boots.contains(&id) && !situational.contains(&id) {
             situational.push(id);
         }
@@ -210,38 +283,58 @@ pub(crate) fn parse_build(data: &Value, champion: u32, catalog: &Catalog) -> Bui
     situational.truncate(SITUATIONAL_ITEMS);
     let mut opponents = matchups(data);
     opponents.sort_by(|a, b| b.2.total_cmp(&a.2));
-    let stats = &data["summary"]["average_stats"];
-    Build {
+    let stats = &data.summary.average_stats;
+    Ok(Build {
         champion,
         runes: RunePage {
-            primary_style: rune(runes["primary_page_id"].as_u64().unwrap_or(0) as u32),
-            secondary_style: rune(runes["secondary_page_id"].as_u64().unwrap_or(0) as u32),
-            primary: ids(&runes["primary_rune_ids"]).into_iter().map(rune).collect(),
-            secondary: ids(&runes["secondary_rune_ids"]).into_iter().map(rune).collect(),
-            shards: ids(&runes["stat_mod_ids"]).into_iter().map(rune).collect(),
-            win_rate: win_rate(runes),
-            pick_rate: runes["pick_rate"].as_f64().unwrap_or(0.0) * 100.0,
+            primary_style: rune(runes.primary_page_id),
+            secondary_style: rune(runes.secondary_page_id),
+            primary: runes.primary_rune_ids.iter().copied().map(rune).collect(),
+            secondary: runes.secondary_rune_ids.iter().copied().map(rune).collect(),
+            shards: runes.stat_mod_ids.iter().copied().map(rune).collect(),
+            win_rate: if runes.play > 0.0 { 100.0 * runes.win / runes.play } else { 0.0 },
+            pick_rate: runes.pick_rate * 100.0,
         },
-        spells: ids(&most_played(data, "summoner_spells")["ids"]).into_iter().map(|id| named(&catalog.spells, id)).collect(),
-        starting_items: ids(&most_played(data, "starter_items")["ids"]).into_iter().map(item).collect(),
+        spells: most_played(&data.summoner_spells).into_iter().map(|id| named(&catalog.spells, id)).collect(),
+        starting_items: most_played(&data.starter_items).into_iter().map(item).collect(),
         boots: boots.into_iter().map(item).collect(),
         core_items: core.into_iter().map(item).collect(),
         situational_items: situational.into_iter().map(item).collect(),
-        skill_order: strings(&most_played(data, "skills")["order"]),
-        skill_priority: strings(&most_played(data, "skill_masteries")["ids"]),
-        win_rate: stats["win_rate"].as_f64().unwrap_or(0.0) * 100.0,
-        games: stats["play"].as_u64().unwrap_or(0) as u32,
+        skill_order: data.skills.first().map(|s| s.order.clone()).unwrap_or_default(),
+        skill_priority: data.skill_masteries.first().map(|s| s.ids.clone()).unwrap_or_default(),
+        win_rate: stats.win_rate * 100.0,
+        games: stats.play,
         position: None,
-        positions: data["summary"]["positions"].as_array().into_iter().flatten().filter_map(|p| p["name"].as_str().and_then(Position::from_opgg)).collect(),
+        positions: data.summary.positions.iter().flatten().filter_map(|p| Position::from_opgg(&p.name)).collect(),
         strong_against: to_matchups(opponents.iter().copied(), catalog),
         weak_against: to_matchups(opponents.iter().rev().copied(), catalog),
-    }
+    })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_json::json;
+    use serde_json::{Value, json};
+
+    fn ranked(runes: Value, counters: Value) -> BuildData {
+        let response = json!({ "data": {
+            "summary": { "average_stats": { "play": 1000, "win_rate": 0.5 }, "positions": [{ "name": "MID" }] },
+            "runes": runes,
+            "summoner_spells": [],
+            "starter_items": [],
+            "boots": [],
+            "core_items": [],
+            "last_items": [],
+            "skills": [],
+            "skill_masteries": [],
+            "counters": counters
+        }});
+        decode("ranked", &response.to_string()).unwrap()
+    }
+
+    fn one_rune_page() -> Value {
+        json!([{ "primary_page_id": 8100, "secondary_page_id": 8000, "primary_rune_ids": [], "secondary_rune_ids": [], "stat_mod_ids": [], "play": 10, "win": 5, "pick_rate": 0.1 }])
+    }
 
     #[test]
     fn arena_tiers_follow_percentiles() {
@@ -256,19 +349,28 @@ mod tests {
 
     #[test]
     fn matchups_skip_rare_opponents_and_rank_both_ends() {
-        let data = json!({
-            "summary": { "average_stats": { "play": 1000 }, "positions": [{ "name": "MID" }] },
-            "counters": [
-                { "champion_id": 1, "play": 100, "win": 60 },
-                { "champion_id": 2, "play": 100, "win": 40 },
-                { "champion_id": 3, "play": 5, "win": 5 }
-            ]
-        });
+        let counters = json!([
+            { "champion_id": 1, "play": 100, "win": 60 },
+            { "champion_id": 2, "play": 100, "win": 40 },
+            { "champion_id": 3, "play": 5, "win": 5 }
+        ]);
+        let data = ranked(one_rune_page(), counters);
         assert_eq!(main_position(&data), Some(Position::Mid));
-        let build = parse_build(&data, 157, &Catalog::default());
+        let build = parse_build(&data, 157, &Catalog::default()).unwrap();
         assert_eq!(build.strong_against.iter().map(|m| m.champion.id).collect::<Vec<_>>(), [1, 2]);
         assert_eq!(build.weak_against[0].champion.id, 2);
         assert_eq!(build.weak_against[0].win_rate, 40.0);
         assert_eq!(build.positions, [Position::Mid]);
+        assert_eq!((build.win_rate, build.games, build.runes.win_rate), (50.0, 1000, 50.0));
+    }
+
+    #[test]
+    fn a_changed_answer_is_an_error_never_a_zero() {
+        assert_eq!(decode::<Vec<MayhemAugment>>("augments", r#"{"data":null}"#).err(), Some(AppError::NoData));
+        let renamed = decode::<Vec<MayhemAugment>>("augments", r#"{"data":[{"id":1,"tier":0,"score":90,"popular":2}]}"#);
+        assert!(matches!(renamed, Err(AppError::OpggFormat(detail)) if detail.starts_with("augments: ")));
+        let unranked = decode::<Vec<MayhemAugment>>("augments", r#"{"data":[{"id":1,"tier":null,"performance":90,"popular":2}]}"#).unwrap();
+        assert!(mayhem_stats(unranked).is_empty());
+        assert_eq!(parse_build(&ranked(json!([]), json!([])), 157, &Catalog::default()).err(), Some(AppError::NoData));
     }
 }

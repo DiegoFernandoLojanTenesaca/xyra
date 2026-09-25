@@ -10,6 +10,8 @@
   const profile = $derived(app.profile);
 </script>
 
+{#if app.profileError}<p class="muted notice">{app.profileError}</p>{/if}
+
 {#if profile}
   <section class="card highlight cut">
     <div class="avatar">
@@ -56,6 +58,10 @@
 {/if}
 
 <style>
+  .notice {
+    margin: 0 0 var(--space-3);
+    font-size: var(--text-sm);
+  }
   .card {
     display: flex;
     align-items: center;

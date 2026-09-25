@@ -4,7 +4,7 @@ import type { GameMode } from "./GameMode";
 import type { Matchup } from "./Matchup";
 import type { Position } from "./Position";
 
-export type ChampSelect = { mode: GameMode, position: Position | null, champion: ChampionInfo | null, bench: Array<ChampionInfo>, lane_opponent: ChampionInfo | null, 
+export type ChampSelect = { mode: GameMode, position: Position | null, champion: ChampionInfo | null, bench: Array<ChampionInfo>, bench_pick: ChampionInfo | null, lane_opponent: ChampionInfo | null, 
 /**
  * Champions the account can pick that beat the lane opponent; `win_rate` is theirs.
  */

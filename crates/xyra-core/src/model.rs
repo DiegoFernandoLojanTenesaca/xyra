@@ -1,5 +1,6 @@
 use crate::{cards::Card, config::LabelStyle};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use ts_rs::TS;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, TS)]
@@ -14,6 +15,7 @@ pub enum GameMode {
     Aram,
     #[serde(alias = "CLASSIC")]
     SummonersRift,
+    #[serde(other)]
     Other,
 }
 
@@ -21,13 +23,7 @@ impl GameMode {
     pub const WITH_AUGMENTS: [GameMode; 2] = [GameMode::Mayhem, GameMode::Arena];
 
     pub fn from_client(code: &str) -> GameMode {
-        match code {
-            "KIWI" => GameMode::Mayhem,
-            "CHERRY" => GameMode::Arena,
-            "ARAM" => GameMode::Aram,
-            "CLASSIC" => GameMode::SummonersRift,
-            _ => GameMode::Other,
-        }
+        GameMode::deserialize(Value::String(code.into())).unwrap_or(GameMode::Other)
     }
 
     pub fn has_augments(self) -> bool {
@@ -104,12 +100,7 @@ impl Rarity {
     pub const ALL: [Rarity; 3] = [Rarity::Prismatic, Rarity::Gold, Rarity::Silver];
 
     pub fn from_client(code: &str) -> Option<Rarity> {
-        match code {
-            "kSilver" => Some(Rarity::Silver),
-            "kGold" => Some(Rarity::Gold),
-            "kPrismatic" => Some(Rarity::Prismatic),
-            _ => None,
-        }
+        Rarity::deserialize(Value::String(code.into())).ok()
     }
 }
 
@@ -124,6 +115,18 @@ pub struct ChampionInfo {
     pub rank: Option<u32>,
     /// The account can neither play it nor take it from the bench.
     pub locked: bool,
+    pub recommendable: bool,
+}
+
+impl ChampionInfo {
+    pub fn new(champion: Asset, tier_and_rank: Option<(u8, u32)>, locked: bool) -> ChampionInfo {
+        let (tier, rank) = tier_and_rank.unzip();
+        ChampionInfo { id: champion.id, name: champion.name, icon: champion.icon, tier, rank, locked, recommendable: false }.with_lock(locked)
+    }
+
+    pub fn with_lock(self, locked: bool) -> ChampionInfo {
+        ChampionInfo { locked, recommendable: self.rank.is_some() && !locked, ..self }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, TS)]
@@ -150,6 +153,7 @@ pub struct ChampSelect {
     pub position: Option<Position>,
     pub champion: Option<ChampionInfo>,
     pub bench: Vec<ChampionInfo>,
+    pub bench_pick: Option<ChampionInfo>,
     pub lane_opponent: Option<ChampionInfo>,
     /// Champions the account can pick that beat the lane opponent; `win_rate` is theirs.
     pub counter_picks: Vec<Matchup>,

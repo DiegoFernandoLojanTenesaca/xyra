@@ -1,5 +1,9 @@
 import { openUrl } from '@tauri-apps/plugin-opener';
 
+export const APP_NAME = 'XYRA';
+
+export const STUDIOS = 'Xynitra × IndagaLab';
+
 export const REPOSITORY = 'https://github.com/DiegoFernandoLojanTenesaca/xyra';
 
 export const LINKS = {
@@ -8,7 +12,6 @@ export const LINKS = {
   releases: `${REPOSITORY}/releases`,
 };
 
-/** Creators, with their photos bundled in the app. */
 export const CREATORS = [
   { user: 'DiegoFernandoLojanTenesaca', team: 'IndagaLab', role: 'creator', photo: '/creators/diego.jpg' },
   { user: 'jahirxtrap', team: 'Xynitra', role: 'coCreator', photo: '/creators/jahir.jpg' },
