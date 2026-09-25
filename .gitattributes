@@ -1,6 +1,6 @@
-* text=auto
-src/lib/generated/*.ts text eol=lf
+* text=auto eol=lf
 *.png binary
 *.jpg binary
 *.ico binary
 *.icns binary
+*.pem text eol=lf
