@@ -1,0 +1,21 @@
+{
+  "subtitle": "Your ARAM: Mayhem and Arena games, from the client match history.",
+  "games": "Games",
+  "wins": "Wins",
+  "winRate": "Winrate",
+  "augmentsUsed": "Augments used",
+  "yourChampions": "Your champions",
+  "bestAugments": "Your best augments",
+  "minGames": "min. 2 games",
+  "recentGames": "Recent games",
+  "empty": "No ARAM: Mayhem or Arena games recorded yet.",
+  "victory": "Victory",
+  "defeat": "Defeat",
+  "csv": {
+    "date": "date",
+    "mode": "mode",
+    "champion": "champion",
+    "result": "result",
+    "augments": "augments"
+  }
+}

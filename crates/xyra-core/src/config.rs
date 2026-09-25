@@ -1,73 +1,62 @@
-//! Ajustes del usuario, guardados como JSON en la carpeta de configuración de la app.
+use crate::i18n;
 use serde::{Deserialize, Serialize};
 use std::{fs, path::Path};
 use ts_rs::TS;
+
+pub const LABEL_STYLES: [&str; 5] = ["plate", "badge", "ribbon", "podium", "focus"];
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
 #[serde(default)]
 pub struct Config {
-    pub estilo: String,
-    pub voz: bool,
+    pub label_style: String,
+    pub voice: bool,
     pub arena: bool,
-    pub pausado: bool,
-    /// "auto" (el del cliente del LoL), "es" o "en".
-    pub idioma: String,
-    /// Calibración: desplazamiento vertical de las marcas, en píxeles a 1200 de alto.
+    pub paused: bool,
+    /// "auto" follows the client locale.
+    pub language: String,
+    /// Vertical offset of the labels, in pixels at a 1200 px tall screen.
     pub offset_y: f64,
-    /// Calibración: tamaño de las marcas.
-    pub escala: f64,
-    /// Guarda una captura cada vez que detecta cartas (para reportar fallos o calibrar).
-    pub grabar: bool,
+    pub scale: f64,
+    pub record_screenshots: bool,
     pub autostart: bool,
-    /// Deja el juego en "Sin bordes" solo (si alguien lo cambia, Xyra lo vuelve a poner con el juego cerrado).
-    pub auto_bordes: bool,
-    /// Importa las runas en cuanto te toca un campeón en la selección.
-    pub auto_runas: bool,
-    /// Cierra la ventana de Xyra al empezar la partida (queda en la bandeja, sin gastar memoria).
-    pub cerrar_en_partida: bool,
+    pub keep_borderless: bool,
+    pub auto_import_runes: bool,
+    pub close_window_in_game: bool,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Config {
-            estilo: "placa".into(),
-            voz: false,
+            label_style: LABEL_STYLES[0].into(),
+            voice: false,
             arena: true,
-            pausado: false,
-            idioma: "auto".into(),
+            paused: false,
+            language: "auto".into(),
             offset_y: 0.0,
-            escala: 1.0,
-            grabar: false,
+            scale: 1.0,
+            record_screenshots: false,
             autostart: true,
-            auto_bordes: true,
-            auto_runas: false,
-            cerrar_en_partida: false,
+            keep_borderless: true,
+            auto_import_runes: false,
+            close_window_in_game: false,
         }
     }
 }
 
 impl Config {
-    pub fn cargar(ruta: &Path) -> Config {
-        fs::read_to_string(ruta).ok().and_then(|t| serde_json::from_str(&t).ok()).unwrap_or_default()
+    pub fn load(path: &Path) -> Config {
+        fs::read_to_string(path).ok().and_then(|text| serde_json::from_str(&text).ok()).unwrap_or_default()
     }
 
-    pub fn guardar(&self, ruta: &Path) {
-        if let Some(carpeta) = ruta.parent() {
-            let _ = fs::create_dir_all(carpeta);
+    pub fn save(&self, path: &Path) -> Result<(), String> {
+        if let Some(dir) = path.parent() {
+            fs::create_dir_all(dir).map_err(|e| e.to_string())?;
         }
-        if let Ok(texto) = serde_json::to_string_pretty(self) {
-            let _ = fs::write(ruta, texto);
-        }
+        fs::write(path, serde_json::to_string_pretty(self).map_err(|e| e.to_string())?).map_err(|e| e.to_string())
     }
 
-    /// Idioma de las etiquetas ya resuelto: "es" o "en".
-    pub fn idioma_efectivo(&self, cliente: &str) -> &'static str {
-        let idioma = if self.idioma == "auto" { cliente } else { &self.idioma };
-        if idioma.to_lowercase().starts_with("es") {
-            "es"
-        } else {
-            "en"
-        }
+    pub fn effective_language(&self, client_locale: &str) -> &'static str {
+        i18n::resolve(if self.language == "auto" { client_locale } else { &self.language })
     }
 }

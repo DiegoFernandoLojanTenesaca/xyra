@@ -1,0 +1,71 @@
+{
+  "languageName": "Español",
+  "tagline": "Gratis y open source",
+  "level": "NV",
+  "phases": {
+    "noClient": "Esperando al LoL",
+    "client": "Listo · esperando partida",
+    "champSelect": "Selección de campeones",
+    "inGame": "En partida",
+    "paused": "En pausa"
+  },
+  "modes": {
+    "KIWI": "ARAM: Caos",
+    "CHERRY": "Arena",
+    "ARAM": "ARAM",
+    "CLASSIC": "Grieta"
+  },
+  "rarity": {
+    "kSilver": "Plata",
+    "kGold": "Oro",
+    "kPrismatic": "Prismático"
+  },
+  "leagues": {
+    "IRON": "Hierro",
+    "BRONZE": "Bronce",
+    "SILVER": "Plata",
+    "GOLD": "Oro",
+    "PLATINUM": "Platino",
+    "EMERALD": "Esmeralda",
+    "DIAMOND": "Diamante",
+    "MASTER": "Maestro",
+    "GRANDMASTER": "Gran Maestro",
+    "CHALLENGER": "Retador"
+  },
+  "quality": {
+    "excellent": "EXCELENTE",
+    "great": "MUY BUENA",
+    "good": "BUENA",
+    "fair": "REGULAR",
+    "bad": "MALA",
+    "rarePick": "POCO USADA"
+  },
+  "reroll": "cámbiala",
+  "window": {
+    "minimize": "Minimizar",
+    "maximize": "Maximizar",
+    "close": "Cerrar"
+  },
+  "nav": {
+    "home": "Inicio",
+    "build": "Build",
+    "augments": "Aumentos",
+    "champions": "Campeones",
+    "stats": "Estadísticas",
+    "labels": "Etiquetas",
+    "game": "Juego",
+    "settings": "Ajustes"
+  },
+  "searchChampion": "Buscar campeón…",
+  "games_one": "{{count}} partida",
+  "games_other": "{{count}} partidas",
+  "winRate": "{{value}}% WR",
+  "errors": {
+    "noClient": "Abre el LoL e inténtalo de nuevo.",
+    "gameInProgress": "Termina la partida y vuelve a intentarlo.",
+    "noFreeRunePage": "No tienes páginas de runas libres: borra una y vuelve a intentar.",
+    "settingNotAllowed": "Esa opción no se puede cambiar desde Xyra.",
+    "noSummoner": "No se pudo leer tu cuenta del cliente.",
+    "unknown": "Algo salió mal: {{detail}}"
+  }
+}

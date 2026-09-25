@@ -1,0 +1,33 @@
+{
+  "subtitle": "How the marks look over the cards.",
+  "active": "Active",
+  "calibration": "Calibration",
+  "calibrationHint": "If marks look misplaced on your screen, adjust and test them.",
+  "height": "Height",
+  "size": "Size",
+  "voice": "Voice hint",
+  "voiceHint": "Says out loud which card to pick, for when you are mid-fight.",
+  "testVoice": "Test voice",
+  "styles": {
+    "plate": {
+      "name": "Plate",
+      "description": "A plate under each card; the best one gets a red frame."
+    },
+    "badge": {
+      "name": "Badge",
+      "description": "A tier letter diamond on the corner."
+    },
+    "ribbon": {
+      "name": "Ribbon",
+      "description": "A colored ribbon inside the card."
+    },
+    "podium": {
+      "name": "Podium",
+      "description": "Ranks 1-2-3 in red, white and gray."
+    },
+    "focus": {
+      "name": "Focus",
+      "description": "Dims the cards you should not pick."
+    }
+  }
+}

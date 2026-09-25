@@ -1,174 +1,173 @@
-//! Estadísticas de aumentos por campeón desde OP.GG.
 use crate::{
-    catalogo::Catalogo,
-    modelo::{Build, Icono, ModoBuild, Runas},
+    catalog::{Catalog, NamedAssets},
+    model::{Asset, Build, BuildMode, RunePage},
 };
 use reqwest::blocking::Client;
 use serde_json::Value;
 use std::collections::HashMap;
 
+const API: &str = "https://lol-api-champion.op.gg/api";
+const MIN_ARENA_GAMES: f64 = 20.0;
+const SITUATIONAL_ITEMS: usize = 6;
+const DEFAULT_RIFT_POSITION: &str = "mid";
+/// Arena tier cutoffs by percentile of average placement: top 10 % = S, next 20 % = A, 30 % = B, 20 % = C, rest = D.
+const ARENA_PERCENTILES: [f64; 4] = [0.1, 0.3, 0.6, 0.8];
+
 #[derive(Clone, Copy)]
-pub struct Dato {
+pub struct AugmentStat {
     /// 0 = S … 6 = F.
     pub tier: u8,
-    /// Sirve para desempatar entre cartas del mismo tier: más alto es mejor.
-    pub perf: f64,
-    /// % de partidas en que se elige.
-    pub popular: f64,
+    pub performance: f64,
+    pub pick_rate: f64,
 }
 
-fn get(http: &Client, url: &str) -> Result<Value, String> {
+fn fetch_json(http: &Client, url: &str) -> Result<Value, String> {
     http.get(url).send().and_then(|r| r.error_for_status()).and_then(|r| r.json()).map_err(|e| e.to_string())
 }
 
-/// ARAM: Caos. OP.GG ya da el tier de cada aumento para el campeón.
-pub fn caos(http: &Client, campeon: u32) -> Result<HashMap<u32, Dato>, String> {
-    let v = get(http, &format!("https://lol-api-champion.op.gg/api/contents/stats/champions/{campeon}/aram-augments"))?;
-    Ok(v["data"]
+pub fn fetch_mayhem_augments(http: &Client, champion: u32) -> Result<HashMap<u32, AugmentStat>, String> {
+    let value = fetch_json(http, &format!("{API}/contents/stats/champions/{champion}/aram-augments"))?;
+    Ok(value["data"]
         .as_array()
-        .ok_or("sin datos")?
+        .ok_or("noData")?
         .iter()
-        .filter_map(|a| {
-            let dato = Dato {
-                tier: a["tier"].as_u64()? as u8,
-                perf: a["performance"].as_f64().unwrap_or(0.0),
-                popular: a["popular"].as_f64().unwrap_or(0.0),
+        .filter_map(|augment| {
+            let stat = AugmentStat {
+                tier: augment["tier"].as_u64()? as u8,
+                performance: augment["performance"].as_f64().unwrap_or(0.0),
+                pick_rate: augment["popular"].as_f64().unwrap_or(0.0),
             };
-            Some((a["id"].as_u64()? as u32, dato))
+            Some((augment["id"].as_u64()? as u32, stat))
         })
         .collect())
 }
 
-/// Arena. OP.GG da el puesto promedio de cada aumento con el campeón; el tier sale del percentil
-/// (10 % mejores = S, siguiente 20 % = A, 30 % = B, 20 % = C, resto = D). Con menos de 20 partidas no se califica.
-pub fn arena(http: &Client, campeon: u32) -> Result<HashMap<u32, Dato>, String> {
-    let v = get(http, &format!("https://lol-api-champion.op.gg/api/global/champions/arena/{campeon}"))?;
-    let mut lista: Vec<(u32, f64, f64)> = v["data"]["augment_group"]
+pub fn fetch_arena_augments(http: &Client, champion: u32) -> Result<HashMap<u32, AugmentStat>, String> {
+    let value = fetch_json(http, &format!("{API}/global/champions/arena/{champion}"))?;
+    let mut placements: Vec<(u32, f64, f64)> = value["data"]["augment_group"]
         .as_array()
-        .ok_or("sin datos")?
+        .ok_or("noData")?
         .iter()
-        .flat_map(|g| g["augments"].as_array().cloned().unwrap_or_default())
-        .filter_map(|a| {
-            let jugadas = a["play"].as_f64()?;
-            if jugadas < 20.0 {
+        .flat_map(|group| group["augments"].as_array().cloned().unwrap_or_default())
+        .filter_map(|augment| {
+            let games = augment["play"].as_f64()?;
+            if games < MIN_ARENA_GAMES {
                 return None;
             }
-            Some((a["id"].as_u64()? as u32, a["total_place"].as_f64()? / jugadas, a["pick_rate"].as_f64().unwrap_or(0.0) * 100.0))
+            let average_place = augment["total_place"].as_f64()? / games;
+            Some((augment["id"].as_u64()? as u32, average_place, augment["pick_rate"].as_f64().unwrap_or(0.0) * 100.0))
         })
         .collect();
-    lista.sort_by(|a, b| a.1.total_cmp(&b.1));
-    Ok(tiers_por_percentil(&lista))
+    placements.sort_by(|a, b| a.1.total_cmp(&b.1));
+    Ok(tiers_by_percentile(&placements))
 }
 
-fn tiers_por_percentil(ordenados: &[(u32, f64, f64)]) -> HashMap<u32, Dato> {
-    let n = ordenados.len().max(1) as f64;
-    ordenados
+fn tiers_by_percentile(sorted: &[(u32, f64, f64)]) -> HashMap<u32, AugmentStat> {
+    let total = sorted.len().max(1) as f64;
+    sorted
         .iter()
         .enumerate()
-        .map(|(i, &(id, puesto, popular))| {
-            let p = i as f64 / n;
-            let tier = match p {
-                p if p < 0.1 => 0,
-                p if p < 0.3 => 1,
-                p if p < 0.6 => 2,
-                p if p < 0.8 => 3,
-                _ => 4,
-            };
-            (id, Dato { tier, perf: 100.0 - puesto * 10.0, popular })
+        .map(|(index, &(id, average_place, pick_rate))| {
+            let percentile = index as f64 / total;
+            let tier = ARENA_PERCENTILES.iter().position(|&cut| percentile < cut).unwrap_or(ARENA_PERCENTILES.len()) as u8;
+            (id, AugmentStat { tier, performance: 100.0 - average_place * 10.0, pick_rate })
         })
         .collect()
 }
 
-/// Tier list de campeones de ARAM: Caos: id -> (tier 1 = mejor … 5, puesto).
-pub fn tiers_campeones(http: &Client) -> Result<HashMap<u32, (u8, u32)>, String> {
-    let v = get(http, "https://lol-api-champion.op.gg/api/contents/tiers?type=aram_mayhem")?;
-    Ok(v["data"]
+/// ARAM: Mayhem champion tier list: id -> (tier 1 = best … 5, rank).
+pub fn fetch_champion_tiers(http: &Client) -> Result<HashMap<u32, (u8, u32)>, String> {
+    let value = fetch_json(http, &format!("{API}/contents/tiers?type=aram_mayhem"))?;
+    Ok(value["data"]
         .as_array()
-        .ok_or("sin datos")?
+        .ok_or("noData")?
         .iter()
         .filter_map(|c| Some((c["id"].as_u64()? as u32, (c["tier"].as_u64()? as u8, c["rank"].as_u64()? as u32))))
         .collect())
 }
 
-/// Build de un campeón según OP.GG. En ARAM es la que OP.GG muestra también para ARAM: Caos; en la Grieta es la de
-/// la posición pedida o, sin posición, la más jugada. Nombres e íconos salen del catálogo.
-pub fn build(http: &Client, campeon: u32, modo: ModoBuild, posicion: Option<&str>, cat: &Catalogo) -> Result<Build, String> {
-    const BASE: &str = "https://lol-api-champion.op.gg/api/global/champions";
-    if modo == ModoBuild::Aram {
-        return Ok(armar_build(&get(http, &format!("{BASE}/aram/{campeon}/none"))?["data"], campeon, cat));
+/// ARAM builds are the ones OP.GG also shows for ARAM: Mayhem; Rift builds default to the most played position.
+pub fn fetch_build(http: &Client, champion: u32, mode: BuildMode, position: Option<&str>, catalog: &Catalog) -> Result<Build, String> {
+    let base = format!("{API}/global/champions");
+    if mode == BuildMode::Aram {
+        return Ok(parse_build(&fetch_json(http, &format!("{base}/aram/{champion}/none"))?["data"], champion, catalog));
     }
-    let pedida = posicion.unwrap_or("mid");
-    let v = get(http, &format!("{BASE}/ranked/{campeon}/{pedida}"))?;
-    let mut b = armar_build(&v["data"], campeon, cat);
-    // sin posición pedida: si el campeón casi no va a "mid", se trae la de su posición principal
-    if let (None, Some(principal)) = (posicion, b.posiciones.first().cloned()) {
-        if principal != pedida {
-            b = armar_build(&get(http, &format!("{BASE}/ranked/{campeon}/{principal}"))?["data"], campeon, cat);
+    let requested = position.unwrap_or(DEFAULT_RIFT_POSITION);
+    let mut build = parse_build(&fetch_json(http, &format!("{base}/ranked/{champion}/{requested}"))?["data"], champion, catalog);
+    if let (None, Some(main)) = (position, build.positions.first().cloned()) {
+        if main != requested {
+            build = parse_build(&fetch_json(http, &format!("{base}/ranked/{champion}/{main}"))?["data"], champion, catalog);
         }
     }
-    b.posicion = Some(b.posicion.clone().unwrap_or_else(|| pedida.to_string()));
-    Ok(b)
+    build.position = Some(build.positions.first().cloned().filter(|_| position.is_none()).unwrap_or_else(|| requested.to_string()));
+    Ok(build)
 }
 
-fn icono(mapa: &HashMap<u32, (String, String)>, id: u32) -> Icono {
-    let (nombre, icono) = mapa.get(&id).cloned().unwrap_or_else(|| (format!("#{id}"), String::new()));
-    Icono { id, nombre, icono }
+fn asset(assets: &NamedAssets, id: u32) -> Asset {
+    let (name, icon) = assets.get(&id).cloned().unwrap_or_else(|| (format!("#{id}"), String::new()));
+    Asset { id, name, icon }
 }
 
-fn ids(v: &Value) -> Vec<u32> {
-    v.as_array().into_iter().flatten().filter_map(|x| x.as_u64()).map(|x| x as u32).collect()
+fn ids(value: &Value) -> Vec<u32> {
+    value.as_array().into_iter().flatten().filter_map(|x| x.as_u64()).map(|x| x as u32).collect()
 }
 
-/// La opción más usada de una lista de OP.GG (vienen ordenadas por partidas).
-fn primera<'a>(d: &'a Value, clave: &str) -> &'a Value {
-    &d[clave][0]
+fn strings(value: &Value) -> Vec<String> {
+    value.as_array().into_iter().flatten().filter_map(|x| x.as_str().map(String::from)).collect()
 }
 
-pub(crate) fn armar_build(d: &Value, campeon: u32, cat: &Catalogo) -> Build {
-    let item = |id| icono(&cat.items, id);
-    let runa = |id| icono(&cat.runas, id);
-    let r = primera(d, "runes");
-    let pct = |v: &Value| {
-        let (w, p) = (v["win"].as_f64().unwrap_or(0.0), v["play"].as_f64().unwrap_or(0.0));
-        if p > 0.0 { 100.0 * w / p } else { 0.0 }
-    };
-    let inicio = ids(&primera(d, "starter_items")["ids"]);
-    let botas = ids(&primera(d, "boots")["ids"]);
-    let nucleo = ids(&primera(d, "core_items")["ids"]);
-    let mut situacionales: Vec<u32> = Vec::new();
-    for x in d["last_items"].as_array().into_iter().flatten() {
-        for id in ids(&x["ids"]) {
-            if !nucleo.contains(&id) && !botas.contains(&id) && !situacionales.contains(&id) {
-                situacionales.push(id);
+/// OP.GG lists are sorted by games played.
+fn most_played<'a>(data: &'a Value, key: &str) -> &'a Value {
+    &data[key][0]
+}
+
+fn win_rate(entry: &Value) -> f64 {
+    let (wins, games) = (entry["win"].as_f64().unwrap_or(0.0), entry["play"].as_f64().unwrap_or(0.0));
+    if games > 0.0 {
+        100.0 * wins / games
+    } else {
+        0.0
+    }
+}
+
+pub(crate) fn parse_build(data: &Value, champion: u32, catalog: &Catalog) -> Build {
+    let item = |id| asset(&catalog.items, id);
+    let rune = |id| asset(&catalog.runes, id);
+    let runes = most_played(data, "runes");
+    let boots = ids(&most_played(data, "boots")["ids"]);
+    let core = ids(&most_played(data, "core_items")["ids"]);
+    let mut situational: Vec<u32> = Vec::new();
+    for entry in data["last_items"].as_array().into_iter().flatten() {
+        for id in ids(&entry["ids"]) {
+            if !core.contains(&id) && !boots.contains(&id) && !situational.contains(&id) {
+                situational.push(id);
             }
         }
     }
-    situacionales.truncate(6);
-    let texto = |v: &Value| v.as_array().into_iter().flatten().filter_map(|x| x.as_str().map(String::from)).collect::<Vec<_>>();
-    let stats = &d["summary"]["average_stats"];
+    situational.truncate(SITUATIONAL_ITEMS);
+    let stats = &data["summary"]["average_stats"];
     Build {
-        campeon,
-        runas: Runas {
-            principal: runa(r["primary_page_id"].as_u64().unwrap_or(0) as u32),
-            secundaria: runa(r["secondary_page_id"].as_u64().unwrap_or(0) as u32),
-            runas: ids(&r["primary_rune_ids"]).into_iter().map(runa).collect(),
-            secundarias: ids(&r["secondary_rune_ids"]).into_iter().map(runa).collect(),
-            fragmentos: ids(&r["stat_mod_ids"]).into_iter().map(runa).collect(),
-            winrate: pct(r),
-            uso: r["pick_rate"].as_f64().unwrap_or(0.0) * 100.0,
+        champion,
+        runes: RunePage {
+            primary_style: rune(runes["primary_page_id"].as_u64().unwrap_or(0) as u32),
+            secondary_style: rune(runes["secondary_page_id"].as_u64().unwrap_or(0) as u32),
+            primary: ids(&runes["primary_rune_ids"]).into_iter().map(rune).collect(),
+            secondary: ids(&runes["secondary_rune_ids"]).into_iter().map(rune).collect(),
+            shards: ids(&runes["stat_mod_ids"]).into_iter().map(rune).collect(),
+            win_rate: win_rate(runes),
+            pick_rate: runes["pick_rate"].as_f64().unwrap_or(0.0) * 100.0,
         },
-        hechizos: ids(&primera(d, "summoner_spells")["ids"]).into_iter().map(|id| icono(&cat.hechizos, id)).collect(),
-        inicio: inicio.into_iter().map(item).collect(),
-        botas: botas.into_iter().map(item).collect(),
-        nucleo: nucleo.into_iter().map(item).collect(),
-        situacionales: situacionales.into_iter().map(item).collect(),
-        habilidades: texto(&primera(d, "skills")["order"]),
-        prioridad: texto(&primera(d, "skill_masteries")["ids"]),
-        winrate: stats["win_rate"].as_f64().unwrap_or(0.0) * 100.0,
-        partidas: stats["play"].as_u64().unwrap_or(0) as u32,
-        posicion: None,
-        // OP.GG las nombra "TOP", "JUNGLE", "MID", "ADC", "SUPPORT"; ya vienen de la más a la menos jugada
-        posiciones: d["summary"]["positions"]
+        spells: ids(&most_played(data, "summoner_spells")["ids"]).into_iter().map(|id| asset(&catalog.spells, id)).collect(),
+        starting_items: ids(&most_played(data, "starter_items")["ids"]).into_iter().map(item).collect(),
+        boots: boots.into_iter().map(item).collect(),
+        core_items: core.into_iter().map(item).collect(),
+        situational_items: situational.into_iter().map(item).collect(),
+        skill_order: strings(&most_played(data, "skills")["order"]),
+        skill_priority: strings(&most_played(data, "skill_masteries")["ids"]),
+        win_rate: stats["win_rate"].as_f64().unwrap_or(0.0) * 100.0,
+        games: stats["play"].as_u64().unwrap_or(0) as u32,
+        position: None,
+        positions: data["summary"]["positions"]
             .as_array()
             .into_iter()
             .flatten()
@@ -178,17 +177,17 @@ pub(crate) fn armar_build(d: &Value, campeon: u32, cat: &Catalogo) -> Build {
 }
 
 #[cfg(test)]
-mod pruebas {
+mod tests {
     use super::*;
 
     #[test]
-    fn percentiles() {
-        let lista: Vec<(u32, f64, f64)> = (0..10).map(|i| (i, 2.0 + i as f64 * 0.3, 1.0)).collect();
-        let t = tiers_por_percentil(&lista);
-        assert_eq!(t[&0].tier, 0);
-        assert_eq!(t[&2].tier, 1);
-        assert_eq!(t[&5].tier, 2);
-        assert_eq!(t[&9].tier, 4);
-        assert!(t[&0].perf > t[&9].perf);
+    fn arena_tiers_follow_percentiles() {
+        let sorted: Vec<(u32, f64, f64)> = (0..10).map(|i| (i, 2.0 + i as f64 * 0.3, 1.0)).collect();
+        let tiers = tiers_by_percentile(&sorted);
+        assert_eq!(tiers[&0].tier, 0);
+        assert_eq!(tiers[&2].tier, 1);
+        assert_eq!(tiers[&5].tier, 2);
+        assert_eq!(tiers[&9].tier, 4);
+        assert!(tiers[&0].performance > tiers[&9].performance);
     }
 }

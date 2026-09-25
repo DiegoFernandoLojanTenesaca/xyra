@@ -1,0 +1,48 @@
+{
+  "gettingStarted": "Getting started",
+  "steps": {
+    "borderless": "Set League to Borderless: Xyra switches it for you from Home.",
+    "joinGame": "Jump into an ARAM: Mayhem game (or Arena, if you turn it on).",
+    "pickRed": "When the cards show up, take the one with the red frame: it is the best for your champion.",
+    "importRunes": "In champion select, open Build and import your runes in one click."
+  },
+  "faqTitle": "FAQ",
+  "faq": {
+    "noLabels": {
+      "question": "I cannot see the labels over the game",
+      "answer": "Make sure League is in Borderless mode, Xyra is not paused and the game is focused. In exclusive fullscreen Windows does not allow drawing on top."
+    },
+    "misplaced": {
+      "question": "Labels look misplaced",
+      "answer": "Adjust height and size in Labels → Calibration and check them with the Test button."
+    },
+    "grades": {
+      "question": "What do S, A, B, C mean?",
+      "answer": "It is the OP.GG tier of that augment with your champion: S is excellent and from C down you should reroll. \"Rare pick\" means almost nobody takes it with that champion, so there is not enough data."
+    },
+    "ban": {
+      "question": "Can I get banned for using it?",
+      "answer": "Xyra only reads the screen and draws on top, like OBS or Discord: it never touches the game. Details in the Security tab."
+    },
+    "runes": {
+      "question": "My runes are not imported",
+      "answer": "League must be open and you need a free rune page. Xyra only replaces the pages it created."
+    },
+    "ocr": {
+      "question": "Xyra does not recognize the cards",
+      "answer": "Windows needs text recognition for your client language: add it in Settings → Time & language → Language."
+    }
+  },
+  "supportTitle": "Something not working?",
+  "support": "Turn on \"Save screenshots\" in General, repeat what failed and tell us on GitHub with the screenshot and the log.",
+  "report": "Report a problem",
+  "viewCode": "View the code",
+  "openLog": "Open log",
+  "releases": "Downloads and news",
+  "creators": "Creators",
+  "roles": {
+    "creator": "Creator",
+    "coCreator": "Co-creator"
+  },
+  "thanks": "Thanks to OP.GG for the stats and to CommunityDragon for the icons."
+}

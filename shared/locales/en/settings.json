@@ -1,0 +1,58 @@
+{
+  "tabs": {
+    "general": "General",
+    "profile": "Profile",
+    "data": "Data",
+    "security": "Security",
+    "help": "Help",
+    "about": "About"
+  },
+  "subtitles": {
+    "general": "Language, startup, modes and diagnostics.",
+    "profile": "Your client data, read only: nothing leaves your PC.",
+    "data": "Everything Xyra saves stays on your PC. Take it or delete it.",
+    "security": "Why using Xyra does not put your account at risk.",
+    "help": "Getting started, FAQ and who makes Xyra.",
+    "about": "Version, what is new and where the data comes from."
+  },
+  "language": "Language",
+  "automaticLanguage": "Automatic (client language)",
+  "autostart": {
+    "title": "Start with Windows",
+    "description": "Sits in the tray and only works during your games."
+  },
+  "arena": {
+    "title": "Arena (beta)",
+    "description": "Also labels Arena augment cards."
+  },
+  "diagnostics": "Diagnostics",
+  "recordScreenshots": {
+    "title": "Save screenshots when cards are detected",
+    "description": "To report bugs or calibrate other resolutions."
+  },
+  "openScreenshots": "Open screenshots",
+  "openLog": "Open log",
+  "noProfile": "Open League to load your profile.",
+  "unranked": "Unranked",
+  "championsPlayed": "Champions played",
+  "mastery": "Mastery",
+  "storedGames": "Saved games",
+  "spaceUsed": "Space used",
+  "folder": "Folder",
+  "exportCsv": "Export games (CSV)",
+  "openFolder": "Open folder",
+  "deleteData": "Delete my data",
+  "confirmDelete": "Sure? Click again",
+  "dataDeleted": "Done: your games, profile, screenshots and log were deleted.",
+  "savedTo": "Saved to {{path}}",
+  "noTelemetry": "No telemetry.",
+  "connections": "It only talks to OP.GG, CommunityDragon and your League client.",
+  "securityRules": {
+    "memory": "Never reads or writes game memory.",
+    "injection": "Never injects into the game or opens its process.",
+    "input": "No simulated keys or clicks, no automation.",
+    "hiddenInfo": "Never reveals hidden information: only public OP.GG data.",
+    "overlay": "Only reads the screen and draws on top, like OBS or Discord."
+  },
+  "securityNote": "To show over the game, League must be in Borderless mode. While you play, Xyra never takes focus or receives clicks."
+}

@@ -1,0 +1,15 @@
+{
+  "license": "MIT license",
+  "sources": "Data from OP.GG · icons from CommunityDragon.",
+  "riot": "Xyra isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games. League of Legends is a trademark of Riot Games, Inc.",
+  "whatsNew": "What's new in this version",
+  "changes": {
+    "labels": "Labels over ARAM: Mayhem and Arena cards, in 5 styles, the moment they show up.",
+    "builds": "Build with runes, spells, items and skills, ready to import into your client.",
+    "tierLists": "Augment and champion tier lists, with OP.GG data.",
+    "stats": "Your stats, your profile and CSV export."
+  },
+  "links": "Links",
+  "builtWith": "Made with Rust, Tauri and Svelte. The in-game overlay is native: no browser, almost no memory.",
+  "madeBy": "Made by"
+}

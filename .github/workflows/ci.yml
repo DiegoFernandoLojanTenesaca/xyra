@@ -1,4 +1,3 @@
-# Pruebas en cada cambio: pruebas del núcleo, tipos generados al día y tipos de la interfaz.
 name: CI
 
 on:
@@ -7,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  pruebas:
+  test:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,6 +20,5 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: cargo test --workspace
-      # los tipos de TypeScript salen de Rust: si alguien cambió un struct sin regenerarlos, falla aquí
-      - run: git diff --exit-code src/lib/generado
+      - run: git diff --exit-code src/lib/generated
       - run: pnpm check

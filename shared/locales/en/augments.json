@@ -1,0 +1,12 @@
+{
+  "subtitle": "Augment tier list for every champion, with OP.GG data.",
+  "all": "All",
+  "loading": "Loading OP.GG data…",
+  "loadError": "Could not load data. Check your connection.",
+  "performance": "Performance",
+  "pickRate": "Picked",
+  "noData": "No data for this champion in this mode.",
+  "pickChampion": "Pick a champion to see their augments.",
+  "augmentCount_one": "{{count}} augment",
+  "augmentCount_other": "{{count}} augments"
+}

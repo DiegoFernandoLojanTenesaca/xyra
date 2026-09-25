@@ -1,0 +1,46 @@
+{
+  "subtitle": "Tells you which augment card to pick, without touching the game.",
+  "live": "Live",
+  "pickCard": "Pick {{card}}",
+  "bestOf": "The best of the {{count}} for {{champion}}.",
+  "noClient": {
+    "title": "Open League to start",
+    "text": "Jump into ARAM: Mayhem and Xyra marks the best card every time."
+  },
+  "client": {
+    "title": "All set. Let's play",
+    "text": "Queue up: when the cards show up, Xyra tells you which one to take, instantly."
+  },
+  "paused": {
+    "title": "Xyra is paused",
+    "text": "It does not read the screen or draw anything. Resume whenever you want."
+  },
+  "inGame": "Watching your cards: the best one gets marked the moment they appear.",
+  "takeFromBench": "Take {{champion}} from the bench",
+  "strongerThan": "Stronger than {{champion}} in ARAM: Mayhem: rank #{{rank}}.",
+  "yourChampion": "Your champion · rank #{{rank}} in ARAM: Mayhem.",
+  "bestPick": "Best pick",
+  "cardsOnScreen": "Cards on screen",
+  "latestCards": "Latest cards",
+  "noCards": "Your ARAM: Mayhem augment cards will show up here.",
+  "bench": "Bench · champ select",
+  "emptyBench": "No champions on the bench.",
+  "gameWindow": "Game window",
+  "fullscreenWarning": "League is in fullscreen: labels cannot be drawn over the game.",
+  "borderlessReady": "Borderless · ready",
+  "settingsUnreadable": "Could not read League settings.",
+  "setBorderless": "Switch to Borderless",
+  "borderlessDone": "Done: your next game opens in Borderless.",
+  "bestAugments": "Your best augments",
+  "minGames": "min. 2 games",
+  "system": "System",
+  "screenReading": "Screen reading",
+  "noOcr": "Windows has no text recognition for your language: add it in Settings → Time & language.",
+  "test": "Test",
+  "pause": "Pause",
+  "resume": "Resume",
+  "openBuild": "See build",
+  "topMayhem": "ARAM: Mayhem top",
+  "latestGames": "Your latest games",
+  "voiceHint": "Voice hint"
+}

@@ -1,0 +1,47 @@
+{
+  "subtitle": "Opciones oficiales del LoL y lo que Xyra hace solo por ti.",
+  "options": "Opciones del juego",
+  "optionsHint": "Son las mismas del menú Opciones del LoL: Xyra solo te ahorra buscarlas.",
+  "noClient": "Abre el LoL para ver y cambiar estas opciones.",
+  "settings": {
+    "WindowMode": {
+      "title": "Sin bordes",
+      "description": "Necesario para ver las etiquetas de Xyra encima del juego."
+    },
+    "ShowAttackRadius": {
+      "title": "Rango de ataque",
+      "description": "Dibuja hasta dónde llegan tus ataques básicos."
+    },
+    "MinimapEnableAllTimers": {
+      "title": "Cronómetros en el minimapa",
+      "description": "Los tiempos de reaparición de objetivos y campamentos que trae el propio juego."
+    },
+    "ShowTurretRangeIndicators": {
+      "title": "Rango de las torres",
+      "description": "Muestra hasta dónde disparan las torres."
+    },
+    "FlipMiniMap": {
+      "title": "Minimapa a la izquierda",
+      "description": "Pasa el minimapa al otro lado de la pantalla."
+    },
+    "MinimapScale": {
+      "title": "Tamaño del minimapa",
+      "description": "Más grande se lee mejor en pantallas grandes."
+    }
+  },
+  "automatic": "Automático",
+  "automaticHint": "Actívalo una vez y Xyra se encarga solo.",
+  "keepBorderless": {
+    "title": "Mantener Sin bordes",
+    "description": "Si el juego vuelve a pantalla completa, Xyra lo regresa a Sin bordes antes de tu próxima partida."
+  },
+  "autoImportRunes": {
+    "title": "Importar runas solas",
+    "description": "En la selección de campeones importa las runas del campeón que te tocó. Solo reemplaza su propia página."
+  },
+  "closeWindowInGame": {
+    "title": "Cerrar la ventana al jugar",
+    "description": "Al empezar la partida la ventana se cierra y Xyra sigue en la bandeja, sin gastar memoria."
+  },
+  "safe": "Todo esto usa opciones que el LoL ya trae: no toca el juego ni juega por ti."
+}

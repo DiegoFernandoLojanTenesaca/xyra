@@ -1,0 +1,10 @@
+{
+  "forChampion": "para {{champion}}",
+  "bestPick": "MEJOR OPCIÓN",
+  "pickThis": "ELIGE ESTA",
+  "voice": {
+    "left": "Elige la de la izquierda",
+    "middle": "Elige la del medio",
+    "right": "Elige la de la derecha"
+  }
+}

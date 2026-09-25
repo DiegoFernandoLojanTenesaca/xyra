@@ -1,0 +1,35 @@
+{
+  "subtitle": "Runas, hechizos, ítems y habilidades para ARAM: Caos y la Grieta, con datos de OP.GG.",
+  "runes": "Runas",
+  "shards": "Fragmentos",
+  "spells": "Hechizos",
+  "items": "Ítems",
+  "blocks": {
+    "starting": "Inicio",
+    "boots": "Botas",
+    "core": "Núcleo",
+    "situational": "Situacionales"
+  },
+  "skills": "Habilidades",
+  "maxFirst": "Sube primero",
+  "importRunes": "Importar runas",
+  "importItems": "Importar ítems",
+  "runesImported": "Listo: la página de runas ya está activa en tu cliente.",
+  "itemsImported": "Listo: el set aparece en la tienda del juego con este campeón.",
+  "loading": "Cargando build de OP.GG…",
+  "loadError": "No se pudo cargar la build. Revisa tu conexión.",
+  "pickRate": "{{value}}% de uso",
+  "note": "Solo se importa cuando tú lo pides: Xyra nunca toca tu cliente por su cuenta.",
+  "noCatalog": "Abre el LoL una vez para ver los nombres e íconos.",
+  "modes": {
+    "aram": "ARAM: Caos",
+    "rift": "Grieta"
+  },
+  "positions": {
+    "top": "Top",
+    "jungle": "Jungla",
+    "mid": "Medio",
+    "adc": "Tirador",
+    "support": "Soporte"
+  }
+}

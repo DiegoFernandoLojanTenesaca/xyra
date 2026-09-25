@@ -1,0 +1,9 @@
+- Updated the README with a banner, badges and app screenshots.
+- Updated the codebase to English identifiers, files and folders.
+- Updated user-facing texts to per-language JSON files shared by the UI and the native overlay.
+- Added a single design tokens file used by the UI and the in-game overlay.
+- Added a shared engine state language resolved from the preference and the client locale.
+- Updated icons to Lucide.
+- Updated the log to record only errors.
+- Fixed Summoner's Rift builds reporting the requested position instead of the loaded main position.
+- Removed per-page duplicated styles in favor of shared components.

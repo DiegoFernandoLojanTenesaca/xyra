@@ -1,0 +1,58 @@
+{
+  "tabs": {
+    "general": "General",
+    "profile": "Perfil",
+    "data": "Datos",
+    "security": "Seguridad",
+    "help": "Ayuda",
+    "about": "Acerca de"
+  },
+  "subtitles": {
+    "general": "Idioma, arranque, modos y diagnóstico.",
+    "profile": "Tus datos del cliente, solo lectura: nada sale de tu PC.",
+    "data": "Todo lo que Xyra guarda está en tu PC. Llévatelo o bórralo.",
+    "security": "Por qué usar Xyra no pone en riesgo tu cuenta.",
+    "help": "Cómo empezar, preguntas frecuentes y quién hace Xyra.",
+    "about": "Versión, novedades y de dónde salen los datos."
+  },
+  "language": "Idioma",
+  "automaticLanguage": "Automático (el del cliente)",
+  "autostart": {
+    "title": "Iniciar con Windows",
+    "description": "Queda en la bandeja y solo trabaja durante tus partidas."
+  },
+  "arena": {
+    "title": "Arena (beta)",
+    "description": "También etiqueta las cartas de Arena."
+  },
+  "diagnostics": "Diagnóstico",
+  "recordScreenshots": {
+    "title": "Guardar capturas al detectar cartas",
+    "description": "Para reportar fallos o calibrar otras resoluciones."
+  },
+  "openScreenshots": "Abrir capturas",
+  "openLog": "Abrir registro",
+  "noProfile": "Abre el LoL para cargar tu perfil.",
+  "unranked": "Sin rango",
+  "championsPlayed": "Campeones jugados",
+  "mastery": "Maestría",
+  "storedGames": "Partidas guardadas",
+  "spaceUsed": "Espacio usado",
+  "folder": "Carpeta",
+  "exportCsv": "Exportar partidas (CSV)",
+  "openFolder": "Abrir carpeta",
+  "deleteData": "Borrar mis datos",
+  "confirmDelete": "¿Seguro? Haz clic otra vez",
+  "dataDeleted": "Listo: se borraron tus partidas, perfil, capturas y registro.",
+  "savedTo": "Guardado en {{path}}",
+  "noTelemetry": "Sin telemetría.",
+  "connections": "Solo se conecta a OP.GG, CommunityDragon y a tu cliente del LoL.",
+  "securityRules": {
+    "memory": "No lee ni escribe la memoria del juego.",
+    "injection": "No inyecta nada en el juego ni abre su proceso.",
+    "input": "No simula teclas ni clics y no automatiza nada.",
+    "hiddenInfo": "No revela información oculta: solo datos públicos de OP.GG.",
+    "overlay": "Solo mira la pantalla y dibuja encima, como OBS o Discord."
+  },
+  "securityNote": "Para verse encima del juego, el LoL debe estar en modo Sin bordes. Mientras juegas, Xyra nunca toma el foco ni recibe clics."
+}

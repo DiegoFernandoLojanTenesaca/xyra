@@ -1,307 +1,309 @@
 <script lang="ts">
-  import '$lib/tema.css';
+  import '$lib/theme.css';
+  import { ChartColumn, CircleQuestionMark, Crown, Gamepad2, Hammer, House, Layers, Minus, Settings as SettingsIcon, Square, Tag, X } from '@lucide/svelte';
   import { getCurrentWindow } from '@tauri-apps/api/window';
   import { onMount } from 'svelte';
   import { app } from '$lib/app.svelte';
-  import type { Pagina } from '$lib/tipos';
-  import { abrir, REPO } from '$lib/proyecto';
-  import Icono from '$lib/ui/Icono.svelte';
-  import Logo from '$lib/ui/Logo.svelte';
-  import Inicio from '$lib/paginas/Inicio.svelte';
-  import Aumentos from '$lib/paginas/Aumentos.svelte';
-  import Build from '$lib/paginas/Build.svelte';
-  import Juego from '$lib/paginas/Juego.svelte';
-  import Campeones from '$lib/paginas/Campeones.svelte';
-  import Estadisticas from '$lib/paginas/Estadisticas.svelte';
-  import Etiquetas from '$lib/paginas/Etiquetas.svelte';
-  import Ajustes from '$lib/paginas/Ajustes.svelte';
+  import Logo from '$lib/components/Logo.svelte';
+  import Augments from '$lib/pages/Augments.svelte';
+  import Build from '$lib/pages/Build.svelte';
+  import Champions from '$lib/pages/Champions.svelte';
+  import Game from '$lib/pages/Game.svelte';
+  import Home from '$lib/pages/Home.svelte';
+  import Labels from '$lib/pages/Labels.svelte';
+  import Settings from '$lib/pages/Settings.svelte';
+  import Stats from '$lib/pages/Stats.svelte';
+  import { openExternal, REPOSITORY } from '$lib/project';
+  import { applyTokens } from '$lib/theme';
+  import type { Page } from '$lib/types';
 
-  const ventana = getCurrentWindow();
-  const PAGINAS: Pagina[] = ['inicio', 'build', 'aumentos', 'campeones', 'stats', 'etiquetas', 'juego'];
-  const T = $derived(app.T);
+  applyTokens();
 
-  onMount(app.iniciar);
+  const NAVIGATION = [
+    { page: 'home', icon: House },
+    { page: 'build', icon: Hammer },
+    { page: 'augments', icon: Layers },
+    { page: 'champions', icon: Crown },
+    { page: 'stats', icon: ChartColumn },
+    { page: 'labels', icon: Tag },
+    { page: 'game', icon: Gamepad2 },
+  ] as const satisfies { page: Page; icon: unknown }[];
+
+  const PAGES = { home: Home, build: Build, augments: Augments, champions: Champions, stats: Stats, labels: Labels, game: Game, settings: Settings };
+
+  const appWindow = getCurrentWindow();
+  const t = $derived(app.t);
+  const CurrentPage = $derived(PAGES[app.page]);
+
+  $effect(() => {
+    document.documentElement.lang = app.language;
+  });
+
+  onMount(app.init);
 </script>
 
-<div class="app">
-  <header class="barra" data-tauri-drag-region>
-    <div class="logo condensado" data-tauri-drag-region><Logo tam={26} fase={app.listo ? app.estado.fase : 'sin_lol'} />XYRA</div>
-    {#if app.listo}
-      <span class="pill corte-s {app.estado.fase}" data-tauri-drag-region>
-        <i></i>{T.fase[app.estado.fase]}{app.estado.fase === 'partida' && app.estado.campeon
-          ? ` · ${app.estado.campeon} · ${T.modos[app.estado.modo ?? ''] ?? ''}`
-          : ''}
+<div class="shell">
+  <header class="titlebar" data-tauri-drag-region>
+    <div class="brand condensed" data-tauri-drag-region><Logo size={26} phase={app.ready ? app.state.phase : 'no_client'} />XYRA</div>
+    {#if app.ready}
+      {@const phase = app.state.phase}
+      <span class="status cut-sm {phase}" data-tauri-drag-region>
+        <i></i>{t(`common:phases.${phase === 'no_client' ? 'noClient' : phase === 'champ_select' ? 'champSelect' : phase === 'in_game' ? 'inGame' : phase}`)}
+        {phase === 'in_game' && app.state.champion ? ` · ${app.state.champion} · ${app.state.mode ? t(`common:modes.${app.state.mode}`) : ''}` : ''}
       </span>
     {/if}
-    <div class="der">
-      {#if app.perfil}
-        <button class="perfil" onclick={() => app.abrirAjustes('perfil')}>
-          <img class="rombo" src={app.perfil.icono} alt="" />
-          <span><b>{app.perfil.nombre}</b><small>{T.nivel} {app.perfil.nivel}{app.perfil.region ? ` · ${app.perfil.region}` : ''}</small></span>
+    <div class="end">
+      {#if app.profile}
+        <button class="profile" onclick={() => app.openSettings('profile')}>
+          <img class="diamond" src={app.profile.icon} alt="" />
+          <span><b>{app.profile.name}</b><small>{t('common:level')} {app.profile.level}{app.profile.region ? ` · ${app.profile.region}` : ''}</small></span>
         </button>
       {/if}
-      <button class="tuerca" class:on={app.pagina === 'ajustes'} onclick={() => app.abrirAjustes('general')} aria-label={T.nav.ajustes} title={T.nav.ajustes}>
-        <Icono nombre="tuerca" tam={19} />
+      <button class="settings" class:active={app.page === 'settings'} onclick={() => app.openSettings('general')} aria-label={t('common:nav.settings')} title={t('common:nav.settings')}>
+        <SettingsIcon size={20} />
       </button>
-      <div class="controles">
-        <button onclick={() => ventana.minimize()} aria-label={T.ventana.minimizar}><Icono nombre="minimizar" tam={16} /></button>
-        <button onclick={() => ventana.toggleMaximize()} aria-label={T.ventana.maximizar}><Icono nombre="maximizar" tam={14} /></button>
-        <button class="cerrar" onclick={() => ventana.close()} aria-label={T.ventana.cerrar}><Icono nombre="cerrar" tam={16} /></button>
+      <div class="window-controls">
+        <button onclick={() => appWindow.minimize()} aria-label={t('common:window.minimize')}><Minus size={16} /></button>
+        <button onclick={() => appWindow.toggleMaximize()} aria-label={t('common:window.maximize')}><Square size={14} /></button>
+        <button class="close" onclick={() => appWindow.close()} aria-label={t('common:window.close')}><X size={16} /></button>
       </div>
     </div>
   </header>
 
   <nav>
-    {#each PAGINAS as p}
-      <button class:on={app.pagina === p} onclick={() => app.ir(p)}>
-        <Icono nombre={p} tam={18} />{T.nav[p]}
-        {#if p === 'stats' && app.nuevas}<span class="nuevas">+{app.nuevas}</span>{/if}
+    {#each NAVIGATION as item (item.page)}
+      <button class:active={app.page === item.page} onclick={() => app.goTo(item.page)}>
+        <item.icon size={18} />{t(`common:nav.${item.page}`)}
+        {#if item.page === 'stats' && app.newGames}<span class="badge">+{app.newGames}</span>{/if}
       </button>
     {/each}
-    <div class="pie">
-      <button class="ayuda" class:on={app.pagina === 'ajustes' && app.pestana === 'ayuda'} onclick={() => app.abrirAjustes('ayuda')}>
-        <Icono nombre="ayuda" tam={16} />{T.ajustes.pestanas.ayuda}
+    <div class="footer">
+      <button class:active={app.page === 'settings' && app.settingsTab === 'help'} onclick={() => app.openSettings('help')}>
+        <CircleQuestionMark size={16} />{t('settings:tabs.help')}
       </button>
-      <!-- crédito discreto: los creadores están en Ayuda -->
-      <button class="firma" onclick={() => abrir(REPO)} title={REPO}>{app.listo ? `v${app.estado.version} · ` : ''}Xynitra × IndagaLab ↗</button>
+      <button class="signature" onclick={() => openExternal(REPOSITORY)} title={REPOSITORY}>
+        {app.ready ? `v${app.state.version} · ` : ''}Xynitra × IndagaLab ↗
+      </button>
     </div>
   </nav>
 
   <main>
-    {#if app.listo}
-      {#key app.pagina}
-        <div class="pagina">
-          {#if app.pagina === 'inicio'}
-            <Inicio />
-          {:else if app.pagina === 'build'}
-            <Build />
-          {:else if app.pagina === 'aumentos'}
-            <Aumentos />
-          {:else if app.pagina === 'campeones'}
-            <Campeones />
-          {:else if app.pagina === 'stats'}
-            <Estadisticas />
-          {:else if app.pagina === 'etiquetas'}
-            <Etiquetas />
-          {:else if app.pagina === 'juego'}
-            <Juego />
-          {:else}
-            <Ajustes />
-          {/if}
-        </div>
+    {#if app.ready}
+      {#key app.page}
+        <div class="page"><CurrentPage /></div>
       {/key}
     {/if}
   </main>
 </div>
 
 <style>
-  .app {
+  .shell {
     display: grid;
-    grid-template-columns: 228px minmax(0, 1fr);
-    grid-template-rows: 46px minmax(0, 1fr);
+    grid-template-columns: var(--size-sidebar) minmax(0, 1fr);
+    grid-template-rows: var(--size-titlebar) minmax(0, 1fr);
     height: 100vh;
   }
-  .barra {
+  .titlebar {
     grid-column: 1 / 3;
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding-left: 20px;
-    background: var(--barra);
-    border-bottom: 1px solid var(--linea);
+    gap: var(--space-4);
+    padding-left: var(--space-5);
+    background: var(--color-chrome);
+    border-bottom: 1px solid var(--color-line);
   }
-  .logo {
+  .brand {
     width: 192px;
     display: flex;
     align-items: center;
-    gap: 11px;
-    font-size: 19px;
+    gap: var(--space-3);
+    font-size: var(--text-xl);
     letter-spacing: 5px;
     font-variation-settings: 'wdth' 78;
   }
-  .pill {
+  .status {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 5px 13px;
-    font-size: 12px;
+    gap: var(--space-2);
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--text-sm);
     letter-spacing: 1.5px;
     font-weight: 600;
     text-transform: uppercase;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--linea);
+    background: color-mix(in srgb, var(--color-white) 4%, transparent);
+    border: 1px solid var(--color-line);
     white-space: nowrap;
   }
-  .pill i {
-    width: 7px;
-    height: 7px;
-    background: var(--tenue);
+  .status i {
+    width: var(--space-2);
+    height: var(--space-2);
+    background: var(--color-textFaint);
   }
-  .pill.cliente i {
-    background: var(--ok);
-    box-shadow: 0 0 10px var(--ok);
+  .status.client i {
+    background: var(--color-success);
+    box-shadow: 0 0 var(--space-3) var(--color-success);
   }
-  .pill.seleccion,
-  .pill.partida {
-    background: rgba(229, 19, 43, 0.12);
-    border-color: rgba(229, 19, 43, 0.45);
+  .status.champ_select,
+  .status.in_game {
+    background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+    border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
   }
-  .pill.seleccion i,
-  .pill.partida i {
-    background: var(--rojo-2);
-    box-shadow: 0 0 10px var(--rojo-2);
+  .status.champ_select i,
+  .status.in_game i {
+    background: var(--color-accentBright);
+    box-shadow: 0 0 var(--space-3) var(--color-accentBright);
   }
-  .pill.pausado i {
-    background: var(--aviso);
+  .status.paused i {
+    background: var(--color-warning);
   }
-  .der {
+  .end {
     margin-left: auto;
     display: flex;
     align-items: stretch;
     height: 100%;
   }
-  .der button {
+  .end button {
     border: none;
     background: none;
-    color: var(--suave);
+    color: var(--color-textMuted);
   }
-  .der button:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--texto);
+  .end button:hover {
+    background: color-mix(in srgb, var(--color-white) 5%, transparent);
+    color: var(--color-text);
   }
-  .der .perfil {
+  .end .profile {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 0 16px;
-    border-left: 1px solid var(--linea);
+    gap: var(--space-3);
+    padding: 0 var(--space-4);
+    border-left: 1px solid var(--color-line);
     text-align: left;
   }
-  .perfil img {
-    width: 28px;
-    height: 28px;
+  .profile img {
+    width: var(--size-thumbSm);
+    height: var(--size-thumbSm);
   }
-  .perfil span {
+  .profile span {
     display: flex;
     flex-direction: column;
   }
-  .perfil b {
-    font-size: 13px;
+  .profile b {
+    font-size: var(--text-md);
     line-height: 1.1;
-    color: var(--texto);
+    color: var(--color-text);
   }
-  .perfil small {
-    font-size: 11px;
+  .profile small {
+    font-size: var(--text-xs);
     letter-spacing: 1px;
   }
-  .der .tuerca {
-    width: 48px;
+  .end .settings {
+    width: var(--size-titlebar);
     display: grid;
     place-items: center;
-    border-left: 1px solid var(--linea);
+    border-left: 1px solid var(--color-line);
   }
-  .der .tuerca.on {
-    color: var(--rojo-2);
-    background: rgba(229, 19, 43, 0.12);
+  .end .settings.active {
+    color: var(--color-accentBright);
+    background: color-mix(in srgb, var(--color-accent) 12%, transparent);
   }
-  .controles {
+  .window-controls {
     display: flex;
-    border-left: 1px solid var(--linea);
+    border-left: 1px solid var(--color-line);
   }
-  .controles button {
-    width: 46px;
+  .window-controls button {
+    width: var(--size-titlebar);
     display: grid;
     place-items: center;
   }
-  .controles .cerrar:hover {
-    background: #c42b1c;
-    color: #fff;
+  .window-controls .close:hover {
+    background: var(--color-danger);
+    color: var(--color-white);
   }
   nav {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    padding: 22px 0 16px;
-    background: var(--barra);
-    border-right: 1px solid var(--linea);
+    padding: var(--space-6) 0 var(--space-4);
+    background: var(--color-chrome);
+    border-right: 1px solid var(--color-line);
   }
   nav button {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 12px 22px;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-6);
     border: none;
     background: none;
-    color: var(--suave);
-    font-size: 13px;
+    color: var(--color-textMuted);
+    font-size: var(--text-md);
     font-weight: 600;
     letter-spacing: 2px;
     text-transform: uppercase;
     text-align: left;
   }
   nav button:hover {
-    color: var(--texto);
+    color: var(--color-text);
   }
-  nav button.on {
-    color: var(--texto);
-    background: linear-gradient(90deg, rgba(229, 19, 43, 0.22), transparent 80%);
+  nav button.active {
+    color: var(--color-text);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 22%, transparent), transparent 80%);
   }
-  nav button.on::before {
+  nav button.active::before {
     content: '';
     position: absolute;
     left: 0;
     top: 0;
     bottom: 0;
     width: 3px;
-    background: var(--rojo);
-    box-shadow: 0 0 12px var(--rojo);
+    background: var(--color-accent);
+    box-shadow: 0 0 var(--space-3) var(--color-accent);
   }
-  nav button.on :global(svg) {
-    color: var(--rojo-2);
+  nav button.active :global(svg) {
+    color: var(--color-accentBright);
   }
-  .nuevas {
+  .badge {
     margin-left: auto;
-    padding: 1px 6px;
-    font-size: 10px;
+    padding: 1px var(--space-2);
+    font-size: var(--text-xs);
     letter-spacing: 1px;
-    background: var(--rojo);
-    color: #fff;
+    background: var(--color-accent);
+    color: var(--color-white);
   }
-  .pie {
+  .footer {
     margin-top: auto;
-    padding: 12px 0 0;
-    border-top: 1px solid var(--linea);
+    padding: var(--space-3) 0 0;
+    border-top: 1px solid var(--color-line);
   }
-  nav .pie button {
+  .footer button {
     width: 100%;
-    padding: 9px 22px;
-    font-size: 12px;
+    padding: var(--space-2) var(--space-6);
+    font-size: var(--text-sm);
   }
-  nav .pie .firma {
-    padding-top: 4px;
-    font-size: 11px;
+  .footer .signature {
+    padding-top: var(--space-1);
+    font-size: var(--text-xs);
     letter-spacing: 0.5px;
     text-transform: none;
-    color: var(--tenue);
+    color: var(--color-textFaint);
   }
-  nav .pie .firma:hover {
-    color: var(--rojo-2);
+  .footer .signature:hover {
+    color: var(--color-accentBright);
   }
   main {
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 26px 32px 34px;
+    padding: var(--space-6) var(--space-8) var(--space-8);
   }
-  .pagina {
-    max-width: 1120px;
+  .page {
+    max-width: var(--size-content);
     margin: 0 auto;
-    animation: entrar 160ms ease-out;
+    animation: enter 160ms ease-out;
   }
-  @keyframes entrar {
+  @keyframes enter {
     from {
       opacity: 0;
-      transform: translateY(6px);
+      transform: translateY(var(--space-2));
     }
   }
 </style>

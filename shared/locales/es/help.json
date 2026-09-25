@@ -1,0 +1,48 @@
+{
+  "gettingStarted": "Cómo empezar",
+  "steps": {
+    "borderless": "Pon el LoL en modo Sin bordes: Xyra lo cambia por ti desde Inicio.",
+    "joinGame": "Entra a una partida de ARAM: Caos (o Arena, si la activas).",
+    "pickRed": "Cuando salgan las cartas, toma la del marco rojo: es la mejor para tu campeón.",
+    "importRunes": "En la selección de campeones, abre Build e importa tus runas con un clic."
+  },
+  "faqTitle": "Preguntas frecuentes",
+  "faq": {
+    "noLabels": {
+      "question": "No veo las etiquetas encima del juego",
+      "answer": "Revisa que el LoL esté en Sin bordes, que Xyra no esté en pausa y que el juego esté al frente. En pantalla completa exclusiva Windows no deja dibujar nada encima."
+    },
+    "misplaced": {
+      "question": "Las etiquetas salen corridas",
+      "answer": "Ajusta la altura y el tamaño en Etiquetas → Calibración y revísalas con el botón Probar."
+    },
+    "grades": {
+      "question": "¿Qué significan S, A, B, C?",
+      "answer": "Es el tier de OP.GG para ese aumento con tu campeón: S es excelente y de C para abajo conviene cambiarla. \"Poco usada\" quiere decir que casi nadie la toma con ese campeón y no hay datos suficientes."
+    },
+    "ban": {
+      "question": "¿Me pueden banear por usarlo?",
+      "answer": "Xyra solo mira la pantalla y dibuja encima, como OBS o Discord: no toca el juego. Los detalles están en la pestaña Seguridad."
+    },
+    "runes": {
+      "question": "No se importan mis runas",
+      "answer": "El LoL tiene que estar abierto y necesitas una página de runas libre. Xyra solo reemplaza las páginas que él mismo creó."
+    },
+    "ocr": {
+      "question": "Xyra no reconoce las cartas",
+      "answer": "Windows necesita el reconocimiento de texto del idioma de tu cliente: agrégalo en Configuración → Hora e idioma → Idioma."
+    }
+  },
+  "supportTitle": "¿Algo no funciona?",
+  "support": "Activa \"Guardar capturas\" en General, repite lo que falló y cuéntanos en GitHub con la captura y el registro.",
+  "report": "Reportar un problema",
+  "viewCode": "Ver el código",
+  "openLog": "Abrir registro",
+  "releases": "Descargas y novedades",
+  "creators": "Creadores",
+  "roles": {
+    "creator": "Creador",
+    "coCreator": "Cocreador"
+  },
+  "thanks": "Gracias a OP.GG por las estadísticas y a CommunityDragon por los íconos."
+}

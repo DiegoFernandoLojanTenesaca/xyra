@@ -1,5 +1,3 @@
-# Espacio de trabajo: la lógica compartida (xyra-core) separada de la app de Windows (src-tauri),
-# para poder reutilizarla más adelante (por ejemplo, un compañero en el celular).
 [workspace]
 resolver = "2"
 members = ["crates/xyra-core", "src-tauri"]

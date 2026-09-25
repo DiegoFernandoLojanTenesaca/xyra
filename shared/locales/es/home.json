@@ -1,0 +1,46 @@
+{
+  "subtitle": "Te dice qué carta de aumento elegir, sin tocar el juego.",
+  "live": "En vivo",
+  "pickCard": "Elige {{card}}",
+  "bestOf": "La mejor de las {{count}} para {{champion}}.",
+  "noClient": {
+    "title": "Abre el LoL para iniciar",
+    "text": "Entra a ARAM: Caos y Xyra te marca la mejor carta en cada elección."
+  },
+  "client": {
+    "title": "Todo listo. A jugar",
+    "text": "Busca partida: cuando salgan las cartas, Xyra te dice cuál tomar al instante."
+  },
+  "paused": {
+    "title": "Xyra en pausa",
+    "text": "No lee la pantalla ni dibuja nada. Reanúdalo cuando quieras."
+  },
+  "inGame": "Atento a tus cartas: la mejor se marca en cuanto salgan.",
+  "takeFromBench": "Toma a {{champion}} de la banca",
+  "strongerThan": "Rinde más que {{champion}} en ARAM: Caos: puesto #{{rank}}.",
+  "yourChampion": "Tu campeón · puesto #{{rank}} en ARAM: Caos.",
+  "bestPick": "Mejor opción",
+  "cardsOnScreen": "Cartas en pantalla",
+  "latestCards": "Últimas cartas",
+  "noCards": "Cuando te salgan cartas en ARAM: Caos aparecerán aquí.",
+  "bench": "Banca · selección",
+  "emptyBench": "Sin campeones en la banca.",
+  "gameWindow": "Ventana del juego",
+  "fullscreenWarning": "El LoL está en pantalla completa: las etiquetas no se ven encima del juego.",
+  "borderlessReady": "Sin bordes · listo",
+  "settingsUnreadable": "No se pudo leer la configuración del LoL.",
+  "setBorderless": "Cambiar a Sin bordes",
+  "borderlessDone": "Listo: la próxima partida abre en Sin bordes.",
+  "bestAugments": "Tus mejores aumentos",
+  "minGames": "mín. 2 partidas",
+  "system": "Sistema",
+  "screenReading": "Lectura de pantalla",
+  "noOcr": "Windows no tiene reconocimiento de texto para tu idioma: agrégalo en Configuración → Hora e idioma.",
+  "test": "Probar",
+  "pause": "Pausar",
+  "resume": "Reanudar",
+  "openBuild": "Ver build",
+  "topMayhem": "Top de ARAM: Caos",
+  "latestGames": "Tus últimas partidas",
+  "voiceHint": "Aviso por voz"
+}

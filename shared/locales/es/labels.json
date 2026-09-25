@@ -1,0 +1,33 @@
+{
+  "subtitle": "Cómo se ven las marcas sobre las cartas.",
+  "active": "Activo",
+  "calibration": "Calibración",
+  "calibrationHint": "Si las marcas salen corridas en tu pantalla, ajústalas y pruébalas.",
+  "height": "Altura",
+  "size": "Tamaño",
+  "voice": "Aviso por voz",
+  "voiceHint": "Dice en voz alta cuál elegir, por si estás en plena pelea.",
+  "testVoice": "Probar voz",
+  "styles": {
+    "plate": {
+      "name": "Placa",
+      "description": "Placa bajo cada carta; la mejor con marco rojo."
+    },
+    "badge": {
+      "name": "Insignia",
+      "description": "Rombo con la letra del tier en la esquina."
+    },
+    "ribbon": {
+      "name": "Cinta",
+      "description": "Franja de color dentro de la carta."
+    },
+    "podium": {
+      "name": "Podio",
+      "description": "Puestos 1-2-3 en rojo, blanco y gris."
+    },
+    "focus": {
+      "name": "Enfoque",
+      "description": "Oscurece las que no conviene elegir."
+    }
+  }
+}

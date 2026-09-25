@@ -1,114 +1,114 @@
-// Estado de la interfaz en un solo lugar: lo que manda el motor en Rust más la navegación.
-// Las páginas lo importan en vez de recibirlo por props.
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
-import { idiomaEfectivo, textos } from './i18n';
-import type { CampeonInfo, Config, Estado, ModoBuild, Pagina, Perfil, PestanaAjustes, Resumen } from './tipos';
+import i18next from 'i18next';
+import { BASE_LANGUAGE, translator } from './i18n';
+import type { AppEvent, BuildMode, ChampionInfo, Config, EngineState, Page, Profile, SettingsTab, StatsSummary } from './types';
+
+const on = <T>(event: AppEvent, handler: (payload: T) => void) => listen<T>(event, (e) => handler(e.payload));
 
 class App {
-  // null solo hasta la primera respuesta del motor: la interfaz no se dibuja antes (ver `listo`)
-  estado = $state<Estado>(null!);
+  state = $state<EngineState>(null!);
   config = $state<Config>(null!);
-  listo = $derived(!!this.estado && !!this.config);
-  stats = $state<Resumen | null>(null);
-  campeones = $state<CampeonInfo[]>([]);
-  perfil = $state<Perfil | null>(null);
-  pagina = $state<Pagina>('inicio');
-  pestana = $state<PestanaAjustes>('general');
-  /** Campeón elegido en Build y Aumentos (se puede abrir desde otras páginas). */
-  elegido = $state<number | null>(null);
-  /** Build de ARAM o de la Grieta y, en la Grieta, la posición (null = la más jugada). */
-  modoBuild = $state<ModoBuild>('aram');
-  posicion = $state<string | null>(null);
-  /** Partidas nuevas desde la última visita a Estadísticas: el "+1" de la barra lateral. */
-  nuevas = $state(0);
-  T = $derived(textos(idiomaEfectivo(this.config?.idioma ?? 'auto', this.estado?.idioma_cliente ?? '')));
+  ready = $derived(!!this.state && !!this.config);
+  stats = $state<StatsSummary | null>(null);
+  champions = $state<ChampionInfo[]>([]);
+  profile = $state<Profile | null>(null);
+  labelStyles = $state<string[]>([]);
+  page = $state<Page>('home');
+  settingsTab = $state<SettingsTab>('general');
+  selectedChampion = $state<number | null>(null);
+  buildMode = $state<BuildMode>('aram');
+  /** null = the champion's most played position. */
+  position = $state<string | null>(null);
+  newGames = $state(0);
+  language = $derived(this.state?.language ?? BASE_LANGUAGE);
+  t = $derived(translator(this.language));
 
-  /** Carga todo y escucha al motor. Devuelve la función para dejar de escuchar. */
-  iniciar = () => {
-    invoke<Estado>('get_estado').then((e) => (this.estado = e));
+  init = () => {
+    invoke<EngineState>('get_state').then((s) => (this.state = s));
     invoke<Config>('get_config').then((c) => (this.config = c));
-    this.recargar();
-    this.cargarPerfil();
-    const quitar = [
-      listen<Estado>('estado', (e) => {
-        // al conectar con el cliente se puede leer el perfil
-        if (this.estado?.fase === 'sin_lol' && e.payload.fase !== 'sin_lol') this.cargarPerfil();
-        this.estado = e.payload;
+    invoke<string[]>('get_label_styles').then((s) => (this.labelStyles = s));
+    this.reloadData();
+    this.loadProfile();
+    const listeners = [
+      on<EngineState>('state', (next) => {
+        if (this.state?.phase === 'no_client' && next.phase !== 'no_client') this.loadProfile();
+        this.state = next;
       }),
-      listen<Config>('config', (e) => (this.config = e.payload)),
-      // partidas importadas o catálogo recargado
-      listen('stats', () => this.recargar()),
+      on<Config>('config', (next) => (this.config = next)),
+      on<null>('stats', () => this.reloadData()),
     ];
-    return () => quitar.forEach((q) => void q.then((f) => f()));
+    return () => listeners.forEach((l) => void l.then((stop) => stop()));
   };
 
-  recargar = async () => {
-    const antes = this.stats?.partidas;
-    const stats = await invoke<Resumen>('get_stats');
-    if (antes !== undefined && stats.partidas > antes && this.pagina !== 'stats') this.nuevas += stats.partidas - antes;
+  reloadData = async () => {
+    const previous = this.stats?.games;
+    const stats = await invoke<StatsSummary>('get_stats');
+    if (previous !== undefined && stats.games > previous && this.page !== 'stats') this.newGames += stats.games - previous;
     this.stats = stats;
-    this.campeones = await invoke<CampeonInfo[]>('get_campeones');
+    this.champions = await invoke<ChampionInfo[]>('get_champions');
   };
 
-  cargarPerfil = async () => {
-    this.perfil = await invoke<Perfil | null>('get_perfil');
+  loadProfile = async () => {
+    this.profile = await invoke<Profile | null>('get_profile').catch(() => this.profile);
   };
 
-  guardar = async (cambios: Partial<Config>) => {
-    this.config = await invoke<Config>('set_config', { config: { ...this.config, ...cambios } });
+  saveConfig = async (changes: Partial<Config>) => {
+    this.config = await invoke<Config>('set_config', { config: { ...this.config, ...changes } });
   };
 
-  ir = (p: Pagina) => {
-    this.pagina = p;
-    if (p === 'stats') this.nuevas = 0;
+  goTo = (page: Page) => {
+    this.page = page;
+    if (page === 'stats') this.newGames = 0;
   };
 
-  verAumentos = (id: number) => {
-    this.elegido = id;
-    this.ir('aumentos');
+  openAugments = (champion: number) => {
+    this.selectedChampion = champion;
+    this.goTo('augments');
   };
 
-  verBuild = (id: number) => {
-    this.elegido = id;
-    this.seguirPartida();
-    this.ir('build');
+  openBuild = (champion: number) => {
+    this.selectedChampion = champion;
+    this.followGame();
+    this.goTo('build');
   };
 
-  /** Modo y posición de la build según la selección o la partida en curso (Grieta si es una normal o clasificatoria). */
-  seguirPartida = () => {
-    const modo = this.estado.seleccion?.modo || this.estado.modo;
-    if (!modo) return;
-    this.modoBuild = modo === 'CLASSIC' ? 'grieta' : 'aram';
-    this.posicion = this.estado.seleccion?.posicion ?? null;
+  openSettings = (tab: SettingsTab) => {
+    this.settingsTab = tab;
+    this.goTo('settings');
   };
 
-  /** Si no hay campeón elegido: el de la selección, el de la partida, tu más jugado o el primero de la tier list. */
-  campeonPorDefecto = () => {
-    if (this.elegido !== null || !this.campeones.length) return;
-    const enPartida = this.campeones.find((c) => c.nombre === this.estado.campeon)?.id;
-    this.elegido = this.estado.seleccion?.campeon?.id ?? enPartida ?? this.stats?.campeones[0]?.id ?? this.campeones[0].id;
-    this.seguirPartida();
+  /** Build mode and position from the current champion select or game (Summoner's Rift for normals and ranked). */
+  followGame = () => {
+    const mode = this.state.champ_select?.mode || this.state.mode;
+    if (!mode) return;
+    this.buildMode = mode === 'CLASSIC' ? 'rift' : 'aram';
+    this.position = this.state.champ_select?.position ?? null;
   };
 
-  /** Lleva runas o ítems de la build al cliente. Devuelve el mensaje para mostrar (éxito o motivo del fallo). */
-  importarBuild = async (campeon: number, que: 'runas' | 'items') => {
-    const T = this.T.build;
+  /** Champion select pick, current game champion, most played or the tier list leader. */
+  pickDefaultChampion = () => {
+    if (this.selectedChampion !== null || !this.champions.length) return;
+    const inGame = this.champions.find((c) => c.name === this.state.champion)?.id;
+    this.selectedChampion = this.state.champ_select?.champion?.id ?? inGame ?? this.stats?.champions[0]?.id ?? this.champions[0].id;
+    this.followGame();
+  };
+
+  errorText = (error: unknown) => {
+    const key = `common:errors.${String(error)}`;
+    return i18next.exists(key, { lng: this.language }) ? this.t(key) : this.t('common:errors.unknown', { detail: String(error) });
+  };
+
+  importBuild = async (champion: number, target: 'runes' | 'items') => {
     try {
-      await invoke('importar_build', { campeon, que, modo: this.modoBuild, posicion: this.posicion });
-      return que === 'runas' ? T.ok_runas : T.ok_items;
-    } catch (e) {
-      return e === 'sin_cliente' ? T.sin_cliente : e === 'sin_espacio' ? T.sin_espacio : String(e);
+      await invoke('import_build', { champion, target, mode: this.buildMode, position: this.position });
+      return this.t(target === 'runes' ? 'build:runesImported' : 'build:itemsImported');
+    } catch (error) {
+      return this.errorText(error);
     }
-  };
-
-  abrirAjustes = (p: PestanaAjustes) => {
-    this.pestana = p;
-    this.ir('ajustes');
   };
 }
 
 export const app = new App();
 
-/** Porcentaje entero, 0 si no hay total. */
-export const pct = (v: number, n: number) => (n ? Math.round((100 * v) / n) : 0);
+export const percent = (part: number, total: number) => (total ? Math.round((100 * part) / total) : 0);

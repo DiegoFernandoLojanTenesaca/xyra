@@ -1,0 +1,10 @@
+{
+  "forChampion": "for {{champion}}",
+  "bestPick": "BEST PICK",
+  "pickThis": "PICK THIS",
+  "voice": {
+    "left": "Pick the left one",
+    "middle": "Pick the middle one",
+    "right": "Pick the right one"
+  }
+}
