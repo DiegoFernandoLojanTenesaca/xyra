@@ -1,0 +1,7 @@
+* text=auto
+# los genera ts-rs con saltos LF: así la comprobación del CI no ve diferencias falsas
+src/lib/generado/*.ts text eol=lf
+*.png binary
+*.jpg binary
+*.ico binary
+*.icns binary

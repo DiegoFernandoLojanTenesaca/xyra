@@ -1,0 +1,17 @@
+[package]
+name = "xyra-core"
+description = "Lógica de Xyra sin interfaz: cartas, OP.GG, cliente del LoL, estadísticas y configuración"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+strsim = "0.11"
+unicode-normalization = "0.1"
+base64 = "0.22"
+# genera los tipos de TypeScript de la interfaz a partir de estos structs (una sola fuente de verdad)
+ts-rs = "12"

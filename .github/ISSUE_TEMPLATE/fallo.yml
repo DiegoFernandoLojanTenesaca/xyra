@@ -1,0 +1,43 @@
+name: Reportar un fallo / Bug report
+description: Algo no funciona como esperabas / Something is not working
+labels: [fallo]
+body:
+  - type: textarea
+    id: que
+    attributes:
+      label: Qué pasó / What happened
+      description: Por ejemplo "no salieron las etiquetas", "la etiqueta sale corrida", "calificó mal una carta".
+    validations:
+      required: true
+  - type: input
+    id: resolucion
+    attributes:
+      label: Resolución de pantalla y escala de Windows / Screen resolution and scaling
+      placeholder: 1920x1080, 125 %
+    validations:
+      required: true
+  - type: dropdown
+    id: modo
+    attributes:
+      label: Modo / Mode
+      options: [ARAM Caos / Mayhem, Arena]
+    validations:
+      required: true
+  - type: dropdown
+    id: ventana
+    attributes:
+      label: Modo de ventana del LoL / League window mode
+      options: [Sin bordes / Borderless, Pantalla completa / Fullscreen, Ventana / Windowed]
+    validations:
+      required: true
+  - type: textarea
+    id: registro
+    attributes:
+      label: Registro / Log
+      description: Ajustes → Abrir registro. Pega las últimas líneas (xyra.log).
+      render: text
+  - type: textarea
+    id: captura
+    attributes:
+      label: Captura / Screenshot
+      description: Activa "Guardar capturas al detectar cartas" en Ajustes y adjunta la imagen de capturas\ (recorta nombres de otros jugadores si quieres).

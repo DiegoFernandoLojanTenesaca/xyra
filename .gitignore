@@ -1,0 +1,17 @@
+node_modules/
+/build
+/.svelte-kit
+/package
+.env
+.env.*
+!.env.example
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+.DS_Store
+
+# Cargo (workspace en la raíz)
+/target
+
+# Carpetas de trabajo (maquetas y diseños sueltos; el logo final está en docs/logo)
+/diseno/
+/xyra final/

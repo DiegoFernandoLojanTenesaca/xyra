@@ -1,0 +1,33 @@
+# Arma el instalador en GitHub y deja un borrador de Release para revisarlo antes de publicarlo.
+# Se lanza a mano (Actions → Release → Run workflow) eligiendo la etiqueta vX.Y.Z como rama.
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  instalador:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: cargo test --workspace
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: Xyra ${{ github.ref_name }}
+          releaseBody: Descarga el instalador `.exe`, pon el LoL en "Sin bordes" y juega. Ver SEGURIDAD.md.
+          releaseDraft: true
