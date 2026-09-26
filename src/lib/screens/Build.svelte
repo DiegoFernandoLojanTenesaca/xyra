@@ -103,6 +103,9 @@
 
 {#if champion}
   <ChampionHeader {champion} showTier={app.buildMode === 'aram'} {details}>
+    {#if app.state.phase === 'champSelect'}
+      <Button icon={Download} disabled={!current || busy} onclick={() => importTo('spells')}>{t('build:importSpells')}</Button>
+    {/if}
     <Button icon={Download} disabled={!current || busy} onclick={() => importTo('items')}>{t('build:importItems')}</Button>
     <Button variant="primary" icon={Download} disabled={!current || busy} onclick={() => importTo('runes')}>{t('build:importRunes')}</Button>
   </ChampionHeader>

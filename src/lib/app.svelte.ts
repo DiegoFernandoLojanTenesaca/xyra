@@ -146,7 +146,7 @@ class App {
   importBuild = async (champion: number, target: ImportTarget) => {
     try {
       await importBuild(champion, target, this.buildMode, this.buildMode === 'rift' ? this.positionOverride : null);
-      return this.t(target === 'runes' ? 'build:runesImported' : 'build:itemsImported');
+      return this.t(`build:imported.${target}`);
     } catch (error) {
       return this.errorText(error);
     }

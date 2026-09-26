@@ -30,10 +30,12 @@ aumentos dentro del juego) y nada más. Estas reglas son parte del proyecto: un 
 - **En la selección de la Grieta** mira los campeones rivales que el cliente ya muestra y te sugiere counters con
   estadísticas públicas de OP.GG, como las webs de builds. No revela nada que el juego oculte.
 - **Escribe en el cliente solo cuando tocas "Importar"** en la página Build: crea una página de runas y un set de ítems
-  para la tienda (lo mismo que hacen Blitz, OP.GG o Mobalytics). Nunca lo hace por su cuenta, nunca durante la partida y
-  solo reemplaza las páginas y sets que él mismo creó (los que empiezan con "Xyra · ").
-  Si activas **"Importar runas solas"** (apagado de fábrica), hace lo mismo en la selección de campeones sin que toques
+  para la tienda, y en la selección de campeones pone tus dos hechizos (lo mismo que hacen Blitz, OP.GG o Mobalytics).
+  Nunca lo hace durante la partida y solo reemplaza las páginas y sets que él mismo creó (los que empiezan con "Xyra · ").
+  Si activas **"Importar build sola"** (apagado de fábrica), hace lo mismo en la selección de campeones sin que toques
   el botón: es una preferencia del cliente, no una jugada.
+- **"Rango de ataque siempre visible"** (apagado de fábrica) solo añade el clic derecho a tu tecla de ataque-movimiento
+  en las teclas del propio LoL; lo puedes quitar ahí mismo o apagando la opción.
 - **Acepta la partida encontrada solo si activas "Aceptar partida solo"** (apagado de fábrica), después de la espera que
   elijas y solo si no la aceptaste ni rechazaste tú. Es una llamada al cliente, como hacía League Akari: no toca el juego.
   Aun así, Riot pidió en 2025 a las apps aprobadas quitar esta función, así que úsala bajo tu responsabilidad.

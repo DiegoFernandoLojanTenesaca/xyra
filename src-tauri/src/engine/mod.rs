@@ -183,11 +183,28 @@ impl Shared {
 
     pub fn import_build(&self, champion: u32, mode: BuildMode, position: Option<Position>, target: ImportTarget) -> Result<()> {
         let lcu = self.lcu()?;
-        let build = self.fetch_build(champion, mode, position)?;
-        let name = self.catalog().champion(champion).name;
+        self.apply_build(&lcu, &self.fetch_build(champion, mode, position)?, target)
+    }
+
+    /// Imports runes, items and spells of the picked champion; one failing does not stop the others.
+    pub fn auto_import(&self, champion: u32, mode: BuildMode, position: Option<Position>) {
+        let (lcu, build) = match self.lcu().and_then(|lcu| Ok((lcu, self.fetch_build(champion, mode, position)?))) {
+            Ok(ready) => ready,
+            Err(e) => return self.log_error("auto import build", e),
+        };
+        for target in ImportTarget::ALL {
+            if let Err(e) = self.apply_build(&lcu, &build, target) {
+                self.log_error(&format!("auto import {target:?}"), e);
+            }
+        }
+    }
+
+    fn apply_build(&self, lcu: &Lcu, build: &Build, target: ImportTarget) -> Result<()> {
+        let name = self.catalog().champion(build.champion).name;
         match target {
-            ImportTarget::Runes => client_import::import_runes(&lcu, &build, &name),
-            ImportTarget::Items => client_import::import_items(&lcu, &build, &name, self.language()),
+            ImportTarget::Runes => client_import::import_runes(lcu, build, &name),
+            ImportTarget::Items => client_import::import_items(lcu, build, &name, self.language()),
+            ImportTarget::Spells => client_import::import_spells(lcu, build),
         }
     }
 
@@ -326,7 +343,7 @@ impl Engine {
     }
 
     fn next_deadline(&self) -> Option<Instant> {
-        [self.reconnect.map(|r| r.0), self.champ_select.rune_deadline(), self.cards.next_read(), self.ready_check.accept_at].into_iter().flatten().min()
+        [self.reconnect.map(|r| r.0), self.champ_select.import_deadline(), self.cards.next_read(), self.ready_check.accept_at].into_iter().flatten().min()
     }
 
     fn handle(&mut self, event: EngineEvent) {
@@ -364,11 +381,9 @@ impl Engine {
         {
             self.shared.log_error("auto accept", e);
         }
-        if let Some(champion) = self.champ_select.take_due_rune_import(now) {
-            let position = self.champ_select.position();
-            if let Err(e) = self.shared.import_build(champion, self.mode.build_mode(), position, ImportTarget::Runes) {
-                self.shared.log_error("auto import runes", e);
-            }
+        if let Some(champion) = self.champ_select.take_due_import(now) {
+            let (shared, mode, position) = (Arc::clone(&self.shared), self.mode.build_mode(), self.champ_select.position());
+            thread::spawn(move || shared.auto_import(champion, mode, position));
         }
         if self.cards.next_read().is_some_and(|at| at <= now)
             && let Some((champion, mode)) = self.reading_target()
@@ -562,8 +577,8 @@ impl Engine {
             }
             Err(_) => None,
         });
-        let auto_runes = self.shared.config().auto_import_runes;
-        for (enemy, position) in self.champ_select.update(parsed, pickable, self.mode, auto_runes) {
+        let auto_import = self.shared.config().auto_import_build;
+        for (enemy, position) in self.champ_select.update(parsed, pickable, self.mode, auto_import) {
             let shared = Arc::clone(&self.shared);
             thread::spawn(move || {
                 let picks = opgg::fetch_counter_picks(&shared.web, enemy, position, &shared.catalog()).unwrap_or_else(|e| {

@@ -11,10 +11,10 @@
   const MINIMAP_RANGE = { min: 1, max: 3, step: 0.1 };
   const MINIMAP_DIGITS = 1;
   const ACCEPT_DELAY_RANGE = { min: 0, max: 10, step: 1 };
-  const AUTOMATIONS = ['keepBorderless', 'autoImportRunes', 'closeWindowInGame', 'autoAccept'] as const;
+  const AUTOMATIONS = ['keepBorderless', 'autoImportBuild', 'closeWindowInGame', 'autoAccept'] as const;
   const AUTOMATION_KEYS: Record<(typeof AUTOMATIONS)[number], keyof Config> = {
     keepBorderless: 'keep_borderless',
-    autoImportRunes: 'auto_import_runes',
+    autoImportBuild: 'auto_import_build',
     closeWindowInGame: 'close_window_in_game',
     autoAccept: 'auto_accept',
   };

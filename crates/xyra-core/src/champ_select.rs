@@ -1,12 +1,13 @@
 use crate::{
     config::ChampionOrder,
-    errors::Result,
+    errors::{AppError, Result},
     league::{Lcu, parse as parse_client},
     model::{ChampSelect, ChampionInfo, GameMode, Matchup, Position},
     opgg::MATCHUPS_SHOWN,
 };
+use reqwest::Method;
 use serde::Deserialize;
-use serde_json::Value;
+use serde_json::{Value, json};
 use std::{
     collections::{HashMap, HashSet},
     time::{Duration, Instant},
@@ -14,8 +15,9 @@ use std::{
 
 pub const SESSION: &str = "/lol-champ-select/v1/session";
 const PICKABLE: &str = "/lol-champ-select/v1/pickable-champion-ids";
-/// How long a pick must stay before its runes are imported.
-const AUTO_RUNES_SETTLE: Duration = Duration::from_secs(3);
+const MY_SELECTION: &str = "/lol-champ-select/v1/session/my-selection";
+/// How long a pick must stay before its build is imported.
+const AUTO_IMPORT_SETTLE: Duration = Duration::from_secs(3);
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ChampSelectSession {
@@ -44,6 +46,10 @@ struct Member {
     champion_id: u32,
     #[serde(default)]
     assigned_position: String,
+    #[serde(default)]
+    spell1_id: u32,
+    #[serde(default)]
+    spell2_id: u32,
 }
 
 #[derive(Deserialize)]
@@ -75,12 +81,30 @@ pub fn parse(session: &Value) -> Result<Option<ChampSelectSession>> {
     }))
 }
 
+/// Sets two summoner spells, keeping each one on the key where the player already has it.
+pub fn set_spells(lcu: &Lcu, spells: [u32; 2]) -> Result<()> {
+    let session: Session = lcu.get_as(SESSION).map_err(|e| match e {
+        AppError::Client(_) => AppError::NotInChampSelect,
+        other => other,
+    })?;
+    let current = session.my_team.iter().find(|member| member.cell_id == session.local_player_cell_id).map(|member| (member.spell1_id, member.spell2_id));
+    let [first, second] = spell_keys(spells, current);
+    lcu.request(Method::PATCH, MY_SELECTION, Some(&json!({ "spell1Id": first, "spell2Id": second }))).map(drop)
+}
+
+fn spell_keys([first, second]: [u32; 2], current: Option<(u32, u32)>) -> [u32; 2] {
+    match current {
+        Some((on_first, on_second)) if first == on_second || second == on_first => [second, first],
+        _ => [first, second],
+    }
+}
+
 /// Champions the player can pick or take from the bench in the current champion select.
 pub fn read_pickable(lcu: &Lcu) -> Result<HashSet<u32>> {
     lcu.get_as(PICKABLE)
 }
 
-/// The current champion select: what can be picked, counter picks and the runes to import.
+/// The current champion select: what can be picked, counter picks and the build to import.
 #[derive(Default)]
 pub struct ChampSelectTracker {
     session: Option<ChampSelectSession>,
@@ -88,8 +112,8 @@ pub struct ChampSelectTracker {
     last_champion: Option<u32>,
     counter_picks: HashMap<(u32, Position), Option<Vec<Matchup>>>,
     requested: HashSet<(u32, Position)>,
-    rune_import: Option<(u32, Instant)>,
-    runes_imported_for: Option<u32>,
+    build_import: Option<(u32, Instant)>,
+    build_imported_for: Option<u32>,
 }
 
 impl ChampSelectTracker {
@@ -111,13 +135,13 @@ impl ChampSelectTracker {
     }
 
     /// Returns the (enemy, position) pairs whose counter picks are still unknown.
-    pub fn update(&mut self, session: ChampSelectSession, pickable: Option<HashSet<u32>>, mode: GameMode, auto_runes: bool) -> Vec<(u32, Position)> {
+    pub fn update(&mut self, session: ChampSelectSession, pickable: Option<HashSet<u32>>, mode: GameMode, auto_import: bool) -> Vec<(u32, Position)> {
         let changed = self.session.as_ref().map(|s| s.champion) != Some(session.champion);
         if session.champion.is_some() {
             self.last_champion = session.champion;
         }
-        if auto_runes && changed {
-            self.rune_import = session.champion.filter(|&c| Some(c) != self.runes_imported_for).map(|c| (c, Instant::now() + AUTO_RUNES_SETTLE));
+        if auto_import && changed {
+            self.build_import = session.champion.filter(|&c| Some(c) != self.build_imported_for).map(|c| (c, Instant::now() + AUTO_IMPORT_SETTLE));
         }
         let wanted = match (mode, session.position) {
             (GameMode::SummonersRift, Some(position)) => {
@@ -136,15 +160,15 @@ impl ChampSelectTracker {
         }
     }
 
-    pub fn rune_deadline(&self) -> Option<Instant> {
-        self.rune_import.map(|r| r.1)
+    pub fn import_deadline(&self) -> Option<Instant> {
+        self.build_import.map(|r| r.1)
     }
 
-    pub fn take_due_rune_import(&mut self, now: Instant) -> Option<u32> {
-        let (champion, at) = self.rune_import?;
+    pub fn take_due_import(&mut self, now: Instant) -> Option<u32> {
+        let (champion, at) = self.build_import?;
         (at <= now).then(|| {
-            self.rune_import = None;
-            self.runes_imported_for = Some(champion);
+            self.build_import = None;
+            self.build_imported_for = Some(champion);
             champion
         })
     }
@@ -229,14 +253,23 @@ mod tests {
     fn imports_runes_once_the_pick_settles() {
         let mut tracker = ChampSelectTracker::default();
         tracker.update(session(Some(103), Vec::new(), Vec::new()), None, GameMode::Mayhem, true);
-        let deadline = tracker.rune_deadline().unwrap();
-        assert_eq!(tracker.take_due_rune_import(deadline - Duration::from_millis(1)), None);
-        assert_eq!(tracker.take_due_rune_import(deadline), Some(103));
+        let deadline = tracker.import_deadline().unwrap();
+        assert_eq!(tracker.take_due_import(deadline - Duration::from_millis(1)), None);
+        assert_eq!(tracker.take_due_import(deadline), Some(103));
         tracker.update(session(Some(103), Vec::new(), Vec::new()), None, GameMode::Mayhem, true);
-        assert!(tracker.rune_deadline().is_none());
+        assert!(tracker.import_deadline().is_none());
         tracker.clear();
         assert_eq!(tracker.last_champion(), Some(103));
         assert!(!tracker.is_active());
+    }
+
+    #[test]
+    fn keeps_each_spell_on_the_key_where_the_player_has_it() {
+        assert_eq!(spell_keys([4, 32], Some((32, 4))), [32, 4]);
+        assert_eq!(spell_keys([4, 32], Some((4, 14))), [4, 32]);
+        assert_eq!(spell_keys([4, 32], Some((14, 32))), [4, 32]);
+        assert_eq!(spell_keys([4, 32], Some((14, 4))), [32, 4]);
+        assert_eq!(spell_keys([4, 32], None), [4, 32]);
     }
 
     #[test]

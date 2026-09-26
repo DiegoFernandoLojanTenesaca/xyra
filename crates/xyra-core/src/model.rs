@@ -304,6 +304,11 @@ pub struct Build {
 pub enum ImportTarget {
     Runes,
     Items,
+    Spells,
+}
+
+impl ImportTarget {
+    pub const ALL: [ImportTarget; 3] = [ImportTarget::Runes, ImportTarget::Items, ImportTarget::Spells];
 }
 
 #[derive(Clone, Debug, Serialize, TS)]

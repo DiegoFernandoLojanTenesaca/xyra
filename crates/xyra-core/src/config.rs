@@ -70,8 +70,9 @@ pub struct Config {
     pub open_league: bool,
     #[serde(alias = "auto_bordes")]
     pub keep_borderless: bool,
-    #[serde(alias = "auto_runas")]
-    pub auto_import_runes: bool,
+    /// Imports runes, items and summoner spells of the picked champion in champion select.
+    #[serde(alias = "auto_runas", alias = "auto_import_runes")]
+    pub auto_import_build: bool,
     #[serde(alias = "cerrar_en_partida")]
     pub close_window_in_game: bool,
     pub auto_accept: bool,
@@ -94,7 +95,7 @@ impl Default for Config {
             autostart: true,
             open_league: false,
             keep_borderless: true,
-            auto_import_runes: false,
+            auto_import_build: false,
             close_window_in_game: false,
             auto_accept: false,
             accept_delay_seconds: DEFAULT_ACCEPT_DELAY_SECONDS,

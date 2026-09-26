@@ -39,9 +39,9 @@
     "title": "Mantener Sin bordes",
     "description": "Si el juego vuelve a pantalla completa, Xyra lo regresa a Sin bordes antes de tu próxima partida."
   },
-  "autoImportRunes": {
-    "title": "Importar runas solas",
-    "description": "En la selección de campeones importa las runas del campeón que te tocó. Solo reemplaza su propia página."
+  "autoImportBuild": {
+    "title": "Importar build sola",
+    "description": "En la selección de campeones pone las runas, los hechizos y el set de ítems del campeón que te tocó. Solo reemplaza su propia página de runas."
   },
   "closeWindowInGame": {
     "title": "Cerrar la ventana al jugar",

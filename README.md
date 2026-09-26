@@ -40,11 +40,13 @@ counters para la Grieta, tier lists y tus estadísticas. Liviano, en español e 
 - **Solo campeones que puedes jugar:** las recomendaciones (banca, top y counters) saltan los que tu cuenta no tiene ni
   están gratis.
 - **Build:** runas, hechizos, ítems y orden de habilidades para ARAM: Caos y para la Grieta (normales, por posición), con
-  enfrentamientos (a quién le gana y contra quién le cuesta) y botones para importar las runas y el set de ítems a tu
-  cliente.
-- **Juego:** activa en un clic opciones oficiales del LoL (rango de ataque, cronómetros del minimapa, rango de torres,
-  tamaño del minimapa) y automatiza lo aburrido (mantener Sin bordes, importar runas solas, cerrar la ventana al jugar,
-  aceptar la partida después de unos segundos).
+  enfrentamientos (a quién le gana y contra quién le cuesta) y botones para importar las runas, los hechizos y el set de
+  ítems a tu cliente.
+- **Juego:** activa en un clic opciones oficiales del LoL (rango de ataque, también siempre visible, cronómetros del
+  minimapa, rango de torres contra la IA, tamaño del minimapa) y automatiza lo aburrido (mantener Sin bordes, importar
+  runas, hechizos e ítems solos, cerrar la ventana al jugar, aceptar la partida después de unos segundos).
+- **Recomendaciones a tu gusto:** en Inicio eliges si el top y la banca se ordenan por tier, por tu maestría, por lo que
+  más juegas o mixto.
 - **Un solo ícono:** con "Abrir el LoL con Xyra" (Ajustes), el ícono de Xyra abre también el LoL.
 - **Tier lists:** aumentos por campeón y campeones de ARAM: Caos.
 - **Tus datos:** winrate por campeón, mejores aumentos, nivel, rango y maestrías, separados por cuenta; exportación a CSV.
@@ -95,7 +97,7 @@ stats. The best card is highlighted and bad ones suggest a reroll. Lightweight, 
 **@DiegoFernandoLojanTenesaca** (IndagaLab) and **@jahirxtrap** (Xynitra).
 
 - **Labels:** 5 styles, shown the moment the cards appear.
-- **Build:** runes, spells, items, skills and matchups for ARAM: Mayhem and Summoner's Rift, with rune and item set import.
+- **Build:** runes, spells, items, skills and matchups for ARAM: Mayhem and Summoner's Rift, with rune, spell and item set import.
 - **Counters:** in Summoner's Rift champion select, the champions you own that beat your lane opponent.
 - **Game:** official League options in one click, plus automations.
 - **Safe:** screen reading and a native click-through overlay only; no memory access, no injection, no simulated input

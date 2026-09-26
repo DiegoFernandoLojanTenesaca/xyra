@@ -1,4 +1,5 @@
 use crate::{
+    champ_select,
     errors::{AppError, Result},
     i18n,
     league::Lcu,
@@ -81,6 +82,11 @@ pub fn import_runes(lcu: &Lcu, build: &Build, champion: &str) -> Result<()> {
         AppError::Client(detail) if detail.to_lowercase().contains(MAX_PAGES_ERROR) => AppError::NoFreeRunePage,
         other => other,
     })
+}
+
+pub fn import_spells(lcu: &Lcu, build: &Build) -> Result<()> {
+    let [first, second] = build.spells.as_slice() else { return Err(AppError::NoData) };
+    champ_select::set_spells(lcu, [first.id, second.id])
 }
 
 pub fn import_items(lcu: &Lcu, build: &Build, champion: &str, language: &str) -> Result<()> {

@@ -38,6 +38,7 @@ fn reads_every_opgg_answer() {
         let aram = opgg::fetch_build(&http, champion, BuildMode::Aram, None, &catalog).expect("ARAM build");
         let rift = opgg::fetch_build(&http, champion, BuildMode::Rift, None, &catalog).expect("Rift build");
         assert!(aram.games > 0 && rift.games > 0 && !rift.positions.is_empty());
+        assert_eq!((aram.spells.len(), rift.spells.len()), (2, 2), "two summoner spells per build");
         let position = rift.position.expect("main position");
         let counters = opgg::fetch_counter_picks(&http, champion, position, &catalog).expect("counter picks").expect("plays its main position");
         println!("{champion}: ARAM {:.1} % over {} games, {position:?} with {} counters", aram.win_rate, aram.games, counters.len());

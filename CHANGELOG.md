@@ -10,6 +10,7 @@
 - Added your chosen augments after each game, marking which were the card Xyra recommended.
 - Added minimizing the Xyra window when a game starts on its screen, so it never covers the cards.
 - Added a choice of how to rank recommended champions on Home and on the bench: tier, mastery, most played or mixed.
+- Added importing summoner spells, each kept on the key where you already had it.
 - Added an option to keep your attack range visible, through a League key binding that shows it every time you move.
 - Fixed Build and Augments staying on the previous game champion; they now follow the current pick.
 - Fixed labels hiding while the cards were still open when a screen read missed some names, or when another monitor had the focus.
@@ -20,6 +21,7 @@
 - Fixed the turret range option promising something League only draws in games against bots; it now says so.
 - Fixed the stats screen waiting on the client while the match history was being read.
 - Fixed augment choices of one account being saved with a game of another after switching accounts.
+- Updated the automatic import in champion select to set runes, spells and the item set, not only runes.
 - Updated the client and OP.GG answers to typed models checked when they arrive.
 - Updated the overlay colors to constants generated from the design tokens at build time, with aliases between tokens.
 - Updated champion select, catalog loading and match history import to live in their own services.

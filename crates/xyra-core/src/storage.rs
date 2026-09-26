@@ -225,7 +225,7 @@ mod tests {
         fs::write(storage.file("perfil.json"), "{}").unwrap();
         let storage = Storage::open(storage.dir.clone()).unwrap();
         let config = storage.load_config().unwrap();
-        assert_eq!((config.label_style, config.voice, config.language, config.auto_import_runes), (LabelStyle::Ribbon, true, None, true));
+        assert_eq!((config.label_style, config.voice, config.language, config.auto_import_build), (LabelStyle::Ribbon, true, None, true));
         assert_eq!(storage.load_games().unwrap()[0].date, "2026-09-01T20:15:00.000Z");
         assert!(!storage.file("perfil.json").exists());
         fs::write(storage.file(CATALOG), r#"{"rarity":{"1":"kUnknown"}}"#).unwrap();

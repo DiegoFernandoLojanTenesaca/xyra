@@ -3,6 +3,7 @@
   "gameInProgress": "Termina la partida y vuelve a intentarlo.",
   "noFreeRunePage": "No tienes páginas de runas libres: borra una y vuelve a intentar.",
   "noFreeKeySlot": "Tu tecla de ataque-movimiento ya usa sus dos espacios: libera uno en Opciones → Teclas del LoL.",
+  "notInChampSelect": "Los hechizos solo se pueden poner durante la selección de campeones.",
   "noSummoner": "No se pudo leer tu cuenta del cliente.",
   "noData": "OP.GG todavía no tiene datos para esto.",
   "emptyCatalog": "El cliente aún no termina de cargar sus datos: espera unos segundos.",

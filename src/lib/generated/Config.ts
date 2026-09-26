@@ -14,7 +14,11 @@ offset_y: number, scale: number, record_screenshots: boolean, autostart: boolean
 /**
  * Opens League when the player opens Xyra.
  */
-open_league: boolean, keep_borderless: boolean, auto_import_runes: boolean, close_window_in_game: boolean, auto_accept: boolean, 
+open_league: boolean, keep_borderless: boolean, 
+/**
+ * Imports runes, items and summoner spells of the picked champion in champion select.
+ */
+auto_import_build: boolean, close_window_in_game: boolean, auto_accept: boolean, 
 /**
  * Seconds to wait before accepting a found match.
  */

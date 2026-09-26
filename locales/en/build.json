@@ -18,11 +18,15 @@
   "noMatchups": "No matchup data for this position.",
   "importRunes": "Import runes",
   "importItems": "Import items",
-  "runesImported": "Done: the rune page is now active in your client.",
-  "itemsImported": "Done: the set shows up in the in-game shop for this champion.",
+  "importSpells": "Set spells",
+  "imported": {
+    "runes": "Done: the rune page is now active in your client.",
+    "items": "Done: the set shows up in the in-game shop for this champion.",
+    "spells": "Done: spells set, each on the key where you already had it."
+  },
   "loading": "Loading OP.GG build…",
   "pickRate": "{{value}} pick rate",
-  "note": "Only imported when you ask: Xyra never touches your client on its own.",
+  "note": "It imports when you ask, or by itself in champion select if you turn on \"Import build by itself\" in Game.",
   "noCatalog": "Open League once to see names and icons.",
   "modes": {
     "aram": "ARAM: Mayhem",

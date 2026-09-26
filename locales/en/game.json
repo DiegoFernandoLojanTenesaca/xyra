@@ -39,9 +39,9 @@
     "title": "Keep Borderless",
     "description": "If the game goes back to fullscreen, Xyra sets Borderless again before your next game."
   },
-  "autoImportRunes": {
-    "title": "Import runes by itself",
-    "description": "In champion select it imports the runes of the champion you got. It only replaces its own page."
+  "autoImportBuild": {
+    "title": "Import build by itself",
+    "description": "In champion select it sets the runes, summoner spells and item set of the champion you got. It only replaces its own rune page."
   },
   "closeWindowInGame": {
     "title": "Close the window while playing",

@@ -18,11 +18,15 @@
   "noMatchups": "Sin datos de enfrentamientos en esta posición.",
   "importRunes": "Importar runas",
   "importItems": "Importar ítems",
-  "runesImported": "Listo: la página de runas ya está activa en tu cliente.",
-  "itemsImported": "Listo: el set aparece en la tienda del juego con este campeón.",
+  "importSpells": "Poner hechizos",
+  "imported": {
+    "runes": "Listo: la página de runas ya está activa en tu cliente.",
+    "items": "Listo: el set aparece en la tienda del juego con este campeón.",
+    "spells": "Listo: hechizos puestos, cada uno en la tecla donde ya lo tenías."
+  },
   "loading": "Cargando build de OP.GG…",
   "pickRate": "{{value}} de uso",
-  "note": "Solo se importa cuando tú lo pides: Xyra nunca toca tu cliente por su cuenta.",
+  "note": "Se importa cuando tú lo pides, o solo en la selección de campeones si activas «Importar build sola» en Juego.",
   "noCatalog": "Abre el LoL una vez para ver los nombres e íconos.",
   "modes": {
     "aram": "ARAM: Caos",

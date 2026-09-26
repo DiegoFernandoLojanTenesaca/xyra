@@ -11,6 +11,7 @@ pub enum AppError {
     GameInProgress,
     NoFreeRunePage,
     NoFreeKeySlot,
+    NotInChampSelect,
     NoSummoner,
     NoData,
     EmptyCatalog,
