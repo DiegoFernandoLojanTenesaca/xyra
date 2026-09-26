@@ -1,10 +1,9 @@
-- Added an Android app that pairs with Xyra by scanning the QR code in Settings → Phone and opens it on your phone, over your Wi-Fi or Tailscale.
-- Added a phone link: scan a QR code in Settings → Phone to accept matches, import builds and follow champion select and your game from your phone on the same network. Off by default and protected by a pairing code.
+- Added Xyra for Android: pair it once by scanning the QR code in Settings → Phone, then accept matches, follow champion select, import runes, items and spells, see builds, the meta, your stats and game tips, and change Xyra's settings from your phone, over your Wi-Fi or Tailscale. The installer is `xyra-android-<version>.apk`.
+- Added the phone link in Settings → Phone, off by default and protected by a pairing code; turning it on prepares Windows, through the administrator prompt, to let the phone in on private networks only.
 - Added game tips on Home: the skill to level following the build and the next item of the build, with the gold you still need, read from the game's official local API.
 - Added a Meta screen with the best ranked champions of the patch by position: win, pick and ban rates, tier and how much each one rose or fell since the previous patch, with a link to the official patch notes.
-- Added Enter to take the first champion of the search and Escape to close its list.
 - Added a notice on Build and Augments while you play, with a button to go back to your champion when you are viewing another one.
-- Added arrow keys to move through the champion search.
+- Added arrow keys, Enter and Escape to the champion search.
 - Added placeholders while Build and Augments load, instead of a line of text.
 - Fixed Build and Augments showing a champion picked by hand earlier instead of the one you are playing.
 - Fixed the Augments mode staying on ARAM: Mayhem or Arena when your next game was in the other mode.
