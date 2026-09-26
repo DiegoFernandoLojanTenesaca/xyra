@@ -74,5 +74,12 @@
   },
   "masteryPoints": "{{points}} mastery points",
   "gamesPlayed_one": "{{count}} game",
-  "gamesPlayed_other": "{{count}} games"
+  "gamesPlayed_other": "{{count}} games",
+  "tips": "Your game",
+  "levelSkill": "Level {{skill}}",
+  "noSkillPoint": "No skill point to spend",
+  "skillHint": "Following the build's skill order",
+  "nextItem": "Next item of the build",
+  "canBuy": "You can buy it now",
+  "goldMissing": "{{gold}} gold to go"
 }

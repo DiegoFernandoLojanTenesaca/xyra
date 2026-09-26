@@ -1,5 +1,6 @@
 mod card_reader;
 mod catalog_loader;
+mod game_tips;
 mod history_importer;
 mod ready_check;
 mod watch;
@@ -9,6 +10,7 @@ pub use card_reader::demo_cards;
 use crate::screen;
 use card_reader::CardReader;
 use catalog_loader::CatalogLoader;
+use game_tips::GameTipsReader;
 use history_importer::HistoryImporter;
 use notify::RecommendedWatcher;
 use ready_check::ReadyCheckAcceptor;
@@ -57,6 +59,7 @@ pub enum EngineEvent {
     ClientClosed { generation: u64, error: Option<AppError> },
     CounterPicks { enemy: u32, position: Position, picks: Option<Vec<Matchup>> },
     ChampionTiers(HashMap<u32, (u8, u32)>),
+    GameBuild(Box<Build>),
     ConfigChanged,
     ShowDemo,
     TestVoice,
@@ -110,6 +113,7 @@ impl Shared {
             client_locale: installation.locale.clone(),
             language: config.effective_language(&installation.locale).into(),
             ocr_language: None,
+            tips: None,
             version: env!("CARGO_PKG_VERSION").into(),
         };
         let (events, received) = mpsc::channel();
@@ -262,6 +266,8 @@ pub fn update_state(app: &AppHandle, shared: &Shared, change: impl FnOnce(&mut E
 struct GameTracking {
     mode: GameMode,
     champion: Option<u32>,
+    /// Position assigned in champion select, for the Summoner's Rift build.
+    position: Option<Position>,
 }
 
 /// Reacts to the League client, the game files and the UI; owns everything that runs on the engine thread.
@@ -281,6 +287,7 @@ struct Engine {
     champ_select: ChampSelectTracker,
     ready_check: ReadyCheckAcceptor,
     cards: CardReader,
+    tips: GameTipsReader,
     _watcher: Option<RecommendedWatcher>,
 }
 
@@ -329,6 +336,7 @@ impl Engine {
             champ_select: ChampSelectTracker::default(),
             ready_check: ReadyCheckAcceptor::default(),
             cards,
+            tips: GameTipsReader::new(),
             _watcher: watcher,
             shared,
         }
@@ -359,7 +367,10 @@ impl Engine {
     }
 
     fn next_deadline(&self) -> Option<Instant> {
-        [self.reconnect.map(|r| r.0), self.champ_select.import_deadline(), self.cards.next_read(), self.ready_check.accept_at].into_iter().flatten().min()
+        [self.reconnect.map(|r| r.0), self.champ_select.import_deadline(), self.cards.next_read(), self.ready_check.accept_at, self.tips.next_poll()]
+            .into_iter()
+            .flatten()
+            .min()
     }
 
     fn handle(&mut self, event: EngineEvent) {
@@ -380,6 +391,7 @@ impl Engine {
                 *self.shared.champion_tiers.write().unwrap() = tiers;
                 self.emit(AppEvent::Data);
             }
+            EngineEvent::GameBuild(build) => self.tips.set_build(*build),
             EngineEvent::ShowDemo if self.game.is_none() => self.cards.demo(&self.shared),
             EngineEvent::ShowDemo => {}
             EngineEvent::TestVoice => self.cards.test_voice(&self.shared),
@@ -400,6 +412,9 @@ impl Engine {
         if let Some(champion) = self.champ_select.take_due_import(now) {
             let (shared, mode, position) = (Arc::clone(&self.shared), self.mode.build_mode(), self.champ_select.position());
             thread::spawn(move || shared.auto_import(champion, mode, position));
+        }
+        if self.tips.next_poll().is_some_and(|at| at <= now) {
+            self.tips.poll(&self.shared);
         }
         if self.cards.next_read().is_some_and(|at| at <= now)
             && let Some((champion, mode)) = self.reading_target()
@@ -526,7 +541,8 @@ impl Engine {
         match (flow, &mut self.game) {
             (Some(flow), Some(game)) if phase.is_in_game() => game.champion = flow.champion.or(game.champion),
             (Some(flow), None) if phase.is_in_game() => {
-                self.game = Some(GameTracking { mode: flow.mode, champion: flow.champion.or(self.champ_select.last_champion()) });
+                let (champion, position) = (flow.champion.or(self.champ_select.last_champion()), self.champ_select.position());
+                self.game = Some(GameTracking { mode: flow.mode, champion, position });
                 self.on_game_started();
             }
             (_, Some(_)) => {
@@ -632,11 +648,20 @@ impl Engine {
         Some((game.champion?, game.mode))
     }
 
+    /// The champion, build mode and position of a running game with builds, while Xyra is not paused.
+    fn tips_target(&self) -> Option<(u32, BuildMode, Option<Position>)> {
+        let game = self.game.as_ref().filter(|g| !self.shared.config().paused && g.mode.has_builds())?;
+        Some((game.champion?, game.mode.build_mode(), game.position))
+    }
+
     fn publish(&mut self) {
         match self.reading_target() {
             Some(_) => self.cards.start(),
             None => self.cards.stop(),
         }
+        let target = self.tips_target();
+        self.tips.follow(target, &self.shared);
+        let tips = self.tips.tips().cloned();
         let paused = self.shared.config().paused;
         let champ_select = self.champ_select.view(self.mode, self.shared.config().champion_order, |id| self.shared.champion_info(id));
         let game = self.game.as_ref().map(|g| CurrentGame { mode: g.mode, champion: g.champion.map(|id| self.shared.champion_info(id)) });
@@ -658,6 +683,7 @@ impl Engine {
             state.cards = cards;
             state.rounds = rounds;
             state.borderless = borderless;
+            state.tips = tips;
         });
     }
 }

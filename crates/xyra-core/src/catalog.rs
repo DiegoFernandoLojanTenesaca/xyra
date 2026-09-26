@@ -25,6 +25,9 @@ pub struct Catalog {
     pub champions: NamedAssets,
     pub rarity: HashMap<u32, Rarity>,
     pub items: NamedAssets,
+    /// Total gold cost of each item.
+    #[serde(default)]
+    pub item_prices: HashMap<u32, u32>,
     pub runes: NamedAssets,
     pub spells: NamedAssets,
 }
@@ -35,6 +38,15 @@ struct NamedEntry {
     id: u32,
     name: String,
     icon_path: String,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ItemEntry {
+    #[serde(flatten)]
+    entry: NamedEntry,
+    #[serde(default)]
+    price_total: u32,
 }
 
 #[derive(Deserialize)]
@@ -82,7 +94,9 @@ impl Catalog {
         if catalog.augment_names.is_empty() || catalog.champions.is_empty() {
             return Err(AppError::EmptyCatalog);
         }
-        catalog.items = assets(lcu.get_as(ITEMS)?);
+        let items: Vec<ItemEntry> = lcu.get_as(ITEMS)?;
+        catalog.item_prices = items.iter().map(|item| (item.entry.id, item.price_total)).collect();
+        catalog.items = assets(items.into_iter().map(|item| item.entry).collect());
         catalog.runes = assets(lcu.get_as(RUNES)?);
         catalog.runes.extend(assets(lcu.get_as::<RuneStyles>(RUNE_STYLES)?.styles));
         catalog.spells = assets(lcu.get_as(SPELLS)?);

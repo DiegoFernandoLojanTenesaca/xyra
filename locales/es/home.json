@@ -74,5 +74,12 @@
   },
   "masteryPoints": "{{points}} puntos de maestría",
   "gamesPlayed_one": "{{count}} partida",
-  "gamesPlayed_other": "{{count}} partidas"
+  "gamesPlayed_other": "{{count}} partidas",
+  "tips": "Tu partida",
+  "levelSkill": "Sube la {{skill}}",
+  "noSkillPoint": "Sin puntos de habilidad",
+  "skillHint": "Según el orden de habilidades de la build",
+  "nextItem": "Siguiente ítem de la build",
+  "canBuy": "Ya puedes comprarlo",
+  "goldMissing": "Te faltan {{gold}} de oro"
 }

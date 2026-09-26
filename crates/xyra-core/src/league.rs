@@ -78,7 +78,7 @@ fn local_tls() -> Arc<ClientConfig> {
         .clone()
 }
 
-fn local_http() -> Client {
+pub(crate) fn local_http() -> Client {
     Client::builder().tls_backend_preconfigured((*local_tls()).clone()).timeout(HTTP_TIMEOUT).build().expect("local HTTP client")
 }
 

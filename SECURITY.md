@@ -21,6 +21,9 @@ aumentos dentro del juego) y nada más. Estas reglas son parte del proyecto: un 
   y reconoce el texto con el OCR que trae Windows.
 - **Dibuja encima** en una ventana propia, transparente, que deja pasar los clics y nunca toma el foco.
   Por eso necesita el juego en modo **Sin bordes**: en pantalla completa exclusiva Windows no deja mostrar nada encima.
+- **Durante la partida lee la API oficial del juego** (`127.0.0.1:2999`, la Live Client Data API que Riot publica para
+  esto) cada 2 segundos: solo tu nivel, tus puntos de habilidad, tu oro y tus ítems, para sugerirte qué habilidad subir y
+  qué ítem comprar según la build. No toca el proceso del juego ni lee nada que el marcador no muestre.
 - **Escucha al cliente local (LCU)** por su WebSocket, como hacen Blitz o Porofessor: se entera al instante de la fase
   (selección, partida, fin), de tu campeón y de la cuenta con la que entras, sin consultarlo a cada rato. La conexión es
   solo con `127.0.0.1` y verifica el certificado del cliente con la raíz oficial de Riot (`riotgames.pem`).

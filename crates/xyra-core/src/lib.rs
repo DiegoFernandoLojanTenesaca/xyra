@@ -8,6 +8,7 @@ pub mod game_settings;
 pub mod gameflow;
 pub mod i18n;
 pub mod league;
+pub mod live_game;
 pub mod matchmaking;
 pub mod model;
 pub mod opgg;

@@ -163,6 +163,24 @@ pub struct Asset {
     pub icon: String,
 }
 
+/// What to do next in the running game, from the build of the champion.
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[ts(export)]
+pub struct GameTips {
+    /// "Q", "W", "E" or "R" while a skill point is free.
+    pub skill: Option<String>,
+    pub next_item: Option<ItemTip>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[ts(export)]
+pub struct ItemTip {
+    pub item: Asset,
+    pub price: Option<u32>,
+    /// Gold still missing; 0 once the player can buy it.
+    pub missing: Option<u32>,
+}
+
 /// Ranked tier list of the current patch, by position.
 #[derive(Clone, Debug, PartialEq, Serialize, TS)]
 #[ts(export)]
@@ -255,6 +273,8 @@ pub struct EngineState {
     pub language: String,
     pub ocr_language: Option<String>,
     pub version: String,
+    /// Next skill and item while a game with builds is running.
+    pub tips: Option<GameTips>,
 }
 
 /// Events the engine pushes to the UI.

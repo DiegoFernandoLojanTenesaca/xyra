@@ -3,6 +3,7 @@ import type { BuildMode } from "./BuildMode";
 import type { Card } from "./Card";
 import type { ChampSelect } from "./ChampSelect";
 import type { CurrentGame } from "./CurrentGame";
+import type { GameTips } from "./GameTips";
 import type { Phase } from "./Phase";
 
 export type EngineState = { phase: Phase, 
@@ -25,4 +26,8 @@ borderless: boolean | null, client_locale: string,
 /**
  * UI language already resolved from the preference and the client locale.
  */
-language: string, ocr_language: string | null, version: string, };
+language: string, ocr_language: string | null, version: string, 
+/**
+ * Next skill and item while a game with builds is running.
+ */
+tips: GameTips | null, };

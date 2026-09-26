@@ -149,24 +149,55 @@
 
 <div class="grid">
   <div class="column">
-    <h3 class="section-title">{engine.phase === 'inGame' ? t('home:cardsOnScreen') : t('home:latestCards')}</h3>
-    {#if cards.length}
-      <div class="cards">
-        {#each cards as card, i (card.id)}
-          <div class="card panel cut appear" class:best={card.best} style="--i:{i}">
-            {#if card.best}<div class="crown"><Star size={12} />{t('home:bestPick')}</div>{/if}
-            {#if card.icon}<img src={card.icon} alt="" />{/if}
-            <h4>{card.name}</h4>
-            <span class="quality" style="color:{qualityColor(card.quality)}">
-              <TierBadge label={card.grade} color={qualityColor(card.quality)} />{t(`common:quality.${card.quality}`)}
+    {#if engine.tips}
+      {@const next = engine.tips.next_item}
+      <h3 class="section-title">{t('home:tips')}</h3>
+      <div class="tips">
+        <div class="panel cut tip">
+          <span class="key" class:idle={!engine.tips.skill}>{engine.tips.skill ?? '—'}</span>
+          <span class="tip-text">
+            <b>{engine.tips.skill ? t('home:levelSkill', { skill: engine.tips.skill }) : t('home:noSkillPoint')}</b>
+            <small class="muted">{t('home:skillHint')}</small>
+          </span>
+        </div>
+        {#if next}
+          <div class="panel cut tip">
+            {#if next.item.icon}<img src={next.item.icon} alt="" />{/if}
+            <span class="tip-text">
+              <b>{next.item.name}</b>
+              <small class:ready={next.missing === 0} class="muted">
+                {next.missing === null
+                  ? t('home:nextItem')
+                  : next.missing === 0
+                    ? t('home:canBuy')
+                    : t('home:goldMissing', { gold: format.number(next.missing) })}
+              </small>
             </span>
-            <div class="bar"><i style="width:{card.tier === null ? 0 : Math.max(MIN_BAR, Math.min(100, card.performance))}%"></i></div>
-            {#if card.reroll}<small class="reroll"><RefreshCw size={12} />{t('common:reroll')}</small>{/if}
           </div>
-        {/each}
+        {/if}
       </div>
-    {:else}
-      <div class="panel cut"><EmptyState icon={Layers} text={t('home:noCards')} /></div>
+    {/if}
+
+    {#if engine.phase !== 'inGame' || liveMode}
+      <h3 class="section-title">{engine.phase === 'inGame' ? t('home:cardsOnScreen') : t('home:latestCards')}</h3>
+      {#if cards.length}
+        <div class="cards">
+          {#each cards as card, i (card.id)}
+            <div class="card panel cut appear" class:best={card.best} style="--i:{i}">
+              {#if card.best}<div class="crown"><Star size={12} />{t('home:bestPick')}</div>{/if}
+              {#if card.icon}<img src={card.icon} alt="" />{/if}
+              <h4>{card.name}</h4>
+              <span class="quality" style="color:{qualityColor(card.quality)}">
+                <TierBadge label={card.grade} color={qualityColor(card.quality)} />{t(`common:quality.${card.quality}`)}
+              </span>
+              <div class="bar"><i style="width:{card.tier === null ? 0 : Math.max(MIN_BAR, Math.min(100, card.performance))}%"></i></div>
+              {#if card.reroll}<small class="reroll"><RefreshCw size={12} />{t('common:reroll')}</small>{/if}
+            </div>
+          {/each}
+        </div>
+      {:else}
+        <div class="panel cut"><EmptyState icon={Layers} text={t('home:noCards')} /></div>
+      {/if}
     {/if}
 
     {#if bestForChampion.length && liveChampion}
@@ -467,6 +498,45 @@
     gap: var(--space-1);
     color: var(--color-warning);
     font-weight: 600;
+  }
+  .tips {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+  }
+  .tip {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+  }
+  .tip img {
+    width: var(--size-thumb);
+    height: var(--size-thumb);
+    flex: none;
+  }
+  .key {
+    display: grid;
+    place-items: center;
+    width: var(--size-thumb);
+    height: var(--size-thumb);
+    flex: none;
+    background: var(--color-accent);
+    color: var(--color-white);
+    font-size: var(--text-xl);
+    font-weight: 700;
+  }
+  .key.idle {
+    background: var(--color-panelRaised);
+    color: var(--color-textMuted);
+  }
+  .tip-text {
+    display: grid;
+    min-width: 0;
+  }
+  .tip-text small.ready {
+    color: var(--color-success);
   }
   .chips {
     display: grid;
