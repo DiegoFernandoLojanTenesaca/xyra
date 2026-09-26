@@ -20,12 +20,20 @@
     query = '';
     open = false;
   }
+
+  /** Enter takes the first match and Escape closes the list. */
+  function onkeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter' && suggestions.length) pick(suggestions[0]);
+    if (event.key === 'Escape') open = false;
+  }
 </script>
 
 <SearchInput
   bind:value={query}
   placeholder={app.t('common:searchChampion')}
   onfocus={() => (open = true)}
+  oninput={() => (open = true)}
+  {onkeydown}
   onblur={() => setTimeout(() => (open = false), BLUR_DELAY_MS)}
 >
   {#if open && suggestions.length}

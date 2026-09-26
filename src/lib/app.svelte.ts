@@ -4,7 +4,7 @@ import { toAppError } from './services/errors';
 import { getChampions, getProfile, importBuild } from './services/league';
 import { checkUpdate, installUpdate } from './services/updates';
 import { BASE_LANGUAGE, formatter, translator } from './i18n';
-import type { BuildMode, ChampionInfo, Choices, Config, EngineState, ImportTarget, Position, Profile, Release, StatsSummary } from './types';
+import type { BuildMode, ChampionInfo, Choices, Config, EngineState, GameMode, ImportTarget, Position, Profile, Release, StatsSummary } from './types';
 
 export const PAGES = ['home', 'build', 'augments', 'champions', 'stats', 'labels', 'game', 'settings'] as const;
 export type Page = (typeof PAGES)[number];
@@ -12,7 +12,15 @@ export type Page = (typeof PAGES)[number];
 export const SETTINGS_TABS = ['general', 'profile', 'data', 'security', 'help', 'about'] as const;
 export type SettingsTab = (typeof SETTINGS_TABS)[number];
 
+const CHAMPION_PAGES: readonly Page[] = ['build', 'augments'];
+
 const playing = (state: EngineState | null) => state?.champ_select?.champion?.id ?? state?.game?.champion?.id ?? null;
+
+/** The champion being played, its position and whether its game started, so any of them changing counts as a new pick. */
+const livePick = (state: EngineState | null) => {
+  const champion = playing(state);
+  return champion === null ? null : `${state?.game ? 'game' : 'select'}:${champion}:${state?.champ_select?.position ?? ''}`;
+};
 
 class App {
   state = $state<EngineState>(null!);
@@ -26,6 +34,8 @@ class App {
   settingsTab = $state<SettingsTab>('general');
   selectedChampion = $state<number | null>(null);
   buildMode = $state<BuildMode>('aram');
+  /** Mode of the Augments tier list; null shows the first mode with augments. */
+  augmentMode = $state<GameMode | null>(null);
   positionOverride = $state<Position | null>(null);
   profileError = $state('');
   newGames = $state(0);
@@ -48,7 +58,7 @@ class App {
       onEvent<EngineState>('state', (next) => {
         if (this.state && next.account !== this.state.account) this.loadProfile();
         const champion = playing(next);
-        const changed = champion !== null && champion !== playing(this.state);
+        const changed = champion !== null && livePick(next) !== livePick(this.state);
         this.state = next;
         if (changed) {
           this.selectedChampion = champion;
@@ -83,20 +93,30 @@ class App {
     this.config = await setConfig({ ...this.config, ...changes });
   };
 
+  /** Build and Augments open on the champion being played; openBuild and openAugments open the one the player chose. */
   goTo = (page: Page) => {
+    const champion = playing(this.state);
+    if (champion !== null && CHAMPION_PAGES.includes(page)) {
+      this.selectedChampion = champion;
+      this.followGame();
+    }
+    this.showPage(page);
+  };
+
+  showPage = (page: Page) => {
     this.page = page;
     if (page === 'stats') this.newGames = 0;
   };
 
   openAugments = (champion: number) => {
     this.selectedChampion = champion;
-    this.goTo('augments');
+    this.showPage('augments');
   };
 
   openBuild = (champion: number) => {
     this.selectedChampion = champion;
     this.followGame();
-    this.goTo('build');
+    this.showPage('build');
   };
 
   openSettings = (tab: SettingsTab) => {
@@ -105,6 +125,8 @@ class App {
   };
 
   followGame = () => {
+    const mode = this.state.game?.mode ?? this.state.champ_select?.mode;
+    if (mode && this.choices?.augment_modes.includes(mode)) this.augmentMode = mode;
     if (!this.state.build_mode) return;
     this.buildMode = this.state.build_mode;
     this.positionOverride = this.state.champ_select?.position ?? null;

@@ -1,6 +1,5 @@
 <script lang="ts">
   import { Layers } from '@lucide/svelte';
-  import { untrack } from 'svelte';
   import { app } from '../app.svelte';
   import { qualityColor, rarityColor } from '../design/theme';
   import { getAugments } from '../services/league';
@@ -19,7 +18,7 @@
   const t = $derived(app.t);
   const format = $derived(app.format);
   const modes = $derived(app.choices.augment_modes);
-  let mode = $state<GameMode>(untrack(() => app.choices.augment_modes.find((m) => m === app.state.game?.mode) ?? app.choices.augment_modes[0]));
+  const mode = $derived(app.augmentMode ?? modes[0]);
   let rarity = $state<Rarity | 'all'>('all');
 
   $effect(app.pickDefaultChampion);
@@ -41,7 +40,7 @@
 
 <div class="tools">
   <ChampionPicker />
-  <SegmentedControl options={modes.map((m) => [m, t(`common:modes.${m}`)] as [GameMode, string])} bind:value={mode} />
+  <SegmentedControl options={modes.map((m) => [m, t(`common:modes.${m}`)] as [GameMode, string])} bind:value={() => mode, (next) => (app.augmentMode = next)} />
   <SegmentedControl
     options={[['all', t('augments:all')], ...app.choices.rarities.map((r) => [r, t(`common:rarity.${r}`)] as [Rarity, string])]}
     bind:value={rarity}

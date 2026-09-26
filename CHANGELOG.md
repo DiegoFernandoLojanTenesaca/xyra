@@ -1,30 +1,4 @@
-- Added a Download and install button when a new version is out: it checks the installer SHA-256 and updates in place, without uninstalling, keeping your settings and games, then reopens Xyra.
-- Added an option to accept found matches after a chosen delay, off by default, that never overrides an answer you already gave.
-- Added an option to open League when you open Xyra, so one desktop icon opens both.
-- Added a choice of Spanish or English when installing, and branded installer images.
-- Added visible language buttons in Settings.
-- Added a notice on the profile screen when the client cannot be read.
-- Added their own errors for when OP.GG or the League client change the shape of their answers.
-- Added the best augments for your champion to Home during a game.
-- Added the augment choices of the current game to Home, with the recommended card of each.
-- Added your chosen augments after each game, marking which were the card Xyra recommended.
-- Added minimizing the Xyra window when a game starts on its screen, so it never covers the cards.
-- Added a choice of how to rank recommended champions on Home and on the bench: tier, mastery, most played or mixed.
-- Added importing summoner spells, each kept on the key where you already had it.
-- Added a website with the features, a preview of every label style and the download of the latest version.
-- Fixed Build and Augments staying on the previous game champion; they now follow the current pick.
-- Fixed labels hiding while the cards were still open when a screen read missed some names, or when another monitor had the focus.
-- Fixed a rerolled card not getting its label back; the new card replaces the old one in its slot.
-- Fixed card names that wrap to two lines not being recognized.
-- Fixed a client update in an unexpected shape ending the game tracking; unreadable updates are now skipped.
-- Fixed the card labels taking longer to appear when the cards had just opened.
-- Fixed the turret range option promising something League only draws in games against bots; it now says so.
-- Fixed the stats screen waiting on the client while the match history was being read.
-- Fixed augment choices of one account being saved with a game of another after switching accounts.
-- Updated the automatic import in champion select to set runes, spells and the item set, not only runes.
-- Updated the client and OP.GG answers to typed models checked when they arrive.
-- Updated the overlay colors to constants generated from the design tokens at build time, with aliases between tokens.
-- Updated champion select, catalog loading and match history import to live in their own services.
-- Updated releases to build when a version tag is pushed, with this changelog as the notes and the installer named xyra-<version>.exe.
-- Updated the main branch to master.
-- Removed the checks that ran on every push; they run when a release is tagged.
+- Added Enter to take the first champion of the search and Escape to close its list.
+- Fixed Build and Augments showing a champion picked by hand earlier instead of the one you are playing.
+- Fixed the Augments mode staying on ARAM: Mayhem or Arena when your next game was in the other mode.
+- Fixed Build keeping the old position when your lane changed during champion select.
