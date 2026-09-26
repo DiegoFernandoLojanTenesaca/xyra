@@ -6,12 +6,13 @@
   import { setBorderless, testOverlay } from '../services/engine';
   import { getAugments } from '../services/league';
   import { resource } from '../services/resource.svelte';
-  import type { ChampionInfo } from '../types';
+  import type { ChampionInfo, ChampionOrder } from '../types';
   import AugmentChip from '../ui/AugmentChip.svelte';
   import Button from '../ui/Button.svelte';
   import ChampionPortrait from '../ui/ChampionPortrait.svelte';
   import EmptyState from '../ui/EmptyState.svelte';
   import Logo from '../ui/Logo.svelte';
+  import SegmentedControl from '../ui/SegmentedControl.svelte';
   import StatTile from '../ui/StatTile.svelte';
   import TierBadge from '../ui/TierBadge.svelte';
 
@@ -29,6 +30,7 @@
   const stats = $derived(app.stats);
 
   let notice = $state('');
+  const order = $derived(config.champion_order);
   const cards = $derived([...engine.cards].sort((a, b) => a.x - b.x));
   const best = $derived(cards.find((c) => c.best) ?? null);
   const select = $derived(engine.champ_select);
@@ -71,7 +73,14 @@
         };
       }
       if (benchPick) {
-        const text = t('home:strongerThan', { champion: mine?.name ?? '', rank: benchPick.rank });
+        const reason = {
+          champion: mine?.name ?? '',
+          rank: benchPick.rank,
+          tier: benchPick.tier,
+          points: format.compact(benchPick.mastery),
+          count: benchPick.played,
+        };
+        const text = t(`home:benchReason.${order}`, reason);
         return { ...base, icon: benchPick.icon, title: t('home:takeFromBench', { champion: benchPick.name }), strong: benchPick.name, text };
       }
       const text = mine?.rank && select.mode !== 'summonersRift' ? t('home:yourChampion', { rank: mine.rank }) : t('home:riftChampion');
@@ -208,12 +217,21 @@
       {#if topChampions.length}
         <section>
           <h3 class="section-title">{t('home:topMayhem')} <small>({t('home:ownedOnly')})</small></h3>
+          <SegmentedControl
+            options={app.choices.champion_orders.map((id) => [id, t(`home:order.${id}`)] as [ChampionOrder, string])}
+            bind:value={() => order, (next) => app.saveConfig({ champion_order: next }).then(app.reloadData)}
+          />
+          <small class="muted order-hint">{t(`home:orderHint.${order}`)}</small>
           <div class="panel cut list">
             {#each topChampions as champion, i (champion.id)}
-              <button class="row appear" style="--i:{i}" onclick={() => app.openBuild(champion.id)}>
+              <button class="row appear champion" style="--i:{i}" onclick={() => app.openBuild(champion.id)}>
                 <b class="rank">#{champion.rank}</b>
                 <img src={champion.icon} alt="" />
-                <span>{champion.name}</span>
+                <span
+                  >{champion.name}
+                  {#if order === 'played'}<small class="muted">{t('home:gamesPlayed', { count: champion.played })}</small>
+                  {:else if order !== 'tier'}<small class="muted">{t('home:masteryPoints', { points: format.compact(champion.mastery) })}</small>{/if}</span
+                >
                 <TierBadge label={`T${champion.tier}`} color={championTierColor(champion.tier)} size="var(--size-thumbSm)" />
               </button>
             {/each}
@@ -506,12 +524,19 @@
     color: var(--color-textMuted);
     font-size: var(--text-sm);
   }
-  .game span {
+  .game span,
+  .champion span {
     display: flex;
     flex-direction: column;
     line-height: 1.2;
   }
-  .game small {
+  .game small,
+  .champion small {
+    font-size: var(--text-xs);
+  }
+  .order-hint {
+    display: block;
+    margin: var(--space-2) 0;
     font-size: var(--text-xs);
   }
   .game b {

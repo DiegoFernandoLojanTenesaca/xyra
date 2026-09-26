@@ -12,13 +12,17 @@
       "title": "Rango de ataque",
       "description": "Dibuja hasta dónde llegan tus ataques básicos."
     },
+    "alwaysAttackRange": {
+      "title": "Rango de ataque siempre visible",
+      "description": "Tu clic derecho también prepara el ataque-movimiento: el círculo aparece cada vez que te mueves y un clic izquierdo ataca al más cercano. Es una asignación de teclas del propio LoL."
+    },
     "minimapTimers": {
       "title": "Cronómetros en el minimapa",
       "description": "Los tiempos de reaparición de objetivos y campamentos que trae el propio juego."
     },
     "turretRange": {
-      "title": "Rango de las torres",
-      "description": "Muestra hasta dónde disparan las torres."
+      "title": "Rango de las torres (contra la IA)",
+      "description": "Riot solo lo dibuja en partidas contra bots: en ARAM, normales y clasificatorias no aparece."
     },
     "flippedMinimap": {
       "title": "Minimapa a la izquierda",

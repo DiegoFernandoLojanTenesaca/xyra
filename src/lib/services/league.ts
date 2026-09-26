@@ -7,5 +7,5 @@ export const getBuild = (champion: number, mode: BuildMode, position: Position |
 export const importBuild = (champion: number, target: ImportTarget, mode: BuildMode, position: Position | null) =>
   invoke<void>('import_build', { champion, target, mode, position });
 export const getGameSettings = () => invoke<GameSetting[]>('get_game_settings');
-export const setGameSetting = (option: GameOption, value: SettingValue) => invoke<void>('set_game_setting', { option, value });
+export const setGameSetting = (option: GameOption, value: SettingValue) => invoke<GameSetting[]>('set_game_setting', { option, value });
 export const getProfile = () => invoke<Profile | null>('get_profile');

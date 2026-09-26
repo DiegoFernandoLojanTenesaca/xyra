@@ -28,8 +28,10 @@
   async function update(setting: GameSetting, value: SettingValue) {
     notice = '';
     try {
-      await setGameSetting(setting.option, value);
-      setting.value = value;
+      for (const fresh of await setGameSetting(setting.option, value)) {
+        const shown = settings.value?.find((s) => s.option === fresh.option);
+        if (shown) shown.value = fresh.value;
+      }
     } catch (error) {
       notice = app.errorText(error);
     }

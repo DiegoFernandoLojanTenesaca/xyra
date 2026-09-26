@@ -16,7 +16,6 @@
   },
   "inGame": "Atento a tus cartas: la mejor se marca en cuanto salgan.",
   "takeFromBench": "Toma a {{champion}} de la banca",
-  "strongerThan": "Rinde más que {{champion}} en ARAM: Caos: puesto #{{rank}}.",
   "yourChampion": "Tu campeón · puesto #{{rank}} en ARAM: Caos.",
   "riftChampion": "Revisa su build y sus enfrentamientos antes de empezar.",
   "counterPick": "Contra {{enemy}}, toma a {{champion}}",
@@ -54,5 +53,26 @@
   "lastGame": "Tus aumentos con {{champion}}",
   "followedSummary": "seguiste a Xyra en {{followed}} de {{seen}}",
   "followedYes": "Era la recomendada",
-  "followedNo": "No era la recomendada"
+  "followedNo": "No era la recomendada",
+  "order": {
+    "tier": "Tier",
+    "mastery": "Maestría",
+    "played": "Jugados",
+    "balanced": "Mixto"
+  },
+  "orderHint": {
+    "tier": "Los mejores de ARAM: Caos según OP.GG. En la selección, el banquillo se recomienda igual.",
+    "mastery": "Los que más dominas por tus puntos de maestría. En la selección, el banquillo se recomienda igual.",
+    "played": "Los que más jugaste en las partidas que Xyra guardó. En la selección, el banquillo se recomienda igual.",
+    "balanced": "Primero el mejor tier y, dentro de cada tier, los que más dominas. En la selección, el banquillo se recomienda igual."
+  },
+  "benchReason": {
+    "tier": "Rinde más que {{champion}} en ARAM: Caos: puesto #{{rank}}.",
+    "mastery": "Lo dominas más que a {{champion}}: {{points}} puntos de maestría.",
+    "played": "Lo jugaste más que a {{champion}}: {{count}} partidas.",
+    "balanced": "Tier {{tier}} y lo dominas: {{points}} puntos de maestría."
+  },
+  "masteryPoints": "{{points}} puntos de maestría",
+  "gamesPlayed_one": "{{count}} partida",
+  "gamesPlayed_other": "{{count}} partidas"
 }

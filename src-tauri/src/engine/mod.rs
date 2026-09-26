@@ -71,6 +71,8 @@ pub struct Shared {
     champion_tiers: RwLock<HashMap<u32, (u8, u32)>>,
     /// Champions the signed-in account can play; None while unknown.
     available: RwLock<Option<HashSet<u32>>>,
+    /// Mastery points of the signed-in account per champion.
+    mastery: RwLock<HashMap<u32, u64>>,
     pub storage: Storage,
     pub installation: Installation,
     pub web: web::Client,
@@ -115,6 +117,7 @@ impl Shared {
             catalog: RwLock::new(Arc::new(catalog.unwrap_or_default())),
             champion_tiers: RwLock::new(HashMap::new()),
             available: RwLock::new(None),
+            mastery: RwLock::new(HashMap::new()),
             storage,
             installation,
             web: web::client(),
@@ -160,13 +163,17 @@ impl Shared {
 
     pub fn champion_info(&self, id: u32) -> ChampionInfo {
         let tier = self.champion_tiers.read().unwrap().get(&id).copied();
-        ChampionInfo::new(self.catalog().champion(id), tier, !self.is_available(id))
+        let mastery = self.mastery.read().unwrap().get(&id).copied().unwrap_or_default();
+        let account = self.account().unwrap_or_default();
+        let played = self.games.lock().unwrap().iter().filter(|g| g.champion == id && g.account == account).count() as u32;
+        ChampionInfo { mastery, played, ..ChampionInfo::new(self.catalog().champion(id), tier, !self.is_available(id)) }
     }
 
-    /// Every champion, ranked ones first by their ARAM: Mayhem rank, then by name.
+    /// Every champion, in the order the player chose for recommendations, then by name.
     pub fn champions(&self) -> Vec<ChampionInfo> {
+        let order = self.config().champion_order;
         let mut champions: Vec<ChampionInfo> = self.catalog().champions.keys().map(|&id| self.champion_info(id)).collect();
-        champions.sort_by(|a, b| (a.rank.is_none(), a.rank, &a.name).cmp(&(b.rank.is_none(), b.rank, &b.name)));
+        champions.sort_by(|a, b| (a.preference(order), &a.name).cmp(&(b.preference(order), &b.name)));
         champions
     }
 
@@ -185,7 +192,8 @@ impl Shared {
     }
 
     pub fn stats_summary(&self) -> StatsSummary {
-        stats::summarize(&self.games.lock().unwrap(), self.account().as_deref(), &self.catalog())
+        let account = self.account();
+        stats::summarize(&self.games.lock().unwrap(), account.as_deref(), &self.catalog())
     }
 
     /// Sets borderless through the client when it is open, or in game.cfg otherwise.
@@ -194,7 +202,7 @@ impl Shared {
             return Err(AppError::GameInProgress);
         }
         match self.lcu() {
-            Ok(lcu) => game_settings::update(&lcu, GameOption::Borderless, SettingValue::Toggle(true)),
+            Ok(lcu) => game_settings::update(&lcu, GameOption::Borderless, SettingValue::Toggle(true)).map(drop),
             Err(_) => league::set_borderless(&self.installation),
         }
     }
@@ -442,9 +450,11 @@ impl Engine {
             return;
         }
         self.account = account;
+        self.history.cancel();
         *self.shared.available.write().unwrap() = None;
+        self.shared.mastery.write().unwrap().clear();
         if let Some(account) = self.account.clone() {
-            self.refresh_available();
+            self.refresh_champions();
             self.history.claim_unowned(&account, &self.shared);
             self.import_games();
         }
@@ -452,11 +462,16 @@ impl Engine {
         self.emit(AppEvent::Data);
     }
 
-    fn refresh_available(&self) {
+    /// Reads which champions the account can play and how much it masters each one.
+    fn refresh_champions(&self) {
         let Some(lcu) = self.lcu() else { return };
         match profile::read_available_champions(lcu) {
             Ok(available) => *self.shared.available.write().unwrap() = Some(available),
             Err(e) => self.shared.log_error("owned champions", e),
+        }
+        match profile::read_mastery_points(lcu) {
+            Ok(points) => *self.shared.mastery.write().unwrap() = points,
+            Err(e) => self.shared.log_error("champion mastery", e),
         }
     }
 
@@ -537,7 +552,7 @@ impl Engine {
             return self.champ_select.clear();
         };
         if !self.champ_select.is_active() {
-            self.refresh_available();
+            self.refresh_champions();
         }
         let pickable = self.lcu().and_then(|lcu| match champ_select::read_pickable(lcu) {
             Ok(pickable) => Some(pickable),
@@ -563,6 +578,7 @@ impl Engine {
     fn import_games(&mut self) {
         let (Some(lcu), Some(account)) = (&self.client, self.account.as_deref()) else { return };
         if self.history.import(lcu, account, &self.shared) {
+            self.refresh_champions();
             self.emit(AppEvent::Data);
         }
     }
@@ -591,7 +607,7 @@ impl Engine {
             None => self.cards.stop(),
         }
         let paused = self.shared.config().paused;
-        let champ_select = self.champ_select.view(self.mode, |id| self.shared.champion_info(id));
+        let champ_select = self.champ_select.view(self.mode, self.shared.config().champion_order, |id| self.shared.champion_info(id));
         let game = self.game.as_ref().map(|g| CurrentGame { mode: g.mode, champion: g.champion.map(|id| self.shared.champion_info(id)) });
         let phase = match () {
             _ if paused => Phase::Paused,

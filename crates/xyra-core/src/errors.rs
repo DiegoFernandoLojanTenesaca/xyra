@@ -10,6 +10,7 @@ pub enum AppError {
     ClientClosed,
     GameInProgress,
     NoFreeRunePage,
+    NoFreeKeySlot,
     NoSummoner,
     NoData,
     EmptyCatalog,

@@ -60,7 +60,7 @@ pub fn followed(augments: &[u32], offers: &[Offer]) -> Vec<Option<bool>> {
 }
 
 #[derive(Deserialize)]
-struct MatchHistory {
+pub struct MatchHistory {
     games: HistoryPage,
 }
 
@@ -108,11 +108,12 @@ impl ParticipantStats {
 }
 
 /// Adds the ARAM: Mayhem and Arena games of the account's recent match history that are not stored yet.
-pub fn import_recent(lcu: &Lcu, account: &str, games: &mut Vec<StoredGame>) -> Result<usize> {
-    Ok(add_new_games(lcu.get_as(MATCH_HISTORY)?, account, games))
+pub fn read_history(lcu: &Lcu) -> Result<MatchHistory> {
+    lcu.get_as(MATCH_HISTORY)
 }
 
-fn add_new_games(history: MatchHistory, account: &str, games: &mut Vec<StoredGame>) -> usize {
+/// Adds the augment games of the history that are not stored yet and returns how many.
+pub fn add_new_games(history: MatchHistory, account: &str, games: &mut Vec<StoredGame>) -> usize {
     let before = games.len();
     for game in history.games.games {
         let mode = GameMode::from_client(&game.game_mode);

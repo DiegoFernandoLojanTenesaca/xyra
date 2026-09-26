@@ -70,7 +70,7 @@ fn talks_to_the_running_client() {
     println!("profile {} #{} level {} rank {:?}", profile.name, profile.tag, profile.level, profile.rank.map(|r| r.tier));
 
     let mut games = Vec::new();
-    println!("{} recent games with augments", stats::import_recent(&lcu, &account, &mut games).expect("match history"));
+    println!("{} recent games with augments", stats::add_new_games(stats::read_history(&lcu).expect("match history"), &account, &mut games));
 
     if let Ok(session) = lcu.get(champ_select::SESSION) {
         println!("champion select {:?}", champ_select::parse(&session).expect("champion select shape"));

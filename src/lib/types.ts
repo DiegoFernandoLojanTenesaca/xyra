@@ -7,6 +7,7 @@ export type { BuildMode } from './generated/BuildMode';
 export type { Card } from './generated/Card';
 export type { ChampSelect } from './generated/ChampSelect';
 export type { ChampionInfo } from './generated/ChampionInfo';
+export type { ChampionOrder } from './generated/ChampionOrder';
 export type { Choices } from './generated/Choices';
 export type { Config } from './generated/Config';
 export type { CurrentGame } from './generated/CurrentGame';

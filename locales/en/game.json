@@ -12,13 +12,17 @@
       "title": "Attack range",
       "description": "Draws how far your basic attacks reach."
     },
+    "alwaysAttackRange": {
+      "title": "Attack range always visible",
+      "description": "Your right click also readies attack-move: the circle shows every time you move and a left click attacks the closest target. It is a key binding of League itself."
+    },
     "minimapTimers": {
       "title": "Minimap timers",
       "description": "The objective and camp respawn timers built into the game."
     },
     "turretRange": {
-      "title": "Turret range",
-      "description": "Shows how far turrets shoot."
+      "title": "Turret range (vs. AI)",
+      "description": "Riot only draws it in games against bots: it does not show in ARAM, normals or ranked."
     },
     "flippedMinimap": {
       "title": "Minimap on the left",

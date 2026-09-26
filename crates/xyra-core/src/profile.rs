@@ -176,6 +176,12 @@ pub fn read(lcu: &Lcu, catalog: &Catalog) -> Result<Profile> {
     })
 }
 
+/// Mastery points of the account per champion.
+pub fn read_mastery_points(lcu: &Lcu) -> Result<HashMap<u32, u64>> {
+    let masteries: Vec<ChampionMastery> = lcu.get_as(MASTERIES)?;
+    Ok(masteries.into_iter().map(|m| (m.champion_id, m.champion_points)).collect())
+}
+
 /// Champions the account owns or has free this week.
 pub fn read_available_champions(lcu: &Lcu) -> Result<HashSet<u32>> {
     let champions: Vec<OwnedChampion> = lcu.get_as(OWNED_CHAMPIONS)?;

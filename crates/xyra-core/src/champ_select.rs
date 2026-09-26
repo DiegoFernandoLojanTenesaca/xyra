@@ -1,4 +1,5 @@
 use crate::{
+    config::ChampionOrder,
     errors::Result,
     league::{Lcu, parse as parse_client},
     model::{ChampSelect, ChampionInfo, GameMode, Matchup, Position},
@@ -148,7 +149,7 @@ impl ChampSelectTracker {
         })
     }
 
-    pub fn view(&self, mode: GameMode, info: impl Fn(u32) -> ChampionInfo) -> Option<ChampSelect> {
+    pub fn view(&self, mode: GameMode, order: ChampionOrder, info: impl Fn(u32) -> ChampionInfo) -> Option<ChampSelect> {
         let session = self.session.as_ref()?;
         let pickable_info = |id| {
             let champion = info(id);
@@ -167,13 +168,21 @@ impl ChampSelectTracker {
         };
         let champion = session.champion.map(pickable_info);
         let bench: Vec<ChampionInfo> = session.bench.iter().map(|&id| pickable_info(id)).collect();
-        Some(ChampSelect { mode, position: session.position, bench_pick: bench_pick(champion.as_ref(), &bench), champion, bench, lane_opponent, counter_picks })
+        Some(ChampSelect {
+            mode,
+            position: session.position,
+            bench_pick: bench_pick(champion.as_ref(), &bench, order),
+            champion,
+            bench,
+            lane_opponent,
+            counter_picks,
+        })
     }
 }
 
-fn bench_pick(champion: Option<&ChampionInfo>, bench: &[ChampionInfo]) -> Option<ChampionInfo> {
-    let best = bench.iter().filter(|c| c.recommendable).min_by_key(|c| c.rank)?;
-    champion.and_then(|c| c.rank).is_none_or(|yours| best.rank < Some(yours)).then(|| best.clone())
+fn bench_pick(champion: Option<&ChampionInfo>, bench: &[ChampionInfo], order: ChampionOrder) -> Option<ChampionInfo> {
+    let best = bench.iter().filter(|c| c.recommendable).min_by_key(|c| c.preference(order))?;
+    champion.is_none_or(|yours| best.preference(order) < yours.preference(order)).then(|| best.clone())
 }
 
 #[cfg(test)]
@@ -188,7 +197,8 @@ mod tests {
 
     fn info(id: u32) -> ChampionInfo {
         let rank = HashMap::from([(1, 40), (2, 10), (3, 5), (4, 20)]);
-        ChampionInfo::new(Asset { id, name: format!("#{id}"), icon: String::new() }, rank.get(&id).map(|&r| (1, r)), false)
+        let mastery = if id == 4 { 90_000 } else { 0 };
+        ChampionInfo { mastery, ..ChampionInfo::new(Asset { id, name: format!("#{id}"), icon: String::new() }, rank.get(&id).map(|&r| (1, r)), false) }
     }
 
     #[test]
@@ -233,14 +243,15 @@ mod tests {
     fn picks_the_best_takeable_bench_champion_only_when_it_beats_yours() {
         let mut tracker = ChampSelectTracker::default();
         tracker.update(session(Some(1), vec![2, 3, 9], Vec::new()), Some(HashSet::from([1, 2, 9])), GameMode::Mayhem, false);
-        let view = tracker.view(GameMode::Mayhem, info).unwrap();
+        let view = tracker.view(GameMode::Mayhem, ChampionOrder::Tier, info).unwrap();
         assert!(view.bench[1].locked && !view.bench[1].recommendable);
         assert_eq!(view.bench_pick.map(|c| c.id), Some(2));
 
         tracker.update(session(Some(3), vec![2, 4], Vec::new()), None, GameMode::Mayhem, false);
-        assert_eq!(tracker.view(GameMode::Mayhem, info).unwrap().bench_pick, None);
+        assert_eq!(tracker.view(GameMode::Mayhem, ChampionOrder::Tier, info).unwrap().bench_pick, None);
+        assert_eq!(tracker.view(GameMode::Mayhem, ChampionOrder::Mastery, info).unwrap().bench_pick.map(|c| c.id), Some(4));
 
         tracker.update(session(None, vec![4, 2], Vec::new()), None, GameMode::Mayhem, false);
-        assert_eq!(tracker.view(GameMode::Mayhem, info).unwrap().bench_pick.map(|c| c.id), Some(2));
+        assert_eq!(tracker.view(GameMode::Mayhem, ChampionOrder::Tier, info).unwrap().bench_pick.map(|c| c.id), Some(2));
     }
 }

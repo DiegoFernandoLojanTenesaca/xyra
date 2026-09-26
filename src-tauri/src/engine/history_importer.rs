@@ -20,6 +20,7 @@ impl HistoryImporter {
 
     pub fn cancel(&mut self) {
         self.pending = false;
+        self.offers.clear();
     }
 
     pub fn is_pending(&self) -> bool {
@@ -35,24 +36,26 @@ impl HistoryImporter {
         }
     }
 
+    /// Reads the match history before locking the stored games, so the stats screen never waits on the client.
     pub fn import(&mut self, lcu: &Lcu, account: &str, shared: &Shared) -> bool {
-        let mut games = shared.games.lock().unwrap();
-        let added = match stats::import_recent(lcu, account, &mut games) {
-            Ok(added) => added,
+        let history = match stats::read_history(lcu) {
+            Ok(history) => history,
             Err(e) => {
                 shared.log_error("match history", e);
-                0
+                return false;
             }
         };
-        if added > 0 {
-            self.pending = false;
-            if let Some(newest) = games.first_mut() {
-                newest.offers = std::mem::take(&mut self.offers);
-            }
-            if let Err(e) = shared.storage.save_games(&games) {
-                shared.log_error("save stats", e);
-            }
+        let mut games = shared.games.lock().unwrap();
+        if stats::add_new_games(history, account, &mut games) == 0 {
+            return false;
         }
-        added > 0
+        self.pending = false;
+        if let Some(newest) = games.first_mut() {
+            newest.offers = std::mem::take(&mut self.offers);
+        }
+        if let Err(e) = shared.storage.save_games(&games) {
+            shared.log_error("save stats", e);
+        }
+        true
     }
 }

@@ -16,7 +16,6 @@
   },
   "inGame": "Watching your cards: the best one gets marked the moment they appear.",
   "takeFromBench": "Take {{champion}} from the bench",
-  "strongerThan": "Stronger than {{champion}} in ARAM: Mayhem: rank #{{rank}}.",
   "yourChampion": "Your champion · rank #{{rank}} in ARAM: Mayhem.",
   "riftChampion": "Check its build and matchups before the game starts.",
   "counterPick": "Against {{enemy}}, pick {{champion}}",
@@ -54,5 +53,26 @@
   "lastGame": "Your augments with {{champion}}",
   "followedSummary": "you followed Xyra in {{followed}} of {{seen}}",
   "followedYes": "It was the recommended one",
-  "followedNo": "It was not the recommended one"
+  "followedNo": "It was not the recommended one",
+  "order": {
+    "tier": "Tier",
+    "mastery": "Mastery",
+    "played": "Played",
+    "balanced": "Mixed"
+  },
+  "orderHint": {
+    "tier": "The best in ARAM: Mayhem according to OP.GG. In champion select, the bench follows the same order.",
+    "mastery": "The ones you master most, by your mastery points. In champion select, the bench follows the same order.",
+    "played": "The ones you played most in the games Xyra stored. In champion select, the bench follows the same order.",
+    "balanced": "Best tier first and, within each tier, the ones you master most. In champion select, the bench follows the same order."
+  },
+  "benchReason": {
+    "tier": "Stronger than {{champion}} in ARAM: Mayhem: rank #{{rank}}.",
+    "mastery": "You master it more than {{champion}}: {{points}} mastery points.",
+    "played": "You played it more than {{champion}}: {{count}} games.",
+    "balanced": "Tier {{tier}} and you master it: {{points}} mastery points."
+  },
+  "masteryPoints": "{{points}} mastery points",
+  "gamesPlayed_one": "{{count}} game",
+  "gamesPlayed_other": "{{count}} games"
 }

@@ -2,6 +2,7 @@
   "clientClosed": "Open League and try again.",
   "gameInProgress": "Finish the game and try again.",
   "noFreeRunePage": "You have no free rune pages: delete one and try again.",
+  "noFreeKeySlot": "Your attack-move action already uses both key slots: free one in League Options → Hotkeys.",
   "noSummoner": "Could not read your account from the client.",
   "noData": "OP.GG has no data for this yet.",
   "emptyCatalog": "The client is still loading its data: wait a few seconds.",

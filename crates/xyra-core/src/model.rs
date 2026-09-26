@@ -1,6 +1,10 @@
-use crate::{cards::Card, config::LabelStyle};
+use crate::{
+    cards::Card,
+    config::{ChampionOrder, LabelStyle},
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::cmp::Reverse;
 use ts_rs::TS;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, TS)]
@@ -116,12 +120,29 @@ pub struct ChampionInfo {
     /// The account can neither play it nor take it from the bench.
     pub locked: bool,
     pub recommendable: bool,
+    /// Mastery points of the account.
+    #[ts(type = "number")]
+    pub mastery: u64,
+    /// Games of the account that Xyra stored.
+    pub played: u32,
 }
 
 impl ChampionInfo {
     pub fn new(champion: Asset, tier_and_rank: Option<(u8, u32)>, locked: bool) -> ChampionInfo {
         let (tier, rank) = tier_and_rank.unzip();
-        ChampionInfo { id: champion.id, name: champion.name, icon: champion.icon, tier, rank, locked, recommendable: false }.with_lock(locked)
+        ChampionInfo { id: champion.id, name: champion.name, icon: champion.icon, tier, rank, locked, recommendable: false, mastery: 0, played: 0 }
+            .with_lock(locked)
+    }
+
+    /// Sort key with the player's criterion: lower goes first, unranked champions last.
+    pub fn preference(&self, order: ChampionOrder) -> (bool, u8, Reverse<u64>, Option<u32>) {
+        let unranked = self.rank.is_none();
+        match order {
+            ChampionOrder::Tier => (unranked, 0, Reverse(0), self.rank),
+            ChampionOrder::Mastery => (unranked, 0, Reverse(self.mastery), self.rank),
+            ChampionOrder::Played => (unranked, 0, Reverse(self.played.into()), self.rank),
+            ChampionOrder::Balanced => (unranked, self.tier.unwrap_or(u8::MAX), Reverse(self.mastery), self.rank),
+        }
     }
 
     pub fn with_lock(self, locked: bool) -> ChampionInfo {
@@ -226,6 +247,7 @@ impl AppEvent {
 #[ts(export)]
 pub struct Choices {
     pub label_styles: Vec<LabelStyle>,
+    pub champion_orders: Vec<ChampionOrder>,
     pub positions: Vec<Position>,
     pub augment_modes: Vec<GameMode>,
     pub rarities: Vec<Rarity>,
@@ -235,6 +257,7 @@ impl Choices {
     pub fn all() -> Choices {
         Choices {
             label_styles: LabelStyle::ALL.to_vec(),
+            champion_orders: ChampionOrder::ALL.to_vec(),
             positions: Position::ALL.to_vec(),
             augment_modes: GameMode::WITH_AUGMENTS.to_vec(),
             rarities: Rarity::ALL.to_vec(),

@@ -8,4 +8,12 @@ tier: number | null, rank: number | null,
 /**
  * The account can neither play it nor take it from the bench.
  */
-locked: boolean, recommendable: boolean, };
+locked: boolean, recommendable: boolean, 
+/**
+ * Mastery points of the account.
+ */
+mastery: number, 
+/**
+ * Games of the account that Xyra stored.
+ */
+played: number, };
