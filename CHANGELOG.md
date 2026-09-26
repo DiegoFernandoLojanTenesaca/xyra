@@ -1,3 +1,4 @@
+- Added an Android app that pairs with Xyra by scanning the QR code in Settings → Phone and opens it on your phone, over your Wi-Fi or Tailscale.
 - Added a phone link: scan a QR code in Settings → Phone to accept matches, import builds and follow champion select and your game from your phone on the same network. Off by default and protected by a pairing code.
 - Added game tips on Home: the skill to level following the build and the next item of the build, with the gold you still need, read from the game's official local API.
 - Added a Meta screen with the best ranked champions of the patch by position: win, pick and ban rates, tier and how much each one rose or fell since the previous patch, with a link to the official patch notes.

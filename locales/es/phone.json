@@ -1,5 +1,5 @@
 {
-  "noToken": "Abre esta página escaneando el QR de Xyra en tu PC: Ajustes → Celular.",
+  "noToken": "Abre Xyra con la app Xyra de tu celular: escanea el código de tu PC en Ajustes → Celular.",
   "connecting": "Conectando con Xyra…",
   "offline": "No encuentro Xyra en tu PC. Revisa que el enlace con el celular siga encendido y que estés en la misma red Wi-Fi.",
   "phases": {

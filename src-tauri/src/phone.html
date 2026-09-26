@@ -291,7 +291,8 @@
             if (answer.state.phase !== state?.phase && !answer.state.champ_select && answer.state.phase !== 'inGame') stats = await api('/api/stats');
             ({ version, state } = answer);
             offline = false;
-          } catch {
+          } catch (error) {
+            if (error.message === 'forbidden' && window.XyraApp) return window.XyraApp.scan();
             offline = true;
             version = null;
             await sleep(RETRY_MS);

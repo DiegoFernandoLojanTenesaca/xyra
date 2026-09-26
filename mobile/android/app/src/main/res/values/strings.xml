@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Xyra</string>
+    <string name="looking">Looking for Xyra on your PC…</string>
+    <string name="not_found_title">Your PC cannot be reached</string>
+    <string name="not_found">Check that Xyra is open with the phone link on and that both are on the same Wi-Fi or on Tailscale.</string>
+    <string name="invalid_code">That is not a Xyra code. On your PC open Settings → Phone and scan the code shown there.</string>
+    <string name="retry">Retry</string>
+    <string name="scan">Scan again</string>
+</resources>

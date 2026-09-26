@@ -1,5 +1,5 @@
 {
-  "noToken": "Open this page by scanning the QR code in Xyra on your PC: Settings → Phone.",
+  "noToken": "Open Xyra with the Xyra app on your phone: scan the code on your PC in Settings → Phone.",
   "connecting": "Connecting to Xyra…",
   "offline": "Xyra on your PC cannot be reached. Check that the phone link is still on and that you are on the same Wi-Fi.",
   "phases": {
