@@ -71,14 +71,14 @@
       "title": "Phone link",
       "description": "Xyra opens an access point on your network so your phone sees the same as the window. It only uses memory while it is on."
     },
-    "sameNetwork": "Your phone has to be on the same Wi-Fi as your PC.",
+    "sameNetwork": "Your phone has to be on the same Wi-Fi as your PC, or both on your Tailscale.",
     "firewall": "Windows has to let the phone in: the first time it asks whether Xyra can use the network (allow it), and your home Wi-Fi must be set as a private network in Settings → Network & internet.",
     "canDo": "From your phone you can accept the match, import runes, items and spells, and see counters, the bench, tips and cards.",
     "privateTitle": "Only with your code.",
     "private": "Nobody can use it without the QR code, and nothing goes through the internet: the phone talks straight to your PC.",
     "off": "Turn the link on to see the QR code.",
     "starting": "Turning the link on…",
-    "scan": "Scan it with your phone camera.",
+    "scan": "Scan it with the Xyra app on your phone.",
     "qrAlt": "QR code to open Xyra on your phone",
     "newCode": "Change code",
     "newCodeHint": "Disconnects the phones that already scanned it."

@@ -37,7 +37,6 @@
     {:else if link.value}
       <img class="code" src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(link.value.qr)}`} alt={t('settings:phone.qrAlt')} />
       <p class="muted">{t('settings:phone.scan')}</p>
-      <code>{link.value.url.split('?')[0]}</code>
       <Button icon={RefreshCw} onclick={() => app.saveConfig({ phone_token: '' })}>{t('settings:phone.newCode')}</Button>
       <small class="muted">{t('settings:phone.newCodeHint')}</small>
     {:else}
@@ -84,8 +83,5 @@
   .code {
     padding: var(--space-3);
     background: var(--color-white);
-  }
-  code {
-    color: var(--color-textSubtle);
   }
 </style>

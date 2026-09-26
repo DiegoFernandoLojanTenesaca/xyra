@@ -20,8 +20,10 @@ use xyra_core::{
 pub const PORT: u16 = 47811;
 /// A state request waits this long for a change before answering with the same state.
 const LONG_POLL: Duration = Duration::from_secs(20);
-/// Any public address works: connecting a UDP socket sends nothing and only picks the network interface.
-const ROUTE_PROBE: (Ipv4Addr, u16) = (Ipv4Addr::new(8, 8, 8, 8), 80);
+/// Connecting a UDP socket sends nothing and only picks the interface that reaches the address: the home network
+/// through a public address, and Tailscale through its DNS address when it is running.
+const ROUTE_PROBES: [(Ipv4Addr, u16); 2] = [(Ipv4Addr::new(8, 8, 8, 8), 80), (Ipv4Addr::new(100, 100, 100, 100), 53)];
+const PAIRING_URI: &str = "xyra://pair";
 const QR_SIZE: u32 = 240;
 const PAGE: &str = include_str!("phone.html");
 const TOKENS: &str = include_str!("../../design/tokens.json");
@@ -64,7 +66,7 @@ fn start(shared: &Arc<Shared>) -> Result<PhoneServer> {
     Ok(PhoneServer { server })
 }
 
-/// The address to open on the phone and its QR code; None while the link is off.
+/// The QR code the Xyra phone app scans to pair; None while the link is off.
 pub fn link(shared: &Shared) -> Result<Option<PhoneLink>> {
     let config = shared.config();
     if !config.phone_link {
@@ -73,15 +75,24 @@ pub fn link(shared: &Shared) -> Result<Option<PhoneLink>> {
     if shared.phone.lock().unwrap().is_none() {
         return Err(AppError::PhoneLinkUnavailable);
     }
-    let url = format!("http://{}:{PORT}/?t={}", local_address()?, config.phone_token);
-    let qr = QrCode::new(&url).map_err(AppError::platform)?.render::<svg::Color>().min_dimensions(QR_SIZE, QR_SIZE).build();
-    Ok(Some(PhoneLink { url, qr }))
+    let hosts = local_addresses().iter().map(IpAddr::to_string).collect::<Vec<_>>().join(",");
+    let pairing = format!("{PAIRING_URI}?hosts={hosts}&port={PORT}&token={}", config.phone_token);
+    let qr = QrCode::new(&pairing).map_err(AppError::platform)?.render::<svg::Color>().min_dimensions(QR_SIZE, QR_SIZE).build();
+    Ok(Some(PhoneLink { qr }))
 }
 
-fn local_address() -> Result<IpAddr> {
-    let socket = UdpSocket::bind((Ipv4Addr::UNSPECIFIED, 0))?;
-    socket.connect(ROUTE_PROBE)?;
-    Ok(socket.local_addr()?.ip())
+/// This PC's addresses on the home network and on Tailscale, the ones a phone can reach.
+fn local_addresses() -> Vec<IpAddr> {
+    let mut addresses = Vec::new();
+    for probe in ROUTE_PROBES {
+        let address = UdpSocket::bind((Ipv4Addr::UNSPECIFIED, 0)).and_then(|socket| socket.connect(probe).and_then(|()| socket.local_addr()));
+        if let Ok(address) = address
+            && !addresses.contains(&address.ip())
+        {
+            addresses.push(address.ip());
+        }
+    }
+    addresses
 }
 
 fn handle(request: Request, shared: &Shared) {

@@ -163,12 +163,11 @@ pub struct Asset {
     pub icon: String,
 }
 
-/// Address and QR code to open Xyra on a phone.
+/// QR code the Xyra phone app scans to pair with this PC.
 #[derive(Clone, Debug, PartialEq, Serialize, TS)]
 #[ts(export)]
 pub struct PhoneLink {
-    pub url: String,
-    /// SVG image of the QR code of `url`.
+    /// SVG image of the pairing code: this PC's addresses, the port and the pairing token.
     pub qr: String,
 }
 
