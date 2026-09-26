@@ -163,6 +163,38 @@ pub struct Asset {
     pub icon: String,
 }
 
+/// Who the phone app is talking to.
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[ts(export)]
+pub struct PcInfo {
+    pub name: String,
+    pub version: String,
+    pub language: String,
+}
+
+/// The settings the phone app can change.
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[ts(export)]
+pub struct PhoneSettings {
+    pub auto_accept: bool,
+    pub accept_delay_seconds: u32,
+    pub auto_import_build: bool,
+    pub paused: bool,
+    pub champion_order: ChampionOrder,
+}
+
+impl From<&crate::config::Config> for PhoneSettings {
+    fn from(config: &crate::config::Config) -> PhoneSettings {
+        PhoneSettings {
+            auto_accept: config.auto_accept,
+            accept_delay_seconds: config.accept_delay_seconds,
+            auto_import_build: config.auto_import_build,
+            paused: config.paused,
+            champion_order: config.champion_order,
+        }
+    }
+}
+
 /// QR code the Xyra phone app scans to pair with this PC.
 #[derive(Clone, Debug, PartialEq, Serialize, TS)]
 #[ts(export)]

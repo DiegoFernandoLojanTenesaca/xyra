@@ -131,6 +131,7 @@ pub fn run() {
             commands::get_build,
             commands::get_meta,
             commands::get_phone_link,
+            commands::prepare_windows_for_phone,
             commands::import_build,
             commands::get_game_settings,
             commands::set_game_setting,

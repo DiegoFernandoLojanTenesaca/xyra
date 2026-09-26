@@ -12,6 +12,7 @@ pub enum AppError {
     NoFreeRunePage,
     NotInChampSelect,
     PhoneLinkUnavailable,
+    WindowsNotPrepared,
     NoSummoner,
     NoData,
     EmptyCatalog,

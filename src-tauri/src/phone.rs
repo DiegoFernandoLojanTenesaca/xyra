@@ -1,10 +1,16 @@
-use crate::{commands::App, engine::Shared};
+use crate::{
+    commands::{App, apply_config},
+    engine::Shared,
+};
+use base64::{Engine, engine::general_purpose::STANDARD};
 use qrcode::{QrCode, render::svg};
-use serde::Serialize;
+use serde::{Serialize, de::DeserializeOwned};
 use serde_json::{Value, json};
 use std::{
     io::Cursor,
     net::{IpAddr, Ipv4Addr, UdpSocket},
+    os::windows::process::CommandExt,
+    process::Command,
     sync::Arc,
     thread,
     time::Duration,
@@ -13,8 +19,9 @@ use tauri::{AppHandle, Manager};
 use tiny_http::{Header, Method, Request, Response, Server};
 use xyra_core::{
     errors::{AppError, Result},
-    i18n, matchmaking,
-    model::{ImportTarget, PhoneLink},
+    matchmaking,
+    model::{BuildMode, GameMode, ImportTarget, PcInfo, PhoneLink, PhoneSettings, Position},
+    opgg,
 };
 
 pub const PORT: u16 = 47811;
@@ -25,10 +32,10 @@ const LONG_POLL: Duration = Duration::from_secs(20);
 const ROUTE_PROBES: [(Ipv4Addr, u16); 2] = [(Ipv4Addr::new(8, 8, 8, 8), 80), (Ipv4Addr::new(100, 100, 100, 100), 53)];
 const PAIRING_URI: &str = "xyra://pair";
 const QR_SIZE: u32 = 240;
-const PAGE: &str = include_str!("phone.html");
-const TOKENS: &str = include_str!("../../design/tokens.json");
+const FIREWALL_RULE: &str = "Xyra (celular)";
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
-/// Serves Xyra to phones on the same network while the player keeps it on.
+/// Serves Xyra to the phone app on the same network while the player keeps it on.
 pub struct PhoneServer {
     server: Arc<Server>,
 }
@@ -45,7 +52,7 @@ pub fn follow_config(app: &AppHandle) {
     let wanted = shared.config().phone_link;
     let mut phone = shared.phone.lock().unwrap();
     if wanted && phone.is_none() {
-        match start(&shared) {
+        match start(app) {
             Ok(server) => *phone = Some(server),
             Err(e) => shared.log_error("phone link", e),
         }
@@ -54,13 +61,13 @@ pub fn follow_config(app: &AppHandle) {
     }
 }
 
-fn start(shared: &Arc<Shared>) -> Result<PhoneServer> {
+fn start(app: &AppHandle) -> Result<PhoneServer> {
     let server = Arc::new(Server::http((Ipv4Addr::UNSPECIFIED, PORT)).map_err(AppError::platform)?);
-    let (listener, shared) = (Arc::clone(&server), Arc::clone(shared));
+    let (listener, app) = (Arc::clone(&server), app.clone());
     thread::spawn(move || {
         for request in listener.incoming_requests() {
-            let shared = Arc::clone(&shared);
-            thread::spawn(move || handle(request, &shared));
+            let app = app.clone();
+            thread::spawn(move || handle(request, &app));
         }
     });
     Ok(PhoneServer { server })
@@ -81,6 +88,22 @@ pub fn link(shared: &Shared) -> Result<Option<PhoneLink>> {
     Ok(Some(PhoneLink { qr }))
 }
 
+/// Asks Windows, through its administrator prompt, to let phones in: marks the network that reaches the internet as
+/// private and allows Xyra's port on private networks only.
+pub fn prepare_windows() -> Result<()> {
+    let program = std::env::current_exe()?.display().to_string().replace('\'', "''");
+    let script = format!(
+        "$route = Get-NetRoute -DestinationPrefix 0.0.0.0/0 | Sort-Object RouteMetric | Select-Object -First 1; \
+         Set-NetConnectionProfile -InterfaceIndex $route.InterfaceIndex -NetworkCategory Private; \
+         Get-NetFirewallRule -DisplayName '{FIREWALL_RULE}' -ErrorAction SilentlyContinue | Remove-NetFirewallRule; \
+         New-NetFirewallRule -DisplayName '{FIREWALL_RULE}' -Direction Inbound -Program '{program}' -Protocol TCP -LocalPort {PORT} -Action Allow -Profile Private | Out-Null"
+    );
+    let encoded = STANDARD.encode(script.encode_utf16().flat_map(u16::to_le_bytes).collect::<Vec<u8>>());
+    let elevate = format!("Start-Process powershell -Verb RunAs -Wait -WindowStyle Hidden -ArgumentList '-NoProfile','-EncodedCommand','{encoded}'");
+    let status = Command::new("powershell").args(["-NoProfile", "-Command", &elevate]).creation_flags(CREATE_NO_WINDOW).status()?;
+    if status.success() { Ok(()) } else { Err(AppError::WindowsNotPrepared) }
+}
+
 /// This PC's addresses on the home network and on Tailscale, the ones a phone can reach.
 fn local_addresses() -> Vec<IpAddr> {
     let mut addresses = Vec::new();
@@ -95,17 +118,44 @@ fn local_addresses() -> Vec<IpAddr> {
     addresses
 }
 
-fn handle(request: Request, shared: &Shared) {
+/// Query parameters of a request, already split; values are plain ASCII the app sends unencoded.
+struct Query<'a>(&'a str);
+
+impl Query<'_> {
+    fn get(&self, name: &str) -> Option<&str> {
+        self.0.split('&').find_map(|pair| pair.strip_prefix(name)?.strip_prefix('='))
+    }
+
+    fn parse<T: DeserializeOwned>(&self, name: &str) -> Option<T> {
+        serde_json::from_value(Value::String(self.get(name)?.into())).ok()
+    }
+
+    fn number<T: std::str::FromStr>(&self, name: &str) -> Option<T> {
+        self.get(name)?.parse().ok()
+    }
+}
+
+fn handle(request: Request, app: &AppHandle) {
+    let shared = Arc::clone(&app.state::<App>());
     let url = request.url().to_string();
     let (path, query) = url.split_once('?').unwrap_or((&url, ""));
-    let param = |name: &str| query.split('&').find_map(|pair| pair.strip_prefix(name)?.strip_prefix('='));
+    let query = Query(query);
     let response = match (request.method(), path) {
-        (Method::Get, "/") => page(shared),
-        _ if !authorized(param("t"), shared) => text(403, "forbidden"),
-        (Method::Get, "/api/state") => state(shared, param("after").and_then(|after| after.parse().ok())),
+        _ if !query.get("t").is_some_and(|token| shared.config().is_phone_token(token)) => text(403, "forbidden"),
+        (Method::Get, "/api/pc") => json_response(&pc_info(&shared)),
+        (Method::Get, "/api/state") => {
+            let (version, state) = shared.wait_for_state(query.number("after"), LONG_POLL);
+            json_response(&json!({ "version": version, "state": state }))
+        }
         (Method::Get, "/api/stats") => json_response(&shared.stats_summary()),
-        (Method::Post, "/api/accept") => outcome(shared.lcu().and_then(|lcu| matchmaking::accept_if_waiting(&lcu)).map(drop)),
-        (Method::Post, "/api/import") => outcome(import(shared, param("target").unwrap_or_default())),
+        (Method::Get, "/api/champions") => json_response(&shared.champions()),
+        (Method::Get, "/api/meta") => answer(shared.meta()),
+        (Method::Get, "/api/build") => answer(build(&shared, &query)),
+        (Method::Get, "/api/augments") => answer(augments(&shared, &query)),
+        (Method::Get, "/api/settings") => json_response(&PhoneSettings::from(&shared.config())),
+        (Method::Post, "/api/settings") => answer(change_settings(app, &shared, &query)),
+        (Method::Post, "/api/accept") => answer(shared.lcu().and_then(|lcu| matchmaking::accept_if_waiting(&lcu))),
+        (Method::Post, "/api/import") => answer(import(&shared, &query)),
         _ => text(404, "not found"),
     };
     if let Err(e) = request.respond(response) {
@@ -113,50 +163,70 @@ fn handle(request: Request, shared: &Shared) {
     }
 }
 
-fn authorized(token: Option<&str>, shared: &Shared) -> bool {
-    token.is_some_and(|token| shared.config().is_phone_token(token))
+fn pc_info(shared: &Shared) -> PcInfo {
+    PcInfo { name: std::env::var("COMPUTERNAME").unwrap_or_default(), version: env!("CARGO_PKG_VERSION").into(), language: shared.language().into() }
 }
 
-/// Answers at once for a first request, then waits until the state changes past `after`.
-fn state(shared: &Shared, after: Option<u64>) -> Response<Cursor<Vec<u8>>> {
-    let (version, state) = shared.wait_for_state(after, LONG_POLL);
-    json_response(&json!({ "version": version, "state": state }))
+fn build(shared: &Shared, query: &Query) -> Result<xyra_core::model::Build> {
+    let champion = query.number("champion").ok_or(AppError::NoData)?;
+    let mode: BuildMode = query.parse("mode").unwrap_or(BuildMode::Aram);
+    shared.fetch_build(champion, mode, query.parse::<Position>("position"))
+}
+
+fn augments(shared: &Shared, query: &Query) -> Result<Vec<xyra_core::model::AugmentRow>> {
+    let champion = query.number("champion").ok_or(AppError::NoData)?;
+    let mode: GameMode = query.parse("mode").unwrap_or(GameMode::Mayhem);
+    Ok(opgg::augment_rows(opgg::fetch_augments(&shared.web, champion, mode)?, &shared.catalog()))
+}
+
+/// Applies the settings the phone sends; any the request leaves out keep their value.
+fn change_settings(app: &AppHandle, shared: &Shared, query: &Query) -> Result<PhoneSettings> {
+    let mut config = shared.config();
+    if let Some(on) = query.parse("auto_accept") {
+        config.auto_accept = on;
+    }
+    if let Some(seconds) = query.number("accept_delay_seconds") {
+        config.accept_delay_seconds = seconds;
+    }
+    if let Some(on) = query.parse("auto_import_build") {
+        config.auto_import_build = on;
+    }
+    if let Some(on) = query.parse("paused") {
+        config.paused = on;
+    }
+    if let Some(order) = query.parse("champion_order") {
+        config.champion_order = order;
+    }
+    Ok(PhoneSettings::from(&apply_config(app, shared, config)?))
 }
 
 /// Imports part of the build of the champion picked in the current champion select.
-fn import(shared: &Shared, target: &str) -> Result<()> {
-    let target: ImportTarget = serde_json::from_value(Value::String(target.into())).map_err(|_| AppError::NoData)?;
+fn import(shared: &Shared, query: &Query) -> Result<()> {
+    let target: ImportTarget = query.parse("target").ok_or(AppError::NoData)?;
     let select = shared.state.lock().unwrap().champ_select.clone().ok_or(AppError::NotInChampSelect)?;
     let champion = select.champion.ok_or(AppError::NotInChampSelect)?;
     shared.import_build(champion.id, select.mode.build_mode(), select.position, target)
 }
 
-fn page(shared: &Shared) -> Response<Cursor<Vec<u8>>> {
-    let language = shared.language();
-    let mut texts = i18n::namespace(language, "phone").unwrap_or_else(|| json!({}));
-    texts["errors"] = i18n::namespace(language, "errors").unwrap_or(Value::Null);
-    let html = PAGE.replace("\"__TEXTS__\"", &texts.to_string()).replace("\"__TOKENS__\"", TOKENS).replace("__LANG__", language);
-    with_type(Response::from_string(html), "text/html; charset=utf-8")
-}
-
-fn outcome(result: Result<()>) -> Response<Cursor<Vec<u8>>> {
+fn answer(result: Result<impl Serialize>) -> Response<Cursor<Vec<u8>>> {
     match result {
-        Ok(()) => json_response(&json!({ "ok": true })),
-        Err(e) => json_response(&json!({ "ok": false, "error": e })).with_status_code(409),
+        Ok(value) => json_response(&json!({ "ok": true, "value": value })),
+        Err(e) => json_response(&json!({ "ok": false, "error": e })),
     }
 }
 
 fn json_response(value: &impl Serialize) -> Response<Cursor<Vec<u8>>> {
-    with_type(Response::from_string(serde_json::to_string(value).unwrap_or_default()), "application/json")
+    with_headers(Response::from_string(serde_json::to_string(value).unwrap_or_default()))
 }
 
 fn text(status: u16, body: &str) -> Response<Cursor<Vec<u8>>> {
-    Response::from_string(body).with_status_code(status)
+    with_headers(Response::from_string(body).with_status_code(status))
 }
 
-fn with_type(response: Response<Cursor<Vec<u8>>>, content_type: &str) -> Response<Cursor<Vec<u8>>> {
-    match Header::from_bytes("Content-Type", content_type) {
-        Ok(header) => response.with_header(header),
-        Err(()) => response,
-    }
+/// The app runs from its own origin, so every answer allows being read from any origin; the token guards access.
+fn with_headers(response: Response<Cursor<Vec<u8>>>) -> Response<Cursor<Vec<u8>>> {
+    [("Content-Type", "application/json; charset=utf-8"), ("Access-Control-Allow-Origin", "*")]
+        .into_iter()
+        .filter_map(|(name, value)| Header::from_bytes(name, value).ok())
+        .fold(response, Response::with_header)
 }

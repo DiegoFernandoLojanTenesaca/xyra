@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { RefreshCw, ShieldCheck, Smartphone } from '@lucide/svelte';
+  import { Download, RefreshCw, ShieldCheck, Smartphone } from '@lucide/svelte';
   import { app } from '../../app.svelte';
-  import { getPhoneLink } from '../../services/engine';
+  import { LINKS, openExternal } from '../../project';
+  import { getPhoneLink, prepareWindowsForPhone } from '../../services/engine';
   import { resource } from '../../services/resource.svelte';
   import Button from '../../ui/Button.svelte';
   import EmptyState from '../../ui/EmptyState.svelte';
@@ -10,22 +11,38 @@
   const t = $derived(app.t);
   const config = $derived(app.config);
   const link = resource(() => (config.phone_link ? config.phone_token : null), getPhoneLink);
+  let preparing = $state(false);
+  let notice = $state('');
+
+  /** Lets the phone in through Windows, which asks for administrator approval. */
+  async function prepareWindows() {
+    preparing = true;
+    notice = await prepareWindowsForPhone().then(() => t('settings:phone.prepared'), app.errorText);
+    preparing = false;
+  }
+
+  async function toggle() {
+    const enabling = !config.phone_link;
+    await app.saveConfig({ phone_link: enabling });
+    if (enabling) await prepareWindows();
+  }
 </script>
 
 <div class="pair">
   <section class="panel cut box">
     <h3 class="section-title">{t('settings:phone.title')}</h3>
-    <ToggleRow
-      title={t('settings:phone.toggle.title')}
-      description={t('settings:phone.toggle.description')}
-      checked={config.phone_link}
-      onchange={() => app.saveConfig({ phone_link: !config.phone_link })}
-    />
+    <ToggleRow title={t('settings:phone.toggle.title')} description={t('settings:phone.toggle.description')} checked={config.phone_link} onchange={toggle} />
     <ul class="muted steps">
+      <li>{t('settings:phone.getApp')}</li>
       <li>{t('settings:phone.sameNetwork')}</li>
       <li>{t('settings:phone.firewall')}</li>
       <li>{t('settings:phone.canDo')}</li>
     </ul>
+    <div class="buttons">
+      <Button icon={Download} onclick={() => openExternal(LINKS.releases)}>{t('settings:phone.download')}</Button>
+      <Button icon={ShieldCheck} disabled={preparing || !config.phone_link} onclick={prepareWindows}>{t('settings:phone.prepare')}</Button>
+    </div>
+    {#if notice}<p class="muted notice">{notice}</p>{/if}
     <p class="privacy"><b><ShieldCheck size={14} />{t('settings:phone.privateTitle')}</b> {t('settings:phone.private')}</p>
   </section>
 
@@ -62,6 +79,16 @@
   }
   .steps li {
     margin-bottom: var(--space-2);
+  }
+  .buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+  .notice {
+    margin: 0 0 var(--space-3);
+    font-size: var(--text-md);
   }
   .privacy {
     margin: 0;

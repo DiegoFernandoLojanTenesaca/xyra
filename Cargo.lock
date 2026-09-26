@@ -5580,6 +5580,7 @@ dependencies = [
 name = "xyra"
 version = "0.3.0"
 dependencies = [
+ "base64 0.22.1",
  "notify",
  "png 0.18.1",
  "qrcode",

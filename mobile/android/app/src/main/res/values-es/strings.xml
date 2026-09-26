@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="looking">Buscando Xyra en tu PC…</string>
-    <string name="not_found_title">No encuentro tu PC</string>
-    <string name="not_found">Revisa que Xyra esté abierto con el enlace del celular encendido y que los dos estén en la misma red Wi-Fi o en Tailscale.</string>
-    <string name="invalid_code">Ese no es un código de Xyra. En tu PC abre Ajustes → Celular y escanea el código que sale ahí.</string>
-    <string name="retry">Reintentar</string>
-    <string name="scan">Escanear de nuevo</string>
-</resources>

@@ -10,5 +10,6 @@ export const testOverlay = () => invoke<void>('test_overlay');
 export const testVoice = () => invoke<void>('test_voice');
 export const setBorderless = () => invoke<void>('set_borderless');
 export const getPhoneLink = () => invoke<PhoneLink | null>('get_phone_link');
+export const prepareWindowsForPhone = () => invoke<void>('prepare_windows_for_phone');
 
 export const onEvent = <T>(event: AppEvent, handler: (payload: T) => void) => listen<T>(event, (e) => handler(e.payload));

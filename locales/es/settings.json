@@ -72,8 +72,8 @@
       "description": "Xyra abre un acceso en tu red para que el celular vea lo mismo que la ventana. Solo gasta memoria mientras está encendido."
     },
     "sameNetwork": "El celular tiene que estar en la misma red Wi-Fi que la PC, o los dos en tu Tailscale.",
-    "firewall": "Windows tiene que dejar entrar al celular: la primera vez pregunta si Xyra puede usar la red (acepta), y tu Wi-Fi de casa debe estar como red privada en Configuración → Red e Internet.",
-    "canDo": "Desde el celular puedes aceptar la partida, importar runas, ítems y hechizos, ver counters, la banca, los consejos y las cartas.",
+    "firewall": "Al encender el enlace, Xyra prepara Windows: marca tu red como privada y abre solo su puerto. Windows te pedirá permiso de administrador.",
+    "canDo": "Desde la app puedes aceptar la partida, ver la selección, la build, el meta y tus estadísticas, e importar runas, ítems y hechizos.",
     "privateTitle": "Solo con tu código.",
     "private": "Sin el código del QR nadie puede usarlo, y nada pasa por internet: el celular habla directo con tu PC.",
     "off": "Enciende el enlace para ver el QR.",
@@ -81,6 +81,10 @@
     "scan": "Escanéalo con la app Xyra de tu celular.",
     "qrAlt": "Código QR para abrir Xyra en el celular",
     "newCode": "Cambiar código",
-    "newCodeHint": "Desconecta a los celulares que ya lo escanearon."
+    "newCodeHint": "Desconecta a los celulares que ya lo escanearon.",
+    "getApp": "Instala la app Xyra para Android desde las descargas de Xyra.",
+    "download": "Descargar la app",
+    "prepare": "Preparar Windows",
+    "prepared": "Listo: Windows ya deja entrar a la app en tu red privada."
   }
 }

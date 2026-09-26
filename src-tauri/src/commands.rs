@@ -89,6 +89,11 @@ pub fn get_phone_link(shared: State<App>) -> Result<Option<PhoneLink>> {
 }
 
 #[tauri::command]
+pub async fn prepare_windows_for_phone() -> Result<()> {
+    blocking(phone::prepare_windows).await
+}
+
+#[tauri::command]
 pub async fn get_meta(shared: State<'_, App>) -> Result<Meta> {
     let shared = Arc::clone(&shared);
     blocking(move || shared.meta()).await
