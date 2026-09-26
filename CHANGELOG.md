@@ -11,6 +11,7 @@
 - Added minimizing the Xyra window when a game starts on its screen, so it never covers the cards.
 - Added a choice of how to rank recommended champions on Home and on the bench: tier, mastery, most played or mixed.
 - Added importing summoner spells, each kept on the key where you already had it.
+- Added a website with the features, a preview of every label style and the download of the latest version.
 - Fixed Build and Augments staying on the previous game champion; they now follow the current pick.
 - Fixed labels hiding while the cards were still open when a screen read missed some names, or when another monitor had the focus.
 - Fixed a rerolled card not getting its label back; the new card replaces the old one in its slot.

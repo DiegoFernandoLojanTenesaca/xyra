@@ -5542,7 +5542,7 @@ dependencies = [
 
 [[package]]
 name = "xyra"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "notify",
  "png 0.18.1",
@@ -5560,7 +5560,7 @@ dependencies = [
 
 [[package]]
 name = "xyra-core"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "base64 0.22.1",
  "include_dir",
