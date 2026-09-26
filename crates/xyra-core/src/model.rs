@@ -163,6 +163,15 @@ pub struct Asset {
     pub icon: String,
 }
 
+/// Address and QR code to open Xyra on a phone.
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[ts(export)]
+pub struct PhoneLink {
+    pub url: String,
+    /// SVG image of the QR code of `url`.
+    pub qr: String,
+}
+
 /// What to do next in the running game, from the build of the champion.
 #[derive(Clone, Debug, PartialEq, Serialize, TS)]
 #[ts(export)]
@@ -275,6 +284,8 @@ pub struct EngineState {
     pub version: String,
     /// Next skill and item while a game with builds is running.
     pub tips: Option<GameTips>,
+    /// A found match waits for the player's answer.
+    pub ready_check: bool,
 }
 
 /// Events the engine pushes to the UI.

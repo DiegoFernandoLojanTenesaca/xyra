@@ -30,4 +30,8 @@ language: string, ocr_language: string | null, version: string,
 /**
  * Next skill and item while a game with builds is running.
  */
-tips: GameTips | null, };
+tips: GameTips | null, 
+/**
+ * A found match waits for the player's answer.
+ */
+ready_check: boolean, };

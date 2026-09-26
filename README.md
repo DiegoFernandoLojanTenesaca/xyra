@@ -48,6 +48,11 @@ momento en que sale. Además: tier lists y tus estadísticas. Liviano, en españ
   runas, hechizos e ítems solos, cerrar la ventana al jugar, aceptar la partida después de unos segundos).
 - **Recomendaciones a tu gusto:** en Inicio eliges si el top y la banca se ordenan por tier, por tu maestría, por lo que
   más juegas o mixto.
+- **Meta del parche:** los mejores campeones de clasificatorias por posición, con winrate, uso, bans, si subieron o
+  bajaron desde el parche anterior y el enlace a las notas oficiales.
+- **Consejos en partida:** qué habilidad subir y tu siguiente ítem, con el oro que te falta, desde la API oficial del juego.
+- **En el celular:** escanea un QR y acepta la partida, importa la build y sigue la selección y tu partida desde el
+  teléfono, en la misma red Wi-Fi.
 - **Un solo ícono:** con "Abrir el LoL con Xyra" (Ajustes), el ícono de Xyra abre también el LoL.
 - **Tier lists:** aumentos por campeón y campeones de ARAM: Caos.
 - **Tus datos:** winrate por campeón, mejores aumentos, nivel, rango y maestrías, separados por cuenta; exportación a CSV.

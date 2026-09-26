@@ -32,6 +32,12 @@ pub fn resolve(locale: &str) -> &'static str {
     languages().find(|l| *l == language).unwrap_or(BASE_LANGUAGE)
 }
 
+/// A whole namespace in `language`, or in the base language when it lacks it.
+pub fn namespace(language: &str, name: &str) -> Option<Value> {
+    let files = namespaces();
+    files.get(&format!("{language}/{name}")).or_else(|| files.get(&format!("{BASE_LANGUAGE}/{name}"))).cloned()
+}
+
 fn lookup(language: &str, key: &str) -> Option<String> {
     let (namespace, path) = key.split_once(':')?;
     let mut node = namespaces().get(&format!("{language}/{namespace}"))?;

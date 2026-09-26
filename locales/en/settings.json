@@ -1,6 +1,7 @@
 {
   "tabs": {
     "general": "General",
+    "phone": "Phone",
     "profile": "Profile",
     "data": "Data",
     "security": "Security",
@@ -9,6 +10,7 @@
   },
   "subtitles": {
     "general": "Language, startup, modes and diagnostics.",
+    "phone": "Accept matches and follow champion select and your game from your phone, on the same network.",
     "profile": "Your client data, read only: nothing leaves your PC.",
     "data": "Everything Xyra saves stays on your PC. Take it or delete it.",
     "security": "Why using Xyra does not put your account at risk.",
@@ -62,5 +64,23 @@
     "overlay": "Only reads the screen and draws on top, like OBS or Discord."
   },
   "securityNote": "To show over the game, League must be in Borderless mode. While you play, Xyra never takes focus or receives clicks.",
-  "privacy": "Privacy"
+  "privacy": "Privacy",
+  "phone": {
+    "title": "Xyra on your phone",
+    "toggle": {
+      "title": "Phone link",
+      "description": "Xyra opens an access point on your network so your phone sees the same as the window. It only uses memory while it is on."
+    },
+    "sameNetwork": "Your phone has to be on the same Wi-Fi as your PC.",
+    "firewall": "The first time, Windows may ask whether Xyra can use the network: allow it on private networks.",
+    "canDo": "From your phone you can accept the match, import runes, items and spells, and see counters, the bench, tips and cards.",
+    "privateTitle": "Only with your code.",
+    "private": "Nobody can use it without the QR code, and nothing goes through the internet: the phone talks straight to your PC.",
+    "off": "Turn the link on to see the QR code.",
+    "starting": "Turning the link on…",
+    "scan": "Scan it with your phone camera.",
+    "qrAlt": "QR code to open Xyra on your phone",
+    "newCode": "Change code",
+    "newCodeHint": "Disconnects the phones that already scanned it."
+  }
 }

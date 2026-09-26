@@ -6,11 +6,20 @@
   import About from './settings/About.svelte';
   import Data from './settings/Data.svelte';
   import General from './settings/General.svelte';
+  import Phone from './settings/Phone.svelte';
   import Help from './settings/Help.svelte';
   import Profile from './settings/Profile.svelte';
   import Security from './settings/Security.svelte';
 
-  const TAB_SCREENS: Record<SettingsTab, Component> = { general: General, profile: Profile, data: Data, security: Security, help: Help, about: About };
+  const TAB_SCREENS: Record<SettingsTab, Component> = {
+    general: General,
+    phone: Phone,
+    profile: Profile,
+    data: Data,
+    security: Security,
+    help: Help,
+    about: About,
+  };
 
   const t = $derived(app.t);
   const Tab = $derived(TAB_SCREENS[app.settingsTab]);

@@ -1,6 +1,7 @@
 mod commands;
 mod engine;
 mod overlay;
+mod phone;
 mod previews;
 pub mod riot_install;
 mod screen;
@@ -113,6 +114,7 @@ pub fn run() {
             if !flag(HIDDEN_FLAG) && !flag(DEMO_FLAG) {
                 open(app.handle(), &shared);
             }
+            phone::follow_config(app.handle());
             let handle = app.handle().clone();
             thread::spawn(move || engine::run(handle, shared, events));
             Ok(())
@@ -128,6 +130,7 @@ pub fn run() {
             commands::get_profile,
             commands::get_build,
             commands::get_meta,
+            commands::get_phone_link,
             commands::import_build,
             commands::get_game_settings,
             commands::set_game_setting,

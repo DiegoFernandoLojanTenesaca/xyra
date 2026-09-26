@@ -21,6 +21,8 @@ tauri-plugin-single-instance = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 notify = "8"
+qrcode = { version = "0.14", default-features = false, features = ["svg"] }
+tiny_http = "0.12"
 png = "0.18"
 xyra-core = { path = "../crates/xyra-core" }
 windows-numerics = "0.3"

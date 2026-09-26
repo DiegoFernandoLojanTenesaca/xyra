@@ -25,6 +25,7 @@ export type { Meta } from './generated/Meta';
 export type { MetaChampion } from './generated/MetaChampion';
 export type { Matchup } from './generated/Matchup';
 export type { Phase } from './generated/Phase';
+export type { PhoneLink } from './generated/PhoneLink';
 export type { Position } from './generated/Position';
 export type { PositionMeta } from './generated/PositionMeta';
 export type { Profile } from './generated/Profile';

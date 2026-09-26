@@ -22,4 +22,12 @@ auto_import_build: boolean, close_window_in_game: boolean, auto_accept: boolean,
 /**
  * Seconds to wait before accepting a found match.
  */
-accept_delay_seconds: number, champion_order: ChampionOrder, };
+accept_delay_seconds: number, champion_order: ChampionOrder, 
+/**
+ * Serves Xyra to phones on the same network.
+ */
+phone_link: boolean, 
+/**
+ * Pairing code the phone sends with every request; empty until the link is first turned on.
+ */
+phone_token: string, };

@@ -20,7 +20,7 @@ use std::{
     collections::{HashMap, HashSet},
     fmt::Display,
     sync::{
-        Arc, Mutex, RwLock,
+        Arc, Condvar, Mutex, RwLock,
         mpsc::{self, Receiver, RecvTimeoutError, Sender},
     },
     thread,
@@ -84,6 +84,10 @@ pub struct Shared {
     pub update: Mutex<Option<Release>>,
     /// The ranked tier list and when it was read.
     meta: Mutex<Option<(Instant, Meta)>>,
+    /// Counts state changes so the phone link can wait for the next one.
+    state_version: Mutex<u64>,
+    state_changed: Condvar,
+    pub phone: Mutex<Option<crate::phone::PhoneServer>>,
     events: Sender<EngineEvent>,
 }
 
@@ -114,6 +118,7 @@ impl Shared {
             language: config.effective_language(&installation.locale).into(),
             ocr_language: None,
             tips: None,
+            ready_check: false,
             version: env!("CARGO_PKG_VERSION").into(),
         };
         let (events, received) = mpsc::channel();
@@ -130,6 +135,9 @@ impl Shared {
             web: web::client(),
             update: Mutex::new(None),
             meta: Mutex::new(None),
+            state_version: Mutex::new(0),
+            state_changed: Condvar::new(),
+            phone: Mutex::new(None),
             events,
         };
         (shared, received)
@@ -183,6 +191,13 @@ impl Shared {
         let mut champions: Vec<ChampionInfo> = self.catalog().champions.keys().map(|&id| self.champion_info(id)).collect();
         champions.sort_by(|a, b| (a.preference(order), &a.name).cmp(&(b.preference(order), &b.name)));
         champions
+    }
+
+    /// The current state and its version, waiting up to `timeout` for one newer than `after`.
+    pub fn wait_for_state(&self, after: Option<u64>, timeout: Duration) -> (u64, EngineState) {
+        let version = self.state_version.lock().unwrap();
+        let (version, _) = self.state_changed.wait_timeout_while(version, timeout, |current| after.is_some_and(|after| *current <= after)).unwrap();
+        (*version, self.state.lock().unwrap().clone())
     }
 
     /// The ranked tier list, read again from OP.GG once it is older than an hour.
@@ -259,6 +274,8 @@ pub fn update_state(app: &AppHandle, shared: &Shared, change: impl FnOnce(&mut E
         (*state != before).then(|| state.clone())
     };
     if let Some(state) = changed {
+        *shared.state_version.lock().unwrap() += 1;
+        shared.state_changed.notify_all();
         emit(app, shared, AppEvent::State, state);
     }
 }
@@ -288,6 +305,7 @@ struct Engine {
     ready_check: ReadyCheckAcceptor,
     cards: CardReader,
     tips: GameTipsReader,
+    in_ready_check: bool,
     _watcher: Option<RecommendedWatcher>,
 }
 
@@ -337,6 +355,7 @@ impl Engine {
             ready_check: ReadyCheckAcceptor::default(),
             cards,
             tips: GameTipsReader::new(),
+            in_ready_check: false,
             _watcher: watcher,
             shared,
         }
@@ -551,7 +570,8 @@ impl Engine {
             }
             _ => {}
         }
-        self.ready_check.follow(phase == GameflowPhase::ReadyCheck, &self.shared.config());
+        self.in_ready_check = phase == GameflowPhase::ReadyCheck;
+        self.ready_check.follow(self.in_ready_check, &self.shared.config());
         if phase == GameflowPhase::ChampSelect {
             self.history.cancel();
             if !self.champ_select.is_active() {
@@ -661,7 +681,7 @@ impl Engine {
         }
         let target = self.tips_target();
         self.tips.follow(target, &self.shared);
-        let tips = self.tips.tips().cloned();
+        let (tips, in_ready_check) = (self.tips.tips().cloned(), self.in_ready_check);
         let paused = self.shared.config().paused;
         let champ_select = self.champ_select.view(self.mode, self.shared.config().champion_order, |id| self.shared.champion_info(id));
         let game = self.game.as_ref().map(|g| CurrentGame { mode: g.mode, champion: g.champion.map(|id| self.shared.champion_info(id)) });
@@ -684,6 +704,7 @@ impl Engine {
             state.rounds = rounds;
             state.borderless = borderless;
             state.tips = tips;
+            state.ready_check = in_ready_check;
         });
     }
 }

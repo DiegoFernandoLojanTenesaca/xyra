@@ -40,6 +40,7 @@ impl ChampionOrder {
 }
 
 const DEFAULT_ACCEPT_DELAY_SECONDS: u32 = 2;
+const PHONE_TOKEN_BYTES: usize = 16;
 
 impl LabelStyle {
     pub const ALL: [LabelStyle; 5] = [LabelStyle::Plate, LabelStyle::Badge, LabelStyle::Ribbon, LabelStyle::Podium, LabelStyle::Focus];
@@ -79,6 +80,25 @@ pub struct Config {
     /// Seconds to wait before accepting a found match.
     pub accept_delay_seconds: u32,
     pub champion_order: ChampionOrder,
+    /// Serves Xyra to phones on the same network.
+    pub phone_link: bool,
+    /// Pairing code the phone sends with every request; empty until the link is first turned on.
+    pub phone_token: String,
+}
+
+impl Config {
+    /// Whether `token` is the phone pairing code, compared in constant time.
+    pub fn is_phone_token(&self, token: &str) -> bool {
+        let expected = self.phone_token.as_bytes();
+        !expected.is_empty() && token.len() == expected.len() && token.bytes().zip(expected).fold(0, |diff, (a, b)| diff | (a ^ b)) == 0
+    }
+}
+
+/// A new random pairing code for the phone link.
+pub fn new_phone_token() -> String {
+    let mut bytes = [0u8; PHONE_TOKEN_BYTES];
+    ring::rand::SecureRandom::fill(&ring::rand::SystemRandom::new(), &mut bytes).expect("system random numbers");
+    bytes.iter().map(|byte| format!("{byte:02x}")).collect()
 }
 
 impl Default for Config {
@@ -100,6 +120,8 @@ impl Default for Config {
             auto_accept: false,
             accept_delay_seconds: DEFAULT_ACCEPT_DELAY_SECONDS,
             champion_order: ChampionOrder::default(),
+            phone_link: false,
+            phone_token: String::new(),
         }
     }
 }
@@ -107,5 +129,19 @@ impl Default for Config {
 impl Config {
     pub fn effective_language(&self, client_locale: &str) -> &'static str {
         i18n::resolve(self.language.as_deref().unwrap_or(client_locale))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn checks_the_phone_pairing_code() {
+        let config = Config { phone_token: new_phone_token(), ..Config::default() };
+        assert_eq!(config.phone_token.len(), 2 * PHONE_TOKEN_BYTES);
+        assert!(config.is_phone_token(&config.phone_token.clone()));
+        assert!(!config.is_phone_token("0"));
+        assert!(!Config::default().is_phone_token(""));
     }
 }

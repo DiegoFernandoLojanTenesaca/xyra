@@ -1,6 +1,7 @@
 {
   "tabs": {
     "general": "General",
+    "phone": "Celular",
     "profile": "Perfil",
     "data": "Datos",
     "security": "Seguridad",
@@ -9,6 +10,7 @@
   },
   "subtitles": {
     "general": "Idioma, arranque, modos y diagnóstico.",
+    "phone": "Acepta partidas y sigue la selección y tu partida desde el celular, en la misma red.",
     "profile": "Tus datos del cliente, solo lectura: nada sale de tu PC.",
     "data": "Todo lo que Xyra guarda está en tu PC. Llévatelo o bórralo.",
     "security": "Por qué usar Xyra no pone en riesgo tu cuenta.",
@@ -62,5 +64,23 @@
     "overlay": "Solo mira la pantalla y dibuja encima, como OBS o Discord."
   },
   "securityNote": "Para verse encima del juego, el LoL debe estar en modo Sin bordes. Mientras juegas, Xyra nunca toma el foco ni recibe clics.",
-  "privacy": "Privacidad"
+  "privacy": "Privacidad",
+  "phone": {
+    "title": "Xyra en el celular",
+    "toggle": {
+      "title": "Enlace con el celular",
+      "description": "Xyra abre un acceso en tu red para que el celular vea lo mismo que la ventana. Solo gasta memoria mientras está encendido."
+    },
+    "sameNetwork": "El celular tiene que estar en la misma red Wi-Fi que la PC.",
+    "firewall": "La primera vez, Windows puede preguntar si Xyra puede usar la red: acepta en redes privadas.",
+    "canDo": "Desde el celular puedes aceptar la partida, importar runas, ítems y hechizos, ver counters, la banca, los consejos y las cartas.",
+    "privateTitle": "Solo con tu código.",
+    "private": "Sin el código del QR nadie puede usarlo, y nada pasa por internet: el celular habla directo con tu PC.",
+    "off": "Enciende el enlace para ver el QR.",
+    "starting": "Encendiendo el enlace…",
+    "scan": "Escanéalo con la cámara del celular.",
+    "qrAlt": "Código QR para abrir Xyra en el celular",
+    "newCode": "Cambiar código",
+    "newCodeHint": "Desconecta a los celulares que ya lo escanearon."
+  }
 }

@@ -37,6 +37,10 @@ aumentos dentro del juego) y nada más. Estas reglas son parte del proyecto: un 
   Nunca lo hace durante la partida y solo reemplaza las páginas y sets que él mismo creó (los que empiezan con "Xyra · ").
   Si activas **"Importar build sola"** (apagado de fábrica), hace lo mismo en la selección de campeones sin que toques
   el botón: es una preferencia del cliente, no una jugada.
+- **El enlace con el celular** (apagado de fábrica) abre un acceso en tu red local, en el puerto 47811, para que el
+  celular vea lo mismo que la ventana. Solo responde a quien tenga el código del QR, que se puede cambiar cuando quieras;
+  nada pasa por internet. Desde el celular solo se puede lo mismo que con los botones de Xyra: aceptar la partida e
+  importar runas, ítems y hechizos. No elige campeón ni juega por ti.
 - **Acepta la partida encontrada solo si activas "Aceptar partida solo"** (apagado de fábrica), después de la espera que
   elijas y solo si no la aceptaste ni rechazaste tú. Es una llamada al cliente, como hacía League Akari: no toca el juego.
   Aun así, Riot pidió en 2025 a las apps aprobadas quitar esta función, así que úsala bajo tu responsabilidad.

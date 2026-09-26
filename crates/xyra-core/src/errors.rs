@@ -11,6 +11,7 @@ pub enum AppError {
     GameInProgress,
     NoFreeRunePage,
     NotInChampSelect,
+    PhoneLinkUnavailable,
     NoSummoner,
     NoData,
     EmptyCatalog,

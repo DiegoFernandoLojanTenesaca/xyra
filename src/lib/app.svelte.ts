@@ -9,7 +9,7 @@ import type { BuildMode, ChampionInfo, Choices, Config, EngineState, GameMode, I
 export const PAGES = ['home', 'build', 'augments', 'champions', 'meta', 'stats', 'labels', 'game', 'settings'] as const;
 export type Page = (typeof PAGES)[number];
 
-export const SETTINGS_TABS = ['general', 'profile', 'data', 'security', 'help', 'about'] as const;
+export const SETTINGS_TABS = ['general', 'phone', 'profile', 'data', 'security', 'help', 'about'] as const;
 export type SettingsTab = (typeof SETTINGS_TABS)[number];
 
 const CHAMPION_PAGES: readonly Page[] = ['build', 'augments'];

@@ -1,16 +1,16 @@
 use crate::{
     engine::{EngineEvent, Shared, emit, update_state},
-    tray,
+    phone, tray,
 };
 use std::{process::Command, sync::Arc};
 use tauri::{AppHandle, Manager, State};
 use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_opener::OpenerExt;
 use xyra_core::{
-    config::Config,
+    config::{self, Config},
     errors::{AppError, Result},
     game_settings::{self, GameOption, GameSetting, SettingValue},
-    model::{AppEvent, AugmentRow, Build, BuildMode, ChampionInfo, Choices, EngineState, GameMode, ImportTarget, Meta, Position},
+    model::{AppEvent, AugmentRow, Build, BuildMode, ChampionInfo, Choices, EngineState, GameMode, ImportTarget, Meta, PhoneLink, Position},
     opgg,
     profile::{self, Profile},
     stats::{self, StatsSummary},
@@ -48,7 +48,10 @@ pub fn set_config(app: AppHandle, shared: State<App>, config: Config) -> Result<
     apply_config(&app, &shared, config)
 }
 
-pub fn apply_config(app: &AppHandle, shared: &Shared, config: Config) -> Result<Config> {
+pub fn apply_config(app: &AppHandle, shared: &Shared, mut config: Config) -> Result<Config> {
+    if config.phone_link && config.phone_token.is_empty() {
+        config.phone_token = config::new_phone_token();
+    }
     if config.autostart != shared.config().autostart {
         let launcher = app.autolaunch();
         if config.autostart { launcher.enable() } else { launcher.disable() }.map_err(AppError::platform)?;
@@ -60,6 +63,7 @@ pub fn apply_config(app: &AppHandle, shared: &Shared, config: Config) -> Result<
     emit(app, shared, AppEvent::Config, config.clone());
     tray::rebuild_menu(app, shared);
     shared.send(EngineEvent::ConfigChanged);
+    phone::follow_config(app);
     Ok(config)
 }
 
@@ -77,6 +81,11 @@ pub fn get_champions(shared: State<App>) -> Vec<ChampionInfo> {
 pub async fn get_augments(shared: State<'_, App>, champion: u32, mode: GameMode) -> Result<Vec<AugmentRow>> {
     let shared = Arc::clone(&shared);
     blocking(move || Ok(opgg::augment_rows(opgg::fetch_augments(&shared.web, champion, mode)?, &shared.catalog()))).await
+}
+
+#[tauri::command]
+pub fn get_phone_link(shared: State<App>) -> Result<Option<PhoneLink>> {
+    phone::link(&shared)
 }
 
 #[tauri::command]
