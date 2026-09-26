@@ -1,0 +1,1100 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Xyra · La mejor carta, al instante</title>
+    <meta
+      name="description"
+      content="Companion gratis para League of Legends: marca la mejor carta de aumento para tu campeón en ARAM: Caos y Arena, importa runas, hechizos e ítems y te sugiere counters. Sin tocar el juego."
+    />
+    <meta name="theme-color" content="#060606" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Xyra · La mejor carta, al instante" />
+    <meta property="og:description" content="Etiquetas en vivo sobre tus cartas de aumento, builds en un clic y counters. Gratis y de código abierto." />
+    <meta property="og:image" content="https://diegofernandolojantenesaca.github.io/xyra/banner.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="logo/xyra-08d-nucleo-grande-rojo.svg" type="image/svg+xml" />
+    <style>
+      :root {
+        --background: #060606;
+        --panel: #0d0d0e;
+        --panel-raised: #131315;
+        --line: #1f1f22;
+        --line-strong: #34343a;
+        --accent: #e5132b;
+        --accent-bright: #ff3448;
+        --accent-shadow: #3a0a10;
+        --text: #f2f2f2;
+        --text-subtle: #c9c9ce;
+        --text-muted: #8a8a90;
+        --success: #41d97c;
+        --warning: #ffb020;
+        --cut: 18px;
+        --width: 1120px;
+        font:
+          16px/1.55 'Bahnschrift',
+          'DIN Alternate',
+          'Segoe UI',
+          system-ui,
+          sans-serif;
+        color: var(--text);
+        background: var(--background);
+        color-scheme: dark;
+        scroll-behavior: smooth;
+        scroll-padding-top: 5rem;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background:
+          radial-gradient(60rem 30rem at 15% -10%, var(--accent-shadow), transparent 70%),
+          repeating-linear-gradient(115deg, transparent 0 34px, rgb(229 19 43 / 0.05) 34px 36px), var(--background);
+      }
+      img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+      }
+      a {
+        color: inherit;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent-bright);
+        outline-offset: 3px;
+      }
+      .wrap {
+        width: min(var(--width), 100% - 2.5rem);
+        margin-inline: auto;
+      }
+      .cut {
+        clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)));
+      }
+      .eyebrow {
+        margin: 0 0 0.75rem;
+        color: var(--accent-bright);
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        line-height: 1.05;
+        text-transform: uppercase;
+      }
+      h2 {
+        font-size: clamp(1.8rem, 4vw, 2.6rem);
+        margin-bottom: 0.75rem;
+      }
+      h3 {
+        font-size: 1.05rem;
+        letter-spacing: 0.06em;
+      }
+      p {
+        margin: 0;
+      }
+      .muted {
+        color: var(--text-muted);
+      }
+      .lead {
+        color: var(--text-subtle);
+        font-size: 1.1rem;
+        max-width: 38rem;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.95rem 1.6rem;
+        border: 1px solid var(--line-strong);
+        background: var(--panel-raised);
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-decoration: none;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          border-color 0.15s;
+      }
+      .button:hover {
+        border-color: var(--text-muted);
+      }
+      .button.primary {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: #fff;
+      }
+      .button.primary:hover {
+        background: var(--accent-bright);
+      }
+      .button svg {
+        width: 1.1rem;
+        height: 1.1rem;
+        flex: none;
+      }
+
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        border-bottom: 1px solid var(--line);
+        background: rgb(6 6 6 / 0.85);
+        backdrop-filter: blur(10px);
+      }
+      header .wrap {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        height: 4rem;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        font-size: 1.25rem;
+        font-weight: 700;
+        letter-spacing: 0.3em;
+        text-decoration: none;
+      }
+      .brand svg {
+        width: 2rem;
+        height: 2rem;
+      }
+      nav {
+        display: flex;
+        gap: 1.5rem;
+        margin-left: auto;
+      }
+      nav a {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-decoration: none;
+        text-transform: uppercase;
+      }
+      nav a:hover {
+        color: var(--text);
+      }
+      header .button {
+        padding: 0.55rem 1rem;
+        font-size: 0.8rem;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 1fr 1.15fr;
+        align-items: center;
+        gap: 3rem;
+        padding: 5rem 0 4rem;
+      }
+      .hero h1 {
+        font-size: clamp(2.6rem, 6vw, 4.4rem);
+        margin-bottom: 1.25rem;
+      }
+      .hero h1 span {
+        color: var(--accent-bright);
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+        margin: 2rem 0 1rem;
+      }
+      .facts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem 1.2rem;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .facts span::before {
+        content: '◆ ';
+        color: var(--accent);
+      }
+      .shot {
+        border: 1px solid var(--line-strong);
+        background: var(--panel);
+        padding: 0.5rem;
+        box-shadow: 0 30px 80px -20px rgb(229 19 43 / 0.35);
+      }
+      .stack {
+        display: grid;
+      }
+      .stack > img {
+        grid-area: 1 / 1;
+      }
+      .reveal {
+        animation: reveal 5s ease-in-out infinite;
+      }
+      @keyframes reveal {
+        0%,
+        20% {
+          opacity: 0;
+        }
+        35%,
+        85% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+      .tag {
+        position: absolute;
+        margin: 1rem;
+        padding: 0.3rem 0.7rem;
+        background: rgb(6 6 6 / 0.8);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      .hero .shot {
+        position: relative;
+      }
+
+      section {
+        padding: 5rem 0;
+        border-top: 1px solid var(--line);
+      }
+      .intro {
+        max-width: 46rem;
+        margin-bottom: 2.5rem;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+      }
+      .card {
+        padding: 1.6rem;
+        border: 1px solid var(--line);
+        background: var(--panel);
+      }
+      .card h3 {
+        margin: 0.9rem 0 0.5rem;
+      }
+      .card p,
+      .card li {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+      }
+      .card svg {
+        width: 1.8rem;
+        height: 1.8rem;
+        color: var(--accent-bright);
+      }
+
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        counter-reset: step;
+      }
+      .flow .card {
+        position: relative;
+      }
+      .flow .card::before,
+      .steps .card::before {
+        counter-increment: step;
+        content: '0' counter(step);
+        color: var(--accent-bright);
+        font-size: 2rem;
+        font-weight: 700;
+      }
+
+      .styles {
+        display: grid;
+        grid-template-columns: 16rem 1fr;
+        gap: 2rem;
+        align-items: start;
+      }
+      .picker {
+        display: grid;
+        gap: 0.5rem;
+      }
+      .picker button {
+        display: grid;
+        gap: 0.2rem;
+        padding: 0.9rem 1.1rem;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        text-align: left;
+        cursor: pointer;
+      }
+      .picker button b {
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .picker button span {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+      }
+      .picker button[aria-pressed='true'] {
+        border-color: var(--accent);
+        background: linear-gradient(90deg, rgb(229 19 43 / 0.18), var(--panel));
+      }
+      .preview img {
+        transition: opacity 0.35s;
+      }
+
+      .modes {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+      }
+      .modes ul {
+        margin: 1rem 0 0;
+        padding: 0;
+        list-style: none;
+      }
+      .modes li {
+        padding: 0.45rem 0;
+        border-top: 1px solid var(--line);
+      }
+      .modes li::before {
+        content: '◆';
+        margin-right: 0.6rem;
+        color: var(--accent);
+        font-size: 0.7rem;
+      }
+
+      .why {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        background: var(--line);
+        border: 1px solid var(--line);
+      }
+      .why div {
+        padding: 1.6rem;
+        background: var(--background);
+      }
+      .why b {
+        display: block;
+        margin-bottom: 0.3rem;
+        font-size: 1.15rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .why p {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+      }
+
+      .gallery {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+      }
+      figure {
+        margin: 0;
+      }
+      figure button {
+        display: block;
+        width: 100%;
+        padding: 0;
+        border: 0;
+        background: none;
+        cursor: zoom-in;
+      }
+      figcaption {
+        margin-top: 0.7rem;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+      }
+      figcaption b {
+        color: var(--text);
+      }
+      dialog {
+        max-width: min(1200px, 95vw);
+        padding: 0;
+        border: 1px solid var(--line-strong);
+        background: var(--panel);
+      }
+      dialog::backdrop {
+        background: rgb(0 0 0 / 0.85);
+      }
+      dialog img {
+        cursor: zoom-out;
+      }
+
+      .rules {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+      .rules ul {
+        margin: 1rem 0 0;
+        padding: 0;
+        list-style: none;
+      }
+      .rules li {
+        padding: 0.65rem 0;
+        border-top: 1px solid var(--line);
+        color: var(--text-subtle);
+      }
+      .rules li::before {
+        content: '✕';
+        margin-right: 0.7rem;
+        color: var(--accent-bright);
+        font-weight: 700;
+      }
+      .rules .yes li::before {
+        content: '✓';
+        color: var(--success);
+      }
+
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        counter-reset: step;
+      }
+      .note {
+        margin-top: 1.5rem;
+        padding: 1rem 1.2rem;
+        border-left: 3px solid var(--accent);
+        background: var(--panel);
+        color: var(--text-subtle);
+        font-size: 0.95rem;
+      }
+
+      .news {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+      .news ul {
+        margin: 1rem 0 0;
+        padding-left: 1.1rem;
+      }
+      .news li {
+        margin-bottom: 0.5rem;
+      }
+      .news li::marker {
+        color: var(--accent);
+      }
+      .soon li::marker {
+        color: var(--warning);
+      }
+
+      details {
+        border-top: 1px solid var(--line);
+      }
+      details:last-child {
+        border-bottom: 1px solid var(--line);
+      }
+      summary {
+        padding: 1.1rem 0;
+        cursor: pointer;
+        font-weight: 700;
+        list-style: none;
+      }
+      summary::after {
+        content: '+';
+        float: right;
+        color: var(--accent-bright);
+      }
+      details[open] summary::after {
+        content: '−';
+      }
+      details p {
+        padding-bottom: 1.2rem;
+        color: var(--text-muted);
+        max-width: 50rem;
+      }
+
+      .cta {
+        text-align: center;
+      }
+      .cta .actions {
+        justify-content: center;
+      }
+
+      footer {
+        padding: 3rem 0;
+        border-top: 1px solid var(--line);
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
+      .creators {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+      .creators a {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        text-decoration: none;
+      }
+      .creators img {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+      }
+      .creators b {
+        display: block;
+        color: var(--text);
+      }
+      .legal {
+        max-width: 50rem;
+        font-size: 0.8rem;
+      }
+
+      @media (max-width: 960px) {
+        .flow,
+        .gallery {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .styles {
+          grid-template-columns: 1fr;
+        }
+        .picker {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+      @media (max-width: 720px) {
+        nav {
+          display: none;
+        }
+        header .button {
+          margin-left: auto;
+        }
+        .hero,
+        .rules,
+        .news,
+        .grid,
+        .steps,
+        .modes,
+        .why,
+        .flow,
+        .gallery {
+          grid-template-columns: 1fr;
+        }
+        .picker {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .hero {
+          padding-top: 3rem;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        :root {
+          scroll-behavior: auto;
+        }
+        .reveal {
+          animation: none;
+        }
+        * {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <symbol id="logo" viewBox="0 0 256 256">
+        <polygon fill="#e5132b" points="128,20 176,68 128,116 80,68" />
+        <polygon fill="#e5132b" points="68,80 116,128 68,176 20,128" />
+        <polygon fill="#e5132b" points="188,80 236,128 188,176 140,128" />
+        <polygon fill="#e5132b" points="128,140 176,188 128,236 80,188" />
+        <polygon fill="#8a8e97" points="128,92 164,128 128,164 92,128" />
+      </symbol>
+      <symbol id="download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16" />
+      </symbol>
+      <symbol id="github" viewBox="0 0 24 24" fill="currentColor">
+        <path
+          d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.39-5.26 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"
+        />
+      </symbol>
+    </svg>
+
+    <header>
+      <div class="wrap">
+        <a class="brand" href="#"
+          ><svg aria-hidden="true"><use href="#logo" /></svg>XYRA</a
+        >
+        <nav aria-label="Secciones">
+          <a href="#funciones">Funciones</a>
+          <a href="#estilos">Estilos</a>
+          <a href="#seguridad">Seguridad</a>
+          <a href="#novedades">Novedades</a>
+          <a href="#preguntas">Preguntas</a>
+        </nav>
+        <a class="button primary cut download" href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases/latest">Descargar</a>
+      </div>
+    </header>
+
+    <main>
+      <div class="wrap hero">
+        <div>
+          <p class="eyebrow">Companion para League of Legends</p>
+          <h1>La mejor carta, <span>al instante</span></h1>
+          <p class="lead">
+            Xyra mira tus cartas de aumento en ARAM: Caos y Arena y marca la mejor para tu campeón en el momento en que salen, con estadísticas de OP.GG. Además
+            importa runas, hechizos e ítems y te sugiere counters en la selección.
+          </p>
+          <div class="actions">
+            <a class="button primary cut download" href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases/latest">
+              <svg aria-hidden="true"><use href="#download" /></svg><span class="download-label">Descargar para Windows</span>
+            </a>
+            <a class="button cut" href="https://github.com/DiegoFernandoLojanTenesaca/xyra"
+              ><svg aria-hidden="true"><use href="#github" /></svg>Código fuente</a
+            >
+          </div>
+          <p class="facts"><span>Gratis</span><span>Sin anuncios</span><span>Código abierto</span><span>Windows 10 y 11</span></p>
+        </div>
+        <div class="shot cut">
+          <div class="stack">
+            <img src="styles/none.jpg" width="1100" height="672" alt="Tres cartas de aumento de ARAM: Caos sin ayuda" />
+            <img class="reveal" src="styles/plate.jpg" width="1100" height="672" alt="Las mismas cartas con las etiquetas de Xyra: la mejor marcada en rojo" />
+          </div>
+        </div>
+      </div>
+
+      <section id="como-funciona">
+        <div class="wrap">
+          <div class="intro">
+            <p class="eyebrow">Cómo funciona</p>
+            <h2>De la carta a la decisión en un segundo</h2>
+            <p class="lead">No tienes que abrir nada: Xyra se entera solo de cuándo estás en partida y con qué campeón.</p>
+          </div>
+          <div class="flow">
+            <div class="card cut">
+              <h3>Escucha al cliente</h3>
+              <p>Sabe al instante si estás en la selección o en partida, y con qué campeón.</p>
+            </div>
+            <div class="card cut">
+              <h3>Lee tus cartas</h3>
+              <p>Con el reconocimiento de texto que trae Windows, solo con el juego al frente.</p>
+            </div>
+            <div class="card cut">
+              <h3>Las califica</h3>
+              <p>Compara cada aumento con las estadísticas de OP.GG para tu campeón.</p>
+            </div>
+            <div class="card cut">
+              <h3>Te marca la mejor</h3>
+              <p>Dibuja la etiqueta encima de la carta, en una capa que deja pasar tus clics.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="estilos">
+        <div class="wrap">
+          <div class="intro">
+            <p class="eyebrow">Pruébalo</p>
+            <h2>Elige cómo se ven tus etiquetas</h2>
+            <p class="lead">Cinco estilos para que las marcas combinen con cómo juegas. Toca uno para verlo sobre las cartas.</p>
+          </div>
+          <div class="styles">
+            <div class="picker" role="group" aria-label="Estilos de etiqueta">
+              <button type="button" data-style="none" aria-pressed="false"><b>Sin Xyra</b><span>Así las ves hoy.</span></button>
+              <button type="button" data-style="plate" aria-pressed="true"><b>Placa</b><span>Placa bajo cada carta; la mejor con marco rojo.</span></button>
+              <button type="button" data-style="badge" aria-pressed="false"><b>Insignia</b><span>Rombo con la letra del tier en la esquina.</span></button>
+              <button type="button" data-style="ribbon" aria-pressed="false"><b>Cinta</b><span>Franja de color dentro de la carta.</span></button>
+              <button type="button" data-style="podium" aria-pressed="false"><b>Podio</b><span>Puestos 1-2-3 en rojo, blanco y gris.</span></button>
+              <button type="button" data-style="focus" aria-pressed="false"><b>Enfoque</b><span>Oscurece las que no conviene elegir.</span></button>
+            </div>
+            <div class="shot cut preview">
+              <img id="style-preview" src="styles/plate.jpg" width="1100" height="672" alt="Cartas de aumento con el estilo Placa" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="funciones">
+        <div class="wrap">
+          <div class="intro">
+            <p class="eyebrow">Qué hace</p>
+            <h2>Todo lo que buscas en otra pestaña, ya en tu partida</h2>
+            <p class="lead">Vive en la bandeja del sistema y solo trabaja durante tus partidas.</p>
+          </div>
+          <div class="grid">
+            <article class="card cut">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5h10l6 7-6 7H4z" /></svg>
+              <h3>Etiquetas en vivo</h3>
+              <p>
+                Cada carta muestra qué tan buena es para tu campeón. La mejor queda marcada y las malas te sugieren cambiarlas. Si quieres, te lo dice en voz
+                alta.
+              </p>
+            </article>
+            <article class="card cut">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16" />
+              </svg>
+              <h3>Build en un clic</h3>
+              <p>Runas, hechizos y set de ítems de OP.GG en tu cliente. Si quieres, se ponen solos al elegir campeón, cada hechizo en la tecla que ya usas.</p>
+            </article>
+            <article class="card cut">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2 2 12l10 10 10-10z" /></svg>
+              <h3>Selección más fácil</h3>
+              <p>Te dice qué campeón tomar de la banca y, en la Grieta, el counter de tu rival. Ordena por tier, por tu maestría o por lo que más juegas.</p>
+            </article>
+            <article class="card cut">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m4 12 5 5L20 6" /></svg>
+              <h3>Acepta la partida</h3>
+              <p>Opcional: acepta por ti cuando encuentras partida, después de la espera que elijas. Nunca pisa una respuesta que ya diste.</p>
+            </article>
+            <article class="card cut">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2" /></svg>
+              <h3>Tiers y estadísticas</h3>
+              <p>Tier list de aumentos por campeón, top de ARAM: Caos y tu winrate por cuenta. Después de cada partida ves si seguiste la recomendación.</p>
+            </article>
+            <article class="card cut">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z" /></svg>
+              <h3>Liviano y al día</h3>
+              <p>Hecho en Rust, sin navegador mientras juegas. Un solo ícono abre Xyra y el LoL, y se actualiza con un botón.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="modos">
+        <div class="wrap">
+          <div class="intro">
+            <p class="eyebrow">Modos</p>
+            <h2>Una app, tres mapas</h2>
+          </div>
+          <div class="modes">
+            <div class="card cut">
+              <h3>ARAM: Caos</h3>
+              <ul>
+                <li>Etiquetas sobre los aumentos</li>
+                <li>Qué campeón tomar de la banca</li>
+                <li>Top de campeones por tier</li>
+                <li>Build para ARAM</li>
+              </ul>
+            </div>
+            <div class="card cut">
+              <h3>Arena</h3>
+              <ul>
+                <li>Etiquetas sobre los aumentos</li>
+                <li>Tier list por campeón</li>
+                <li>Tus estadísticas en Arena</li>
+              </ul>
+            </div>
+            <div class="card cut">
+              <h3>Grieta del Invocador</h3>
+              <ul>
+                <li>Counter para tu rival de línea</li>
+                <li>Build por posición</li>
+                <li>Enfrentamientos favorables y difíciles</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="por-que">
+        <div class="wrap">
+          <div class="intro">
+            <p class="eyebrow">Por qué Xyra</p>
+            <h2>Solo lo que necesitas</h2>
+          </div>
+          <div class="why">
+            <div>
+              <b>Sin anuncios</b>
+              <p>Ni en la app ni en el juego.</p>
+            </div>
+            <div>
+              <b>Sin cuenta</b>
+              <p>Instalas y listo: no te pide correo ni registro.</p>
+            </div>
+            <div>
+              <b>Sin Overwolf</b>
+              <p>Una app nativa que no necesita otra plataforma debajo.</p>
+            </div>
+            <div>
+              <b>Código abierto</b>
+              <p>Cualquiera puede revisar qué hace, línea por línea.</p>
+            </div>
+            <div>
+              <b>Tus datos en tu PC</b>
+              <p>Partidas y ajustes se guardan solo en tu computadora.</p>
+            </div>
+            <div>
+              <b>En tu idioma</b>
+              <p>En español e inglés, con los nombres de tu cliente.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="capturas">
+        <div class="wrap">
+          <div class="intro">
+            <p class="eyebrow">Así se ve</p>
+            <h2>Hecho para el LoL</h2>
+            <p class="lead">Toca una captura para verla en grande.</p>
+          </div>
+          <div class="gallery">
+            <figure>
+              <button type="button">
+                <img class="shot cut" src="screenshots/home.jpg" width="1200" height="772" alt="Pantalla de inicio de Xyra" loading="lazy" />
+              </button>
+              <figcaption><b>Inicio:</b> qué carta tomar, tu resumen y los mejores campeones.</figcaption>
+            </figure>
+            <figure>
+              <button type="button">
+                <img class="shot cut" src="screenshots/build.jpg" width="1200" height="772" alt="Pantalla de build de Xyra" loading="lazy" />
+              </button>
+              <figcaption><b>Build:</b> runas, hechizos, ítems y habilidades, listos para importar.</figcaption>
+            </figure>
+            <figure>
+              <button type="button">
+                <img class="shot cut" src="screenshots/augments.jpg" width="1200" height="772" alt="Tier list de aumentos en Xyra" loading="lazy" />
+              </button>
+              <figcaption><b>Aumentos:</b> tier list por campeón para ARAM: Caos y Arena.</figcaption>
+            </figure>
+            <figure>
+              <button type="button">
+                <img class="shot cut" src="screenshots/labels.jpg" width="1200" height="772" alt="Estilos de etiqueta de Xyra" loading="lazy" />
+              </button>
+              <figcaption><b>Etiquetas:</b> estilo, tamaño, altura y aviso por voz.</figcaption>
+            </figure>
+            <figure>
+              <button type="button">
+                <img class="shot cut" src="screenshots/game.jpg" width="1200" height="772" alt="Opciones del juego en Xyra" loading="lazy" />
+              </button>
+              <figcaption><b>Juego:</b> opciones oficiales del LoL y lo que Xyra hace solo.</figcaption>
+            </figure>
+            <figure>
+              <button type="button">
+                <img class="shot cut" src="screenshots/stats.jpg" width="1200" height="772" alt="Estadísticas en Xyra" loading="lazy" />
+              </button>
+              <figcaption><b>Estadísticas:</b> tu winrate y tus mejores aumentos.</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section id="seguridad">
+        <div class="wrap">
+          <div class="intro">
+            <p class="eyebrow">Juego limpio</p>
+            <h2>Mira la pantalla, no toca el juego</h2>
+            <p class="lead">Xyra hace lo mismo que las apps que Riot permite y nada más. Estas reglas son parte del proyecto.</p>
+          </div>
+          <div class="rules">
+            <div class="card cut">
+              <h3>Nunca</h3>
+              <ul>
+                <li>Lee ni escribe la memoria del juego</li>
+                <li>Inyecta código ni engancha DirectX</li>
+                <li>Simula teclas ni clics</li>
+                <li>Elige campeón ni carta por ti</li>
+                <li>Revela información que el juego oculta</li>
+              </ul>
+            </div>
+            <div class="card cut yes">
+              <h3>Sí</h3>
+              <ul>
+                <li>Lee las cartas con el reconocimiento de texto de Windows</li>
+                <li>Dibuja encima en una capa que deja pasar tus clics</li>
+                <li>Habla solo con el cliente del LoL en tu PC</li>
+                <li>Te sugiere: tú decides y haces clic</li>
+                <li>Guarda tus datos solo en tu PC</li>
+              </ul>
+            </div>
+          </div>
+          <p class="note">Todos los detalles están en <a href="https://github.com/DiegoFernandoLojanTenesaca/xyra/blob/master/SECURITY.md">SECURITY.md</a>.</p>
+        </div>
+      </section>
+
+      <section id="instalar">
+        <div class="wrap">
+          <div class="intro">
+            <p class="eyebrow">Instalar</p>
+            <h2>Listo en un minuto</h2>
+          </div>
+          <div class="steps">
+            <div class="card cut">
+              <h3>Descarga</h3>
+              <p>Baja el instalador de la última versión e instálalo. No pide permisos de administrador.</p>
+            </div>
+            <div class="card cut">
+              <h3>Sin bordes</h3>
+              <p>Pon el LoL en modo de ventana Sin bordes. Xyra lo hace por ti con el juego cerrado.</p>
+            </div>
+            <div class="card cut">
+              <h3>A jugar</h3>
+              <p>Entra a ARAM: Caos o Arena. Cuando salgan las cartas, Xyra ya las habrá marcado.</p>
+            </div>
+          </div>
+          <p class="note">
+            El instalador todavía no tiene firma digital, así que Windows puede mostrar "Windows protegió tu PC". Pulsa "Más información" y luego "Ejecutar de
+            todas formas".
+          </p>
+        </div>
+      </section>
+
+      <section id="novedades">
+        <div class="wrap">
+          <div class="intro">
+            <p class="eyebrow">Novedades</p>
+            <h2>Siempre mejorando</h2>
+          </div>
+          <div class="news">
+            <div class="card cut">
+              <h3>Lo nuevo</h3>
+              <ul>
+                <li>Runas, hechizos e ítems se ponen solos al elegir campeón.</li>
+                <li>Eliges si las recomendaciones van por tier, por tu maestría o por lo que más juegas.</li>
+                <li>En Inicio, los mejores aumentos para tu campeón y las cartas que te salieron en cada ronda.</li>
+                <li>Después de la partida ves si elegiste la carta que recomendó Xyra.</li>
+                <li>Acepta la partida por ti, si lo activas.</li>
+                <li>Se actualiza con un botón, sin desinstalar.</li>
+              </ul>
+              <p class="muted">Notas completas en <a href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases">GitHub</a>.</p>
+            </div>
+            <div class="card cut soon">
+              <h3>Lo que viene</h3>
+              <ul>
+                <li>Xyra en tu celular: ve las recomendaciones en una segunda pantalla escaneando un QR.</li>
+                <li>Aviso de qué habilidad subir y cuál es tu siguiente ítem durante la partida.</li>
+                <li>Un botón para tomar de la banca al campeón recomendado.</li>
+                <li>Más idiomas.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="preguntas">
+        <div class="wrap">
+          <div class="intro">
+            <p class="eyebrow">Preguntas</p>
+            <h2>Lo que todos preguntan</h2>
+          </div>
+          <details>
+            <summary>¿Es gratis?</summary>
+            <p>Sí, y de código abierto con licencia MIT. No tiene anuncios ni cuentas.</p>
+          </details>
+          <details>
+            <summary>¿Me pueden banear por usarlo?</summary>
+            <p>
+              Xyra no lee ni modifica el juego, no simula teclas y no juega por ti: solo mira la pantalla, dibuja encima y habla con el cliente, como otras apps
+              de estadísticas. Es un proyecto de la comunidad sin aprobación de Riot, así que úsalo bajo tu responsabilidad.
+            </p>
+          </details>
+          <details>
+            <summary>¿En qué modos funciona?</summary>
+            <p>Las etiquetas, en ARAM: Caos y Arena. Builds, runas y counters, también en la Grieta del Invocador.</p>
+          </details>
+          <details>
+            <summary>¿Por qué necesita el modo Sin bordes?</summary>
+            <p>En pantalla completa exclusiva Windows no deja dibujar nada encima del juego. Xyra puede ponerlo por ti y mantenerlo.</p>
+          </details>
+          <details>
+            <summary>¿Consume muchos recursos?</summary>
+            <p>No. Mientras no juegas se queda quieto en la bandeja, y durante la partida solo lee la zona de las cartas cuando el juego está al frente.</p>
+          </details>
+          <details>
+            <summary>¿Funciona con otras apps como Blitz o Porofessor?</summary>
+            <p>
+              Sí, pueden convivir. Si las dos importan runas solas, deja esa opción activa en una sola, y si tienes todas tus páginas de runas ocupadas, libera
+              una para que Xyra tenga la suya.
+            </p>
+          </details>
+          <details>
+            <summary>¿Cómo se actualiza?</summary>
+            <p>
+              Cuando sale una versión nueva, aparece un botón en la app. Descarga, comprueba el instalador y actualiza sin perder tus ajustes ni tus partidas.
+            </p>
+          </details>
+        </div>
+      </section>
+
+      <section class="cta">
+        <div class="wrap">
+          <h2>Tu próxima carta, sin dudas</h2>
+          <div class="actions">
+            <a class="button primary cut download" href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases/latest">
+              <svg aria-hidden="true"><use href="#download" /></svg><span class="download-label">Descargar para Windows</span>
+            </a>
+          </div>
+          <p class="muted release-info">Windows 10 y 11</p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <div class="creators">
+          <a href="https://github.com/DiegoFernandoLojanTenesaca">
+            <img src="https://github.com/DiegoFernandoLojanTenesaca.png?size=80" alt="" loading="lazy" />
+            <span><b>@DiegoFernandoLojanTenesaca</b>Creador · IndagaLab</span>
+          </a>
+          <a href="https://github.com/jahirxtrap">
+            <img src="https://github.com/jahirxtrap.png?size=80" alt="" loading="lazy" />
+            <span><b>@jahirxtrap</b>Cocreador · Xynitra</span>
+          </a>
+        </div>
+        <p class="legal">
+          Proyecto de la comunidad. Xyra no está respaldado por Riot Games ni refleja sus opiniones ni las de nadie involucrado oficialmente en producir o
+          gestionar sus propiedades. League of Legends y Riot Games son marcas de Riot Games, Inc. Sin relación con OP.GG. Estadísticas de OP.GG e íconos de
+          CommunityDragon.
+        </p>
+      </div>
+    </footer>
+
+    <dialog id="viewer" aria-label="Captura ampliada">
+      <img alt="" />
+    </dialog>
+
+    <script>
+      const RELEASE_API = 'https://api.github.com/repos/DiegoFernandoLojanTenesaca/xyra/releases/latest';
+
+      document.querySelectorAll('.picker button').forEach((button, _, all) =>
+        button.addEventListener('click', () => {
+          all.forEach((other) => other.setAttribute('aria-pressed', String(other === button)));
+          const preview = document.getElementById('style-preview');
+          preview.src = `styles/${button.dataset.style}.jpg`;
+          preview.alt = `Cartas de aumento: ${button.querySelector('b').textContent}`;
+        }),
+      );
+
+      const viewer = document.getElementById('viewer');
+      document.querySelectorAll('figure button').forEach((button) =>
+        button.addEventListener('click', () => {
+          const shot = button.querySelector('img');
+          Object.assign(viewer.querySelector('img'), { src: shot.src, alt: shot.alt });
+          viewer.showModal();
+        }),
+      );
+      viewer.addEventListener('click', () => viewer.close());
+
+      fetch(RELEASE_API)
+        .then((response) => (response.ok ? response.json() : Promise.reject(response.status)))
+        .then((release) => {
+          const version = release.tag_name.replace(/^v/, '');
+          const installer = release.assets.find((asset) => asset.name.endsWith('.exe'));
+          if (!installer) return;
+          const size = new Intl.NumberFormat('es', { style: 'unit', unit: 'megabyte', maximumFractionDigits: 1 }).format(installer.size / 1024 / 1024);
+          document.querySelectorAll('a.download').forEach((link) => (link.href = installer.browser_download_url));
+          document.querySelectorAll('.download-label').forEach((label) => (label.textContent = `Descargar v${version}`));
+          document.querySelectorAll('.release-info').forEach((info) => (info.textContent = `Versión ${version} · ${size} · Windows 10 y 11`));
+        })
+        .catch(() => {});
+    </script>
+  </body>
+</html>
