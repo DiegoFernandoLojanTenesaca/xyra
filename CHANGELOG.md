@@ -1,4 +1,4 @@
-- Added a Download and install button when a new version is out, which checks the installer SHA-256 before opening it.
+- Added a Download and install button when a new version is out: it checks the installer SHA-256 and updates in place, without uninstalling, keeping your settings and games, then reopens Xyra.
 - Added an option to accept found matches after a chosen delay, off by default, that never overrides an answer you already gave.
 - Added an option to open League when you open Xyra, so one desktop icon opens both.
 - Added a choice of Spanish or English when installing, and branded installer images.

@@ -21,6 +21,8 @@ use xyra_core::{
 pub type App = Arc<Shared>;
 
 const CSV_FILE: &str = "xyra-games.csv";
+/// Passive progress window, update mode that never uninstalls nor deletes app data, and restart of Xyra when done.
+const INSTALLER_UPDATE_ARGS: [&str; 3] = ["/P", "/UPDATE", "/R"];
 
 async fn blocking<T: Send + 'static>(task: impl FnOnce() -> Result<T> + Send + 'static) -> Result<T> {
     tauri::async_runtime::spawn_blocking(task).await.map_err(AppError::platform)?
@@ -148,7 +150,7 @@ pub async fn check_update(shared: State<'_, App>) -> Result<Option<Release>> {
     .await
 }
 
-/// Downloads the newer version, opens its installer and closes Xyra so it can be replaced.
+/// Downloads the newer version and updates in place: no questions, no uninstall, settings and games kept, Xyra reopened.
 #[tauri::command]
 pub async fn install_update(app: AppHandle, shared: State<'_, App>) -> Result<()> {
     let shared = Arc::clone(&shared);
@@ -163,7 +165,7 @@ pub async fn install_update(app: AppHandle, shared: State<'_, App>) -> Result<()
         }
     })
     .await?;
-    Command::new(installer).spawn().map_err(AppError::platform)?;
+    Command::new(installer).args(INSTALLER_UPDATE_ARGS).spawn().map_err(AppError::platform)?;
     app.exit(0);
     Ok(())
 }
