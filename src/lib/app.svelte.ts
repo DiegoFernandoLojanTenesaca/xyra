@@ -43,6 +43,8 @@ class App {
   updateProgress = $state<number | null>(null);
   updateError = $state('');
   checkingUpdate = $state(false);
+  /** The champion of the current champion select or game. */
+  liveChampion = $derived(this.state?.champ_select?.champion ?? this.state?.game?.champion ?? null);
   language = $derived(this.state?.language ?? BASE_LANGUAGE);
   t = $derived(translator(this.language));
   format = $derived(formatter(this.language));
@@ -95,12 +97,14 @@ class App {
 
   /** Build and Augments open on the champion being played; openBuild and openAugments open the one the player chose. */
   goTo = (page: Page) => {
-    const champion = playing(this.state);
-    if (champion !== null && CHAMPION_PAGES.includes(page)) {
-      this.selectedChampion = champion;
-      this.followGame();
-    }
+    if (CHAMPION_PAGES.includes(page)) this.followLive();
     this.showPage(page);
+  };
+
+  followLive = () => {
+    if (!this.liveChampion) return;
+    this.selectedChampion = this.liveChampion.id;
+    this.followGame();
   };
 
   showPage = (page: Page) => {

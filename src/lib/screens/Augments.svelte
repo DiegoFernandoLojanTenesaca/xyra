@@ -8,8 +8,10 @@
   import ChampionHeader from '../ui/ChampionHeader.svelte';
   import ChampionPicker from '../ui/ChampionPicker.svelte';
   import EmptyState from '../ui/EmptyState.svelte';
+  import LiveChampionBar from '../ui/LiveChampionBar.svelte';
   import PageHeader from '../ui/PageHeader.svelte';
   import SegmentedControl from '../ui/SegmentedControl.svelte';
+  import Skeleton from '../ui/Skeleton.svelte';
   import TierBadge from '../ui/TierBadge.svelte';
 
   const MIN_BAR = 4;
@@ -47,6 +49,8 @@
   />
 </div>
 
+<LiveChampionBar />
+
 {#if champion}
   <ChampionHeader {champion} {details} />
 {/if}
@@ -56,7 +60,7 @@
 {:else if augments.error}
   <EmptyState icon={Layers} text={app.errorText(augments.error)} />
 {:else if rows === null}
-  <p class="muted loading">{t('augments:loading')}</p>
+  <Skeleton label={t('augments:loading')} />
 {:else if !groups.length}
   <EmptyState icon={Layers} text={t('augments:noData')} />
 {:else}

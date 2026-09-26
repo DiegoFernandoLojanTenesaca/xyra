@@ -577,7 +577,7 @@ impl Engine {
             }
             Err(_) => None,
         });
-        let auto_import = self.shared.config().auto_import_build;
+        let auto_import = self.shared.config().auto_import_build && self.mode.has_builds();
         for (enemy, position) in self.champ_select.update(parsed, pickable, self.mode, auto_import) {
             let shared = Arc::clone(&self.shared);
             thread::spawn(move || {

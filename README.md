@@ -7,9 +7,9 @@
   <a href="LICENSE"><img alt="Licencia MIT" src="https://img.shields.io/github/license/DiegoFernandoLojanTenesaca/xyra?style=for-the-badge&color=1f1f22"></a>
 </p>
 
-<p align="center"><b>Companion de escritorio para League of Legends.</b> Mira tus cartas de aumento y te marca la mejor para tu
-campeón en el momento en que salen, con estadísticas de OP.GG. Además: builds y runas que se importan con un clic,
-counters para la Grieta, tier lists y tus estadísticas. Liviano, en español e inglés, y sin tocar el juego.</p>
+<p align="center"><b>Companion de escritorio para League of Legends.</b> Al elegir campeón te pone runas, hechizos e ítems de
+OP.GG, te sugiere counters en normales y clasificatorias, y en ARAM: Caos y Arena te marca la mejor carta de aumento en el
+momento en que sale. Además: tier lists y tus estadísticas. Liviano, en español e inglés, y sin tocar el juego.</p>
 
 <p align="center"><img src="docs/labels-preview.jpg" alt="Etiquetas de Xyra sobre las cartas de aumento en una partida de ARAM: Caos" width="92%"></p>
 

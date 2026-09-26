@@ -63,5 +63,8 @@
   "searchChampion": "Search champion…",
   "games_one": "{{count, number}} game",
   "games_other": "{{count, number}} games",
-  "winRate": "{{value}} WR"
+  "winRate": "{{value}} WR",
+  "followingGame": "Following your game · {{champion}}",
+  "viewingOther": "You are viewing another champion; you play {{champion}}",
+  "backToChampion": "Back to {{champion}}"
 }

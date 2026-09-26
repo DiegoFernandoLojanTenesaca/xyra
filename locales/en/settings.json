@@ -61,5 +61,6 @@
     "hiddenInfo": "Never reveals hidden information: only public OP.GG data.",
     "overlay": "Only reads the screen and draws on top, like OBS or Discord."
   },
-  "securityNote": "To show over the game, League must be in Borderless mode. While you play, Xyra never takes focus or receives clicks."
+  "securityNote": "To show over the game, League must be in Borderless mode. While you play, Xyra never takes focus or receives clicks.",
+  "privacy": "Privacy"
 }

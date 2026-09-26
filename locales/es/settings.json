@@ -61,5 +61,6 @@
     "hiddenInfo": "No revela información oculta: solo datos públicos de OP.GG.",
     "overlay": "Solo mira la pantalla y dibuja encima, como OBS o Discord."
   },
-  "securityNote": "Para verse encima del juego, el LoL debe estar en modo Sin bordes. Mientras juegas, Xyra nunca toma el foco ni recibe clics."
+  "securityNote": "Para verse encima del juego, el LoL debe estar en modo Sin bordes. Mientras juegas, Xyra nunca toma el foco ni recibe clics.",
+  "privacy": "Privacidad"
 }

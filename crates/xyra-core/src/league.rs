@@ -145,7 +145,7 @@ impl Lcu {
         if let Some(body) = body {
             request = request.json(body);
         }
-        let response = request.send().map_err(AppError::client)?;
+        let response = request.send().map_err(|e| if e.is_connect() { AppError::ClientClosed } else { AppError::client(e) })?;
         let status = response.status();
         let text = response.text().map_err(AppError::client)?;
         if !status.is_success() {

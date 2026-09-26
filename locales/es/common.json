@@ -63,5 +63,8 @@
   "searchChampion": "Buscar campeón…",
   "games_one": "{{count, number}} partida",
   "games_other": "{{count, number}} partidas",
-  "winRate": "{{value}} WR"
+  "winRate": "{{value}} WR",
+  "followingGame": "Siguiendo tu partida · {{champion}}",
+  "viewingOther": "Estás viendo otro campeón; juegas con {{champion}}",
+  "backToChampion": "Volver a {{champion}}"
 }

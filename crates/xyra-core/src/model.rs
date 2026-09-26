@@ -34,6 +34,11 @@ impl GameMode {
         GameMode::WITH_AUGMENTS.contains(&self)
     }
 
+    /// Modes with runes, summoner spells and item sets to import: Arena has none of them.
+    pub fn has_builds(self) -> bool {
+        !matches!(self, GameMode::Arena | GameMode::Other)
+    }
+
     pub fn build_mode(self) -> BuildMode {
         if self == GameMode::SummonersRift { BuildMode::Rift } else { BuildMode::Aram }
     }

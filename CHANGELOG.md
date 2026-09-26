@@ -1,4 +1,11 @@
 - Added Enter to take the first champion of the search and Escape to close its list.
+- Added a notice on Build and Augments while you play, with a button to go back to your champion when you are viewing another one.
+- Added arrow keys to move through the champion search.
+- Added placeholders while Build and Augments load, instead of a line of text.
 - Fixed Build and Augments showing a champion picked by hand earlier instead of the one you are playing.
 - Fixed the Augments mode staying on ARAM: Mayhem or Arena when your next game was in the other mode.
 - Fixed Build keeping the old position when your lane changed during champion select.
+- Fixed the Game screen showing a raw connection error when League was closed; it now asks you to open League.
+- Fixed the automatic build import running in Arena, which has no runes, spells or item sets to import.
+- Updated the texts of the app, the website and the README to present Xyra for every mode: normals, ranked, ARAM and ARAM: Mayhem.
+- Updated the privacy note in Settings → Data to its own title instead of repeating Security.

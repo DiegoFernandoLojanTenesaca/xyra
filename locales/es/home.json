@@ -4,11 +4,11 @@
   "bestOf": "La mejor de las {{count}} para {{champion}}.",
   "noClient": {
     "title": "Abre el LoL para iniciar",
-    "text": "Entra a ARAM: Caos y Xyra te marca la mejor carta en cada elección."
+    "text": "Abre el LoL: Xyra te prepara la build en cualquier modo y te marca la mejor carta de aumento."
   },
   "client": {
     "title": "Todo listo. A jugar",
-    "text": "Busca partida: cuando salgan las cartas, Xyra te dice cuál tomar al instante."
+    "text": "Busca partida: en la selección te pone la build y te dice qué tomar, y en ARAM: Caos y Arena te marca la mejor carta."
   },
   "paused": {
     "title": "Xyra en pausa",

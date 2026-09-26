@@ -4,11 +4,11 @@
   "bestOf": "The best of the {{count}} for {{champion}}.",
   "noClient": {
     "title": "Open League to start",
-    "text": "Jump into ARAM: Mayhem and Xyra marks the best card every time."
+    "text": "Open League: Xyra sets your build in any mode and marks the best augment card."
   },
   "client": {
     "title": "All set. Let's play",
-    "text": "Queue up: when the cards show up, Xyra tells you which one to take, instantly."
+    "text": "Queue up: in champion select Xyra sets your build and tells you what to take, and in ARAM: Mayhem and Arena it marks the best card."
   },
   "paused": {
     "title": "Xyra is paused",

@@ -50,7 +50,7 @@
   </section>
 
   <section class="panel cut box">
-    <h3 class="section-title">{t('settings:tabs.security')}</h3>
+    <h3 class="section-title">{t('settings:privacy')}</h3>
     <p class="privacy"><b><ShieldCheck size={14} />{t('settings:noTelemetry')}</b> {t('settings:connections')}</p>
   </section>
 </div>

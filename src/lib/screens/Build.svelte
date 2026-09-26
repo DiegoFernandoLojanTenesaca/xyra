@@ -8,8 +8,10 @@
   import ChampionHeader from '../ui/ChampionHeader.svelte';
   import ChampionPicker from '../ui/ChampionPicker.svelte';
   import EmptyState from '../ui/EmptyState.svelte';
+  import LiveChampionBar from '../ui/LiveChampionBar.svelte';
   import PageHeader from '../ui/PageHeader.svelte';
   import SegmentedControl from '../ui/SegmentedControl.svelte';
+  import Skeleton from '../ui/Skeleton.svelte';
 
   const SKILLS = ['Q', 'W', 'E', 'R'];
   const RATE_DIGITS = 1;
@@ -101,6 +103,8 @@
   {/if}
 </div>
 
+<LiveChampionBar />
+
 {#if champion}
   <ChampionHeader {champion} showTier={app.buildMode === 'aram'} {details}>
     {#if app.state.phase === 'champSelect'}
@@ -115,7 +119,7 @@
 {#if build.error}
   <EmptyState icon={Hammer} text={app.errorText(build.error)} />
 {:else if !current}
-  <p class="muted loading">{t('build:loading')}</p>
+  <Skeleton label={t('build:loading')} />
 {:else}
   {#if missingNames}<p class="muted">{t('build:noCatalog')}</p>{/if}
   <div class="grid">
