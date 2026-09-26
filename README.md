@@ -3,7 +3,6 @@
 <p align="center">
   <a href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases/latest"><img alt="Descargar" src="https://img.shields.io/github/v/release/DiegoFernandoLojanTenesaca/xyra?style=for-the-badge&label=descargar&color=e5132b"></a>
   <img alt="Windows 10 y 11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-131315?style=for-the-badge">
-  <a href="https://github.com/DiegoFernandoLojanTenesaca/xyra/actions/workflows/ci.yml"><img alt="Pruebas" src="https://img.shields.io/github/actions/workflow/status/DiegoFernandoLojanTenesaca/xyra/ci.yml?branch=main&style=for-the-badge&label=pruebas"></a>
   <a href="LICENSE"><img alt="Licencia MIT" src="https://img.shields.io/github/license/DiegoFernandoLojanTenesaca/xyra?style=for-the-badge&color=1f1f22"></a>
 </p>
 
@@ -64,7 +63,7 @@ dibuja encima. Todos los detalles en [SECURITY.md](SECURITY.md).
 
 ## Instalación
 
-1. Descarga `Xyra_x.y.z_x64-setup.exe` desde [Releases](../../releases).
+1. Descarga `xyra-x.y.z.exe` desde [Releases](../../releases).
 2. Pon el LoL en **Sin bordes** (Opciones => Video => Modo de ventana). Xyra lo hace por ti con el juego cerrado.
 3. Juega ARAM: Caos. Xyra arranca con Windows y queda en la bandeja.
 
