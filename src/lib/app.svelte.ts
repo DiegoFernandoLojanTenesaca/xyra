@@ -6,7 +6,7 @@ import { checkUpdate, installUpdate } from './services/updates';
 import { BASE_LANGUAGE, formatter, translator } from './i18n';
 import type { BuildMode, ChampionInfo, Choices, Config, EngineState, GameMode, ImportTarget, Position, Profile, Release, StatsSummary } from './types';
 
-export const PAGES = ['home', 'build', 'augments', 'champions', 'stats', 'labels', 'game', 'settings'] as const;
+export const PAGES = ['home', 'build', 'augments', 'champions', 'meta', 'stats', 'labels', 'game', 'settings'] as const;
 export type Page = (typeof PAGES)[number];
 
 export const SETTINGS_TABS = ['general', 'profile', 'data', 'security', 'help', 'about'] as const;
@@ -120,6 +120,14 @@ class App {
   openBuild = (champion: number) => {
     this.selectedChampion = champion;
     this.followGame();
+    this.showPage('build');
+  };
+
+  /** Opens the Summoner's Rift build of a champion in a position, as picked from the tier list. */
+  openRiftBuild = (champion: number, position: Position) => {
+    this.selectedChampion = champion;
+    this.buildMode = 'rift';
+    this.positionOverride = position;
     this.showPage('build');
   };
 

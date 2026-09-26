@@ -1,3 +1,4 @@
+- Added a Meta screen with the best ranked champions of the patch by position: win, pick and ban rates, tier and how much each one rose or fell since the previous patch, with a link to the official patch notes.
 - Added Enter to take the first champion of the search and Escape to close its list.
 - Added a notice on Build and Augments while you play, with a button to go back to your champion when you are viewing another one.
 - Added arrow keys to move through the champion search.

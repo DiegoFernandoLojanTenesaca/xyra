@@ -35,7 +35,7 @@ use xyra_core::{
     gameflow::{self, GameflowPhase},
     league::{self, Installation, Lcu, LcuEvent},
     matchmaking,
-    model::{AppEvent, Build, BuildMode, ChampionInfo, CurrentGame, EngineState, GameMode, ImportTarget, Matchup, Phase, Position},
+    model::{AppEvent, Build, BuildMode, ChampionInfo, CurrentGame, EngineState, GameMode, ImportTarget, Matchup, Meta, Phase, Position},
     opgg, profile,
     stats::{self, StatsSummary, StoredGame},
     storage::Storage,
@@ -44,6 +44,7 @@ use xyra_core::{
 };
 
 pub const MAIN_WINDOW: &str = "main";
+const META_MAX_AGE: Duration = Duration::from_secs(60 * 60);
 const SUBSCRIPTIONS: [&str; 4] = [profile::CURRENT_SUMMONER, gameflow::SESSION, champ_select::SESSION, stats::END_OF_GAME];
 const RECONNECT_DELAY: Duration = Duration::from_secs(2);
 const MAX_RECONNECTS: u32 = 5;
@@ -78,6 +79,8 @@ pub struct Shared {
     pub web: web::Client,
     /// The newer release found by the last update check.
     pub update: Mutex<Option<Release>>,
+    /// The ranked tier list and when it was read.
+    meta: Mutex<Option<(Instant, Meta)>>,
     events: Sender<EngineEvent>,
 }
 
@@ -122,6 +125,7 @@ impl Shared {
             installation,
             web: web::client(),
             update: Mutex::new(None),
+            meta: Mutex::new(None),
             events,
         };
         (shared, received)
@@ -175,6 +179,18 @@ impl Shared {
         let mut champions: Vec<ChampionInfo> = self.catalog().champions.keys().map(|&id| self.champion_info(id)).collect();
         champions.sort_by(|a, b| (a.preference(order), &a.name).cmp(&(b.preference(order), &b.name)));
         champions
+    }
+
+    /// The ranked tier list, read again from OP.GG once it is older than an hour.
+    pub fn meta(&self) -> Result<Meta> {
+        if let Some((read_at, meta)) = self.meta.lock().unwrap().as_ref()
+            && read_at.elapsed() < META_MAX_AGE
+        {
+            return Ok(meta.clone());
+        }
+        let meta = opgg::fetch_meta(&self.web, &self.catalog())?;
+        *self.meta.lock().unwrap() = Some((Instant::now(), meta.clone()));
+        Ok(meta)
     }
 
     pub fn fetch_build(&self, champion: u32, mode: BuildMode, position: Option<Position>) -> Result<Build> {

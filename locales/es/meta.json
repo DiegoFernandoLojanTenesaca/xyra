@@ -1,0 +1,15 @@
+{
+  "subtitle": "Los mejores campeones de clasificatorias en el parche {{patch}}, por posición.",
+  "loading": "Cargando el meta de OP.GG…",
+  "patchNotes": "Notas del parche {{patch}}",
+  "table": "Campeones de {{position}}",
+  "champion": "Campeón",
+  "tier": "Tier",
+  "winRate": "Victorias",
+  "pickRate": "Uso",
+  "banRate": "Bans",
+  "trend": "Desde el parche anterior",
+  "openBuild": "Ver su build en esta posición",
+  "noMatch": "Ningún campeón coincide con la búsqueda.",
+  "source": "Estadísticas de clasificatorias de todas las regiones, de OP.GG. Toca un campeón para ver su build en esa posición."
+}

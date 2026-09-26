@@ -1,0 +1,15 @@
+{
+  "subtitle": "The best ranked champions in patch {{patch}}, by position.",
+  "loading": "Loading the meta from OP.GG…",
+  "patchNotes": "Patch {{patch}} notes",
+  "table": "{{position}} champions",
+  "champion": "Champion",
+  "tier": "Tier",
+  "winRate": "Win rate",
+  "pickRate": "Pick rate",
+  "banRate": "Ban rate",
+  "trend": "Since last patch",
+  "openBuild": "See its build in this position",
+  "noMatch": "No champion matches the search.",
+  "source": "Ranked stats from every region, by OP.GG. Tap a champion to see its build in that position."
+}

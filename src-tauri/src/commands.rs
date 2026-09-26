@@ -10,7 +10,7 @@ use xyra_core::{
     config::Config,
     errors::{AppError, Result},
     game_settings::{self, GameOption, GameSetting, SettingValue},
-    model::{AppEvent, AugmentRow, Build, BuildMode, ChampionInfo, Choices, EngineState, GameMode, ImportTarget, Position},
+    model::{AppEvent, AugmentRow, Build, BuildMode, ChampionInfo, Choices, EngineState, GameMode, ImportTarget, Meta, Position},
     opgg,
     profile::{self, Profile},
     stats::{self, StatsSummary},
@@ -77,6 +77,12 @@ pub fn get_champions(shared: State<App>) -> Vec<ChampionInfo> {
 pub async fn get_augments(shared: State<'_, App>, champion: u32, mode: GameMode) -> Result<Vec<AugmentRow>> {
     let shared = Arc::clone(&shared);
     blocking(move || Ok(opgg::augment_rows(opgg::fetch_augments(&shared.web, champion, mode)?, &shared.catalog()))).await
+}
+
+#[tauri::command]
+pub async fn get_meta(shared: State<'_, App>) -> Result<Meta> {
+    let shared = Arc::clone(&shared);
+    blocking(move || shared.meta()).await
 }
 
 #[tauri::command]

@@ -1,8 +1,22 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { AugmentRow, Build, BuildMode, ChampionInfo, GameMode, GameOption, GameSetting, ImportTarget, Position, Profile, SettingValue } from '../types';
+import type {
+  AugmentRow,
+  Build,
+  BuildMode,
+  ChampionInfo,
+  GameMode,
+  GameOption,
+  GameSetting,
+  ImportTarget,
+  Meta,
+  Position,
+  Profile,
+  SettingValue,
+} from '../types';
 
 export const getChampions = () => invoke<ChampionInfo[]>('get_champions');
 export const getAugments = (champion: number, mode: GameMode) => invoke<AugmentRow[]>('get_augments', { champion, mode });
+export const getMeta = () => invoke<Meta>('get_meta');
 export const getBuild = (champion: number, mode: BuildMode, position: Position | null) => invoke<Build>('get_build', { champion, mode, position });
 export const importBuild = (champion: number, target: ImportTarget, mode: BuildMode, position: Position | null) =>
   invoke<void>('import_build', { champion, target, mode, position });

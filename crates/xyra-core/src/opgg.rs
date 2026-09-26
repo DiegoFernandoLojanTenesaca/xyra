@@ -1,7 +1,7 @@
 use crate::{
     catalog::{Catalog, named},
     errors::{AppError, Result},
-    model::{AugmentRow, Build, BuildMode, GameMode, Matchup, Position, Quality, RunePage, grade},
+    model::{AugmentRow, Build, BuildMode, GameMode, Matchup, Meta, MetaChampion, Position, PositionMeta, Quality, RunePage, grade},
     web::Client,
 };
 use serde::{Deserialize, de::DeserializeOwned};
@@ -16,6 +16,9 @@ const ARENA_PERCENTILES: [f64; 4] = [0.1, 0.3, 0.6, 0.8];
 /// A matchup counts once it holds this share of the champion's games in the position.
 const MIN_MATCHUP_SHARE: f64 = 0.01;
 pub const MATCHUPS_SHOWN: usize = 5;
+const RANKED_LIST: &str = "global/champions/ranked";
+/// Game version 16.x is the public patch 26.x.
+const PATCH_YEAR_OFFSET: u32 = 10;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct AugmentStat {
@@ -66,6 +69,44 @@ struct ChampionTier {
     id: u32,
     tier: u8,
     rank: u32,
+}
+
+#[derive(Deserialize)]
+struct RankedList {
+    data: Vec<RankedChampion>,
+    meta: RankedListInfo,
+}
+
+#[derive(Deserialize)]
+struct RankedListInfo {
+    version: String,
+}
+
+#[derive(Deserialize)]
+struct RankedChampion {
+    id: u32,
+    positions: Option<Vec<RankedPosition>>,
+}
+
+#[derive(Deserialize)]
+struct RankedPosition {
+    name: String,
+    stats: RankedStats,
+}
+
+#[derive(Deserialize)]
+struct RankedStats {
+    win_rate: f64,
+    pick_rate: f64,
+    ban_rate: f64,
+    tier_data: TierData,
+}
+
+#[derive(Deserialize)]
+struct TierData {
+    tier: u8,
+    rank: u32,
+    rank_prev_patch: Option<u32>,
 }
 
 #[derive(Deserialize)]
@@ -200,6 +241,42 @@ pub fn augment_rows(stats: HashMap<u32, AugmentStat>, catalog: &Catalog) -> Vec<
     rows
 }
 
+/// Ranked tier list of every position in the current patch.
+pub fn fetch_meta(http: &Client, catalog: &Catalog) -> Result<Meta> {
+    let text = http.get(format!("{API}/{RANKED_LIST}")).send()?.error_for_status()?.text()?;
+    let list: RankedList = serde_json::from_str(&text).map_err(|e| AppError::opgg_format(RANKED_LIST, e))?;
+    Ok(meta(list, catalog))
+}
+
+fn meta(list: RankedList, catalog: &Catalog) -> Meta {
+    let mut positions: Vec<PositionMeta> = Position::ALL.map(|position| PositionMeta { position, champions: Vec::new() }).to_vec();
+    for champion in list.data {
+        for played in champion.positions.into_iter().flatten() {
+            let Some(slot) = Position::from_opgg(&played.name).and_then(|position| positions.iter_mut().find(|p| p.position == position)) else { continue };
+            let (stats, tier) = (&played.stats, &played.stats.tier_data);
+            slot.champions.push(MetaChampion {
+                champion: catalog.champion(champion.id),
+                tier: tier.tier,
+                rank: tier.rank,
+                win_rate: stats.win_rate * 100.0,
+                pick_rate: stats.pick_rate * 100.0,
+                ban_rate: stats.ban_rate * 100.0,
+                trend: tier.rank_prev_patch.map(|previous| previous as i32 - tier.rank as i32),
+            });
+        }
+    }
+    positions.iter_mut().for_each(|p| p.champions.sort_by_key(|c| c.rank));
+    Meta { patch: patch_name(&list.meta.version), positions }
+}
+
+/// "16.19" becomes "26.19"; anything else is kept as it came.
+fn patch_name(version: &str) -> String {
+    match version.split_once('.').and_then(|(major, minor)| Some((major.parse::<u32>().ok()?, minor))) {
+        Some((major, minor)) => format!("{}.{minor}", major + PATCH_YEAR_OFFSET),
+        None => version.to_string(),
+    }
+}
+
 /// ARAM: Mayhem champion tier list: id -> (tier 1 = best … 5, rank).
 pub fn fetch_champion_tiers(http: &Client) -> Result<HashMap<u32, (u8, u32)>> {
     let tiers: Vec<ChampionTier> = fetch(http, "contents/tiers?type=aram_mayhem")?;
@@ -307,6 +384,30 @@ pub(crate) fn parse_build(data: &BuildData, champion: u32, catalog: &Catalog) ->
 mod tests {
     use super::*;
     use serde_json::{Value, json};
+
+    #[test]
+    fn groups_the_ranked_list_by_position_best_first() {
+        let list: RankedList = serde_json::from_value(json!({
+            "meta": { "version": "16.19" },
+            "data": [
+                { "id": 1, "positions": [
+                    { "name": "MID", "stats": { "win_rate": 0.52, "pick_rate": 0.05, "ban_rate": 0.1, "tier_data": { "tier": 1, "rank": 2, "rank_prev_patch": 5 } } },
+                    { "name": "TOP", "stats": { "win_rate": 0.48, "pick_rate": 0.01, "ban_rate": 0.1, "tier_data": { "tier": 4, "rank": 40, "rank_prev_patch": null } } }
+                ] },
+                { "id": 2, "positions": [{ "name": "MID", "stats": { "win_rate": 0.55, "pick_rate": 0.08, "ban_rate": 0.2, "tier_data": { "tier": 1, "rank": 1, "rank_prev_patch": 1 } } }] },
+                { "id": 3, "positions": null }
+            ]
+        }))
+        .unwrap();
+        let meta = meta(list, &Catalog::default());
+        assert_eq!(meta.patch, "26.19");
+        let mid = &meta.positions.iter().find(|p| p.position == Position::Mid).unwrap().champions;
+        assert_eq!(mid.iter().map(|c| (c.champion.id, c.trend)).collect::<Vec<_>>(), [(2, Some(0)), (1, Some(3))]);
+        assert_eq!(mid[1].win_rate.round(), 52.0);
+        let top = &meta.positions.iter().find(|p| p.position == Position::Top).unwrap().champions;
+        assert_eq!(top[0].trend, None);
+        assert_eq!(patch_name("latest"), "latest");
+    }
 
     fn ranked(runes: Value, counters: Value) -> BuildData {
         let response = json!({ "data": {

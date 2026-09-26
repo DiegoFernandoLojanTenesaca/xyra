@@ -30,6 +30,9 @@ fn reads_every_opgg_answer() {
     let catalog = Catalog::default();
     let tiers = opgg::fetch_champion_tiers(&http).expect("ARAM: Mayhem champion tiers");
     assert!(!tiers.is_empty());
+    let meta = opgg::fetch_meta(&http, &catalog).expect("ranked tier list");
+    assert!(meta.positions.iter().all(|p| !p.champions.is_empty()), "every position has champions");
+    println!("patch {}", meta.patch);
     for champion in CHAMPIONS {
         for mode in GameMode::WITH_AUGMENTS {
             let augments = opgg::fetch_augments(&http, champion, mode).expect("augment stats");

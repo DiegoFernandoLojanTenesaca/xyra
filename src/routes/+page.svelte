@@ -14,6 +14,7 @@
     Settings as SettingsIcon,
     Square,
     Tag,
+    TrendingUp,
     X,
   } from '@lucide/svelte';
   import { getCurrentWindow } from '@tauri-apps/api/window';
@@ -27,6 +28,7 @@
   import Game from '$lib/screens/Game.svelte';
   import Home from '$lib/screens/Home.svelte';
   import Labels from '$lib/screens/Labels.svelte';
+  import Meta from '$lib/screens/Meta.svelte';
   import Settings from '$lib/screens/Settings.svelte';
   import Stats from '$lib/screens/Stats.svelte';
   import Logo from '$lib/ui/Logo.svelte';
@@ -38,6 +40,7 @@
     { page: 'build', icon: Hammer },
     { page: 'augments', icon: Layers },
     { page: 'champions', icon: Crown },
+    { page: 'meta', icon: TrendingUp },
     { page: 'stats', icon: ChartColumn },
     { page: 'labels', icon: Tag },
     { page: 'game', icon: Gamepad2 },
@@ -48,6 +51,7 @@
     build: Build,
     augments: Augments,
     champions: Champions,
+    meta: Meta,
     stats: Stats,
     labels: Labels,
     game: Game,

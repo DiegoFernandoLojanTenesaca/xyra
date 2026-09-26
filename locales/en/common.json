@@ -55,6 +55,7 @@
     "build": "Build",
     "augments": "Augments",
     "champions": "Champions",
+    "meta": "Meta",
     "stats": "Stats",
     "labels": "Labels",
     "game": "Game",

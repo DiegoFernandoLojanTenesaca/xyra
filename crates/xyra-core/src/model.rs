@@ -163,6 +163,38 @@ pub struct Asset {
     pub icon: String,
 }
 
+/// Ranked tier list of the current patch, by position.
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[ts(export)]
+pub struct Meta {
+    /// Public patch name, like "26.19".
+    pub patch: String,
+    pub positions: Vec<PositionMeta>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[ts(export)]
+pub struct PositionMeta {
+    pub position: Position,
+    /// Best first.
+    pub champions: Vec<MetaChampion>,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[ts(export)]
+pub struct MetaChampion {
+    pub champion: Asset,
+    /// 1 = best … 5.
+    pub tier: u8,
+    pub rank: u32,
+    /// Percentages, 0-100.
+    pub win_rate: f64,
+    pub pick_rate: f64,
+    pub ban_rate: f64,
+    /// Places gained since the previous patch; negative when it dropped.
+    pub trend: Option<i32>,
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, TS)]
 #[ts(export)]
 pub struct Matchup {

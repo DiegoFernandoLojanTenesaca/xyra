@@ -127,6 +127,7 @@ pub fn run() {
             commands::get_augments,
             commands::get_profile,
             commands::get_build,
+            commands::get_meta,
             commands::import_build,
             commands::get_game_settings,
             commands::set_game_setting,
