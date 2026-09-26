@@ -13,7 +13,7 @@ use xyra_core::{
     game_settings, gameflow,
     league::{Lcu, Method},
     model::{BuildMode, GameMode, Position},
-    opgg, profile, stats,
+    opgg, profile, stats, updates, web,
 };
 use xyra_lib::riot_install;
 
@@ -26,7 +26,7 @@ const RUNE_PAGES: &str = "/lol-perks/v1/pages";
 #[test]
 #[ignore]
 fn reads_every_opgg_answer() {
-    let http = opgg::client();
+    let http = web::client();
     let catalog = Catalog::default();
     let tiers = opgg::fetch_champion_tiers(&http).expect("ARAM: Mayhem champion tiers");
     assert!(!tiers.is_empty());
@@ -87,9 +87,12 @@ fn talks_to_the_running_client() {
     let uri = events.recv_timeout(EVENT_WAIT).expect("an event over the verified WebSocket");
     println!("first event {uri} after {:?}", started.elapsed());
 
-    let http = opgg::client();
+    let http = web::client();
     let build = opgg::fetch_build(&http, AHRI, BuildMode::Aram, None, &catalog).expect("OP.GG build");
     assert_eq!(build.runes.primary.len() + build.runes.secondary.len() + build.runes.shards.len(), 9);
+
+    let latest = updates::check(&web::client()).expect("GitHub latest release");
+    println!("update available: {:?}", latest.map(|release| release.version));
 
     if env::var("XYRA_SMOKE_WRITE").is_ok() {
         match client_import::import_runes(&lcu, &build, "Smoke") {

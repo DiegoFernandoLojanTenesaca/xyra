@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { CircleQuestionMark, Download, ExternalLink, Square } from '@lucide/svelte';
+  import { CircleQuestionMark, Download, ExternalLink, RefreshCw, Square } from '@lucide/svelte';
   import { app } from '../../app.svelte';
   import { APP_NAME, CREATORS, githubHandle, githubProfile, LINKS, openExternal } from '../../project';
   import Button from '../../ui/Button.svelte';
@@ -23,6 +23,31 @@
         <span><b>{githubHandle(creator.user)}</b><small class="accent">{creator.team}</small></span>
       </button>
     {/each}
+  </div>
+</section>
+
+<section class="panel cut box update">
+  <div>
+    <h3 class="section-title">{t('about:updates')}</h3>
+    {#if app.updateProgress !== null}
+      <p>{t('about:downloading', { value: app.format.percent(app.updateProgress * 100) })}</p>
+      <div class="progress"><i style="width:{app.updateProgress * 100}%"></i></div>
+    {:else if app.update}
+      <p class="accent">{t('about:available', { version: app.update.version })}</p>
+      <p class="muted">{t('about:installHint')}</p>
+    {:else if app.checkingUpdate}
+      <p class="muted loading">{t('about:checking')}</p>
+    {:else}
+      <p class="muted">{app.updateError || t('about:upToDate', { version: app.state.version })}</p>
+    {/if}
+  </div>
+  <div class="links">
+    {#if app.update}
+      <Button variant="primary" icon={Download} disabled={app.updateProgress !== null} onclick={app.installUpdate}>{t('about:install')}</Button>
+      <Button icon={ExternalLink} onclick={() => openExternal(app.update!.notes_url)}>{t('about:notes')}</Button>
+    {:else}
+      <Button icon={RefreshCw} disabled={app.checkingUpdate} onclick={app.checkUpdate}>{t('about:checkUpdates')}</Button>
+    {/if}
   </div>
 </section>
 
@@ -52,6 +77,28 @@
 <p class="muted legal">{t('about:riot')}</p>
 
 <style>
+  .update {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-6);
+    margin-bottom: var(--space-6);
+  }
+  .update > div:first-child {
+    flex: 1;
+  }
+  .update p {
+    margin: 0 0 var(--space-2);
+  }
+  .progress {
+    height: var(--space-1);
+    background: var(--color-line);
+  }
+  .progress i {
+    display: block;
+    height: 100%;
+    background: var(--color-accent);
+  }
   .card {
     display: flex;
     align-items: center;

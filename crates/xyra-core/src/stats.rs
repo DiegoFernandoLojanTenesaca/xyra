@@ -34,6 +34,29 @@ pub struct StoredGame {
     pub win: bool,
     #[serde(alias = "aumentos")]
     pub augments: Vec<u32>,
+    /// The augment choices Xyra saw in this game, in order.
+    #[serde(default)]
+    pub offers: Vec<Offer>,
+}
+
+/// The cards of one augment choice and the one Xyra recommended.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Offer {
+    pub cards: Vec<u32>,
+    pub best: Option<u32>,
+}
+
+/// For each chosen augment, whether it was the recommended card of its choice; None when Xyra did not see that choice.
+pub fn followed(augments: &[u32], offers: &[Offer]) -> Vec<Option<bool>> {
+    let mut used = vec![false; offers.len()];
+    augments
+        .iter()
+        .map(|&augment| {
+            let index = offers.iter().enumerate().position(|(i, offer)| !used[i] && offer.cards.contains(&augment))?;
+            used[index] = true;
+            Some(offers[index].best == Some(augment))
+        })
+        .collect()
 }
 
 #[derive(Deserialize)]
@@ -104,6 +127,7 @@ fn add_new_games(history: MatchHistory, account: &str, games: &mut Vec<StoredGam
             mode,
             win: player.stats.win,
             augments: player.stats.augments(),
+            offers: Vec::new(),
             date: game.game_creation_date,
         });
     }
@@ -142,6 +166,8 @@ pub struct RecentGame {
     pub mode: GameMode,
     pub win: bool,
     pub augments: Vec<Asset>,
+    /// Aligned with `augments`: whether each was the card Xyra recommended; None when it did not see that choice.
+    pub followed: Vec<Option<bool>>,
 }
 
 #[derive(Serialize, TS)]
@@ -204,6 +230,7 @@ pub fn summarize(games: &[StoredGame], account: Option<&str>, catalog: &Catalog)
                 mode: game.mode,
                 win: game.win,
                 augments: game.augments.iter().map(|&id| named(&catalog.augments, id)).collect(),
+                followed: followed(&game.augments, &game.offers),
             })
             .collect(),
     }
@@ -252,7 +279,15 @@ mod tests {
             mode: GameMode::Mayhem,
             win,
             augments: vec![7, 9],
+            offers: Vec::new(),
         }
+    }
+
+    #[test]
+    fn matches_each_chosen_augment_with_its_offer() {
+        let offers = [Offer { cards: vec![1, 2, 3], best: Some(2) }, Offer { cards: vec![4, 5, 6], best: Some(4) }];
+        assert_eq!(followed(&[2, 5, 9], &offers), [Some(true), Some(false), None]);
+        assert_eq!(followed(&[2, 2], &offers[..1]), [Some(true), None]);
     }
 
     #[test]

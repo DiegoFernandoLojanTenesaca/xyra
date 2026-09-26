@@ -15,6 +15,10 @@ account: string | null, game: CurrentGame | null, champ_select: ChampSelect | nu
  */
 build_mode: BuildMode | null, cards: Array<Card>, 
 /**
+ * Every augment choice seen in the current or last game, in order.
+ */
+rounds: Array<Array<Card>>, 
+/**
  * None when the game settings could not be read.
  */
 borderless: boolean | null, client_locale: string, 

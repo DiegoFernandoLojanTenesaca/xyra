@@ -10,11 +10,13 @@
 
   const MINIMAP_RANGE = { min: 1, max: 3, step: 0.1 };
   const MINIMAP_DIGITS = 1;
-  const AUTOMATIONS = ['keepBorderless', 'autoImportRunes', 'closeWindowInGame'] as const;
+  const ACCEPT_DELAY_RANGE = { min: 0, max: 10, step: 1 };
+  const AUTOMATIONS = ['keepBorderless', 'autoImportRunes', 'closeWindowInGame', 'autoAccept'] as const;
   const AUTOMATION_KEYS: Record<(typeof AUTOMATIONS)[number], keyof Config> = {
     keepBorderless: 'keep_borderless',
     autoImportRunes: 'auto_import_runes',
     closeWindowInGame: 'close_window_in_game',
+    autoAccept: 'auto_accept',
   };
 
   const t = $derived(app.t);
@@ -75,6 +77,18 @@
         onchange={() => app.saveConfig({ [key]: !config[key] })}
       />
     {/each}
+    {#if config.auto_accept}
+      <label class="range">
+        <span><b>{t('game:acceptDelay.title')}</b><small class="muted">{t('game:acceptDelay.description')}</small></span>
+        <input
+          type="range"
+          {...ACCEPT_DELAY_RANGE}
+          value={config.accept_delay_seconds}
+          onchange={(e) => app.saveConfig({ accept_delay_seconds: +e.currentTarget.value })}
+        />
+        <b class="value">{app.format.seconds(config.accept_delay_seconds)}</b>
+      </label>
+    {/if}
     <p class="safe"><ShieldCheck size={16} />{t('game:safe')}</p>
   </section>
 </div>

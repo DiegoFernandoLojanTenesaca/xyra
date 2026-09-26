@@ -20,6 +20,7 @@ const CATALOG: &str = "catalog.json";
 const PROFILE: &str = "profile.json";
 const LOG: &str = "xyra.log";
 const SCREENSHOTS: &str = "screenshots";
+const UPDATES: &str = "updates";
 const TEMPORARY_EXTENSION: &str = "tmp";
 const CORRUPT_EXTENSION: &str = "corrupt";
 const MAX_LOG_BYTES: u64 = 1_000_000;
@@ -181,6 +182,10 @@ impl Storage {
             fs::remove_dir_all(screenshots)?;
         }
         Ok(())
+    }
+
+    pub fn updates_dir(&self) -> PathBuf {
+        self.file(UPDATES)
     }
 
     pub fn screenshot_path(&self) -> Result<PathBuf> {

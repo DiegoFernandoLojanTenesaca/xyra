@@ -2,7 +2,7 @@ use crate::{
     engine::{EngineEvent, Shared, emit, update_state},
     tray,
 };
-use std::sync::Arc;
+use std::{process::Command, sync::Arc};
 use tauri::{AppHandle, Manager, State};
 use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_opener::OpenerExt;
@@ -15,6 +15,7 @@ use xyra_core::{
     profile::{self, Profile},
     stats::{self, StatsSummary},
     storage::{DataFolder, DataUsage},
+    updates::{self, Release},
 };
 
 pub type App = Arc<Shared>;
@@ -73,7 +74,7 @@ pub fn get_champions(shared: State<App>) -> Vec<ChampionInfo> {
 #[tauri::command]
 pub async fn get_augments(shared: State<'_, App>, champion: u32, mode: GameMode) -> Result<Vec<AugmentRow>> {
     let shared = Arc::clone(&shared);
-    blocking(move || Ok(opgg::augment_rows(opgg::fetch_augments(&shared.opgg, champion, mode)?, &shared.catalog()))).await
+    blocking(move || Ok(opgg::augment_rows(opgg::fetch_augments(&shared.web, champion, mode)?, &shared.catalog()))).await
 }
 
 #[tauri::command]
@@ -132,6 +133,38 @@ pub fn delete_data(app: AppHandle, shared: State<App>) -> Result<()> {
     shared.storage.delete_personal_data()?;
     shared.games.lock().unwrap().clear();
     emit(&app, &shared, AppEvent::Data, ());
+    Ok(())
+}
+
+/// Looks on GitHub for a newer version and remembers it for the install.
+#[tauri::command]
+pub async fn check_update(shared: State<'_, App>) -> Result<Option<Release>> {
+    let shared = Arc::clone(&shared);
+    blocking(move || {
+        let release = updates::check(&shared.web)?;
+        *shared.update.lock().unwrap() = release.clone();
+        Ok(release)
+    })
+    .await
+}
+
+/// Downloads the newer version, opens its installer and closes Xyra so it can be replaced.
+#[tauri::command]
+pub async fn install_update(app: AppHandle, shared: State<'_, App>) -> Result<()> {
+    let shared = Arc::clone(&shared);
+    let installer = blocking({
+        let (app, shared) = (app.clone(), Arc::clone(&shared));
+        move || {
+            let release = match shared.update.lock().unwrap().clone() {
+                Some(release) => release,
+                None => updates::check(&shared.web)?.ok_or(AppError::NoData)?,
+            };
+            updates::download(&shared.web, &release, &shared.storage.updates_dir(), |done| emit(&app, &shared, AppEvent::UpdateProgress, done))
+        }
+    })
+    .await?;
+    Command::new(installer).spawn().map_err(AppError::platform)?;
+    app.exit(0);
     Ok(())
 }
 

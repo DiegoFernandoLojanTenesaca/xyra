@@ -11,7 +11,7 @@ aumentos dentro del juego) y nada más. Estas reglas son parte del proyecto: un 
 | No inyecta código en el juego ni engancha DirectX | Blitz y Discord lo hacen porque Riot los tiene aprobados; para cualquier otro es motivo de baneo. |
 | No abre el proceso `League of Legends.exe` | Vanguard protege ese proceso. Para saber si el juego está al frente solo se lee el **título** de la ventana. |
 | No simula teclas ni clics, ni usa ganchos de teclado o atajos globales | Actuar por el jugador está prohibido por la política de Riot. |
-| No automatiza nada (aceptar partida, elegir campeón, elegir la carta) | Idem. Xyra **sugiere**; el jugador decide y hace clic. |
+| No juega por ti: no elige campeón ni carta | Idem. Xyra **sugiere**; el jugador decide y hace clic. |
 | No revela información oculta (nombres en ranked, temporizadores enemigos, etc.) | Riot prohíbe exponer información que el juego oculta a propósito. |
 | No muestra anuncios | Riot prohibió los anuncios dentro del juego en 2025. |
 
@@ -34,12 +34,16 @@ aumentos dentro del juego) y nada más. Estas reglas son parte del proyecto: un 
   solo reemplaza las páginas y sets que él mismo creó (los que empiezan con "Xyra · ").
   Si activas **"Importar runas solas"** (apagado de fábrica), hace lo mismo en la selección de campeones sin que toques
   el botón: es una preferencia del cliente, no una jugada.
+- **Acepta la partida encontrada solo si activas "Aceptar partida solo"** (apagado de fábrica), después de la espera que
+  elijas y solo si no la aceptaste ni rechazaste tú. Es una llamada al cliente, como hacía League Akari: no toca el juego.
+  Aun así, Riot pidió en 2025 a las apps aprobadas quitar esta función, así que úsala bajo tu responsabilidad.
 - **Cambia opciones oficiales del juego** desde la página Juego (sin bordes, rango de ataque, cronómetros del minimapa,
   rango de torres, minimapa): las mismas del menú Opciones del LoL, por la API del cliente, y solo las de una lista fija
   (`crates/xyra-core/src/game_settings.rs`). Los cronómetros son los que trae el propio juego: Xyra no dibuja cronómetros
   propios (Riot prohíbe, por ejemplo, los de definitivas enemigas).
-- **Se conecta a internet solo** con OP.GG (estadísticas públicas de aumentos, builds y enfrentamientos) y
-  CommunityDragon (íconos), con la verificación de certificados normal de Windows. Sin telemetría, sin cuentas, sin
+- **Se conecta a internet solo** con OP.GG (estadísticas públicas de aumentos, builds y enfrentamientos),
+  CommunityDragon (íconos) y GitHub (para ver si hay una versión nueva y, si tocas "Descargar e instalar", bajar su
+  instalador y comprobar su SHA-256 antes de abrirlo), con la verificación de certificados normal de Windows. Sin telemetría, sin cuentas, sin
   servidores propios.
 
 ## Datos en tu PC
@@ -64,9 +68,10 @@ Abre un *issue* con la etiqueta `seguridad` o, si es sensible, escribe al manten
 ## Security & fair play (English)
 
 Xyra only does what Riot-approved apps do. It **never** reads or writes game memory, injects code, hooks DirectX,
-opens the game process, simulates input, automates actions, reveals hidden information or shows ads. It captures the
+opens the game process, simulates input, plays or picks for you, reveals hidden information or shows ads. It captures the
 screen (like OBS) only during ARAM: Mayhem/Arena games with the game focused, recognizes text with Windows' built-in OCR,
 and draws on its own click-through window (requires **Borderless** mode). It listens to the local client over its
 WebSocket on `127.0.0.1`, verifying its certificate against Riot's root (read-only; it only writes a rune page or an
-item set when you click "Import"), suggests Summoner's Rift counters from public OP.GG stats, and only talks to OP.GG and
-CommunityDragon over the internet. No telemetry.
+item set when you click "Import"), suggests Summoner's Rift counters from public OP.GG stats, and only talks to OP.GG, CommunityDragon and GitHub
+(update check and installer, verified by SHA-256) over the internet. The optional match auto-accept (off by default) is a client call, but Riot asked approved
+apps to drop it in 2025: use it at your own risk. No telemetry.

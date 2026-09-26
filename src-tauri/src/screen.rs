@@ -6,11 +6,11 @@ use windows::{
     Storage::Streams::DataWriter,
     Win32::{
         Graphics::Gdi::{
-            BI_RGB, BITMAPINFO, BITMAPINFOHEADER, BitBlt, CreateCompatibleDC, CreateDIBSection, DIB_RGB_COLORS, DeleteDC, DeleteObject, GetDC, ReleaseDC,
-            SRCCOPY, SelectObject,
+            BI_RGB, BITMAPINFO, BITMAPINFOHEADER, BitBlt, CreateCompatibleDC, CreateDIBSection, DIB_RGB_COLORS, DeleteDC, DeleteObject, GetDC,
+            MONITOR_DEFAULTTONEAREST, MonitorFromWindow, ReleaseDC, SRCCOPY, SelectObject,
         },
         System::WinRT::{RO_INIT_MULTITHREADED, RoInitialize},
-        UI::WindowsAndMessaging::{GetForegroundWindow, GetSystemMetrics, GetWindowTextW, SM_CXSCREEN, SM_CYSCREEN},
+        UI::WindowsAndMessaging::{FindWindowW, GetForegroundWindow, GetSystemMetrics, IsIconic, SM_CXSCREEN, SM_CYSCREEN},
     },
     core::{HSTRING, Result},
 };
@@ -90,24 +90,30 @@ impl Ocr {
         let result = self.engine.RecognizeAsync(&bitmap)?.join()?;
         let mut lines = Vec::new();
         for line in result.Lines()? {
-            let (mut x0, mut x1, mut y1) = (f64::MAX, f64::MIN, f64::MIN);
+            let (mut x0, mut x1, mut y0, mut y1) = (f64::MAX, f64::MIN, f64::MAX, f64::MIN);
             for word in line.Words()? {
                 let rect = word.BoundingRect()?;
                 x0 = x0.min(rect.X as f64);
                 x1 = x1.max((rect.X + rect.Width) as f64);
+                y0 = y0.min(rect.Y as f64);
                 y1 = y1.max((rect.Y + rect.Height) as f64);
             }
             if x0 < x1 {
-                lines.push(OcrLine { text: line.Text()?.to_string(), x0, x1, y1 });
+                lines.push(OcrLine { text: line.Text()?.to_string(), x0, x1, y0, y1 });
             }
         }
         Ok(lines)
     }
 }
 
-/// Whether the foreground window is the game, by its title.
-pub fn is_game_focused() -> bool {
-    let mut title = [0u16; 64];
-    let len = unsafe { GetWindowTextW(GetForegroundWindow(), &mut title) };
-    String::from_utf16_lossy(&title[..len.max(0) as usize]) == GAME_WINDOW_TITLE
+/// Whether the game window shows on screen: it has the focus, or the focus is on another monitor.
+pub fn is_game_visible() -> bool {
+    unsafe {
+        let Ok(game) = FindWindowW(None, &HSTRING::from(GAME_WINDOW_TITLE)) else { return false };
+        if IsIconic(game).as_bool() {
+            return false;
+        }
+        let foreground = GetForegroundWindow();
+        foreground == game || MonitorFromWindow(foreground, MONITOR_DEFAULTTONEAREST) != MonitorFromWindow(game, MONITOR_DEFAULTTONEAREST)
+    }
 }

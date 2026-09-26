@@ -47,5 +47,12 @@
   "topMayhem": "Top de ARAM: Caos",
   "ownedOnly": "que tienes",
   "latestGames": "Tus últimas partidas",
-  "voiceHint": "Aviso por voz"
+  "voiceHint": "Aviso por voz",
+  "bestForChampion": "Mejores para {{champion}}",
+  "rounds": "Elecciones de esta partida",
+  "round": "Ronda {{number}}",
+  "lastGame": "Tus aumentos con {{champion}}",
+  "followedSummary": "seguiste a Xyra en {{followed}} de {{seen}}",
+  "followedYes": "Era la recomendada",
+  "followedNo": "No era la recomendada"
 }

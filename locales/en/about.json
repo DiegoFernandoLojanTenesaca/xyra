@@ -11,5 +11,15 @@
   },
   "links": "Links",
   "builtWith": "Made with Rust, Tauri and Svelte. The in-game overlay is native: no browser, almost no memory.",
-  "madeBy": "Made by"
+  "madeBy": "Made by",
+  "updates": "Updates",
+  "checkUpdates": "Check for updates",
+  "checking": "Checking…",
+  "upToDate": "You have the latest version (v{{version}}).",
+  "available": "A new version is out: v{{version}}.",
+  "install": "Download and install",
+  "updateTo": "Update to v{{version}}",
+  "downloading": "Downloading… {{value}}",
+  "notes": "What's new",
+  "installHint": "Xyra closes and opens the installer; your settings and games are kept."
 }

@@ -19,6 +19,8 @@ pub enum LabelStyle {
     Focus,
 }
 
+const DEFAULT_ACCEPT_DELAY_SECONDS: u32 = 2;
+
 impl LabelStyle {
     pub const ALL: [LabelStyle; 5] = [LabelStyle::Plate, LabelStyle::Badge, LabelStyle::Ribbon, LabelStyle::Podium, LabelStyle::Focus];
 }
@@ -44,12 +46,17 @@ pub struct Config {
     #[serde(alias = "grabar")]
     pub record_screenshots: bool,
     pub autostart: bool,
+    /// Opens League when the player opens Xyra.
+    pub open_league: bool,
     #[serde(alias = "auto_bordes")]
     pub keep_borderless: bool,
     #[serde(alias = "auto_runas")]
     pub auto_import_runes: bool,
     #[serde(alias = "cerrar_en_partida")]
     pub close_window_in_game: bool,
+    pub auto_accept: bool,
+    /// Seconds to wait before accepting a found match.
+    pub accept_delay_seconds: u32,
 }
 
 impl Default for Config {
@@ -64,9 +71,12 @@ impl Default for Config {
             scale: 1.0,
             record_screenshots: false,
             autostart: true,
+            open_league: false,
             keep_borderless: true,
             auto_import_runes: false,
             close_window_in_game: false,
+            auto_accept: false,
+            accept_delay_seconds: DEFAULT_ACCEPT_DELAY_SECONDS,
         }
     }
 }

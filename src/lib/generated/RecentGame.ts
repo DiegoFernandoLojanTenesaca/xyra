@@ -6,4 +6,8 @@ export type RecentGame = { game_id: number,
 /**
  * ISO 8601, UTC.
  */
-date: string, champion: Asset, mode: GameMode, win: boolean, augments: Array<Asset>, };
+date: string, champion: Asset, mode: GameMode, win: boolean, augments: Array<Asset>, 
+/**
+ * Aligned with `augments`: whether each was the card Xyra recommended; None when it did not see that choice.
+ */
+followed: Array<boolean | null>, };

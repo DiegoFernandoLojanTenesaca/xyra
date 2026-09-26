@@ -5,6 +5,7 @@
   "noSummoner": "Could not read your account from the client.",
   "noData": "OP.GG has no data for this yet.",
   "emptyCatalog": "The client is still loading its data: wait a few seconds.",
+  "badDownload": "The download arrived incomplete or altered: try again.",
   "network": "Could not reach OP.GG: {{detail}}",
   "opggFormat": "OP.GG changed how it answers and this version of Xyra cannot read it: {{detail}}",
   "client": "The League client answered with an error: {{detail}}",

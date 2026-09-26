@@ -188,6 +188,8 @@ pub struct EngineState {
     /// Build mode of the current champion select or game.
     pub build_mode: Option<BuildMode>,
     pub cards: Vec<Card>,
+    /// Every augment choice seen in the current or last game, in order.
+    pub rounds: Vec<Vec<Card>>,
     /// None when the game settings could not be read.
     pub borderless: Option<bool>,
     pub client_locale: String,
@@ -205,6 +207,7 @@ pub enum AppEvent {
     State,
     Config,
     Data,
+    UpdateProgress,
 }
 
 impl AppEvent {
@@ -213,6 +216,7 @@ impl AppEvent {
             AppEvent::State => "state",
             AppEvent::Config => "config",
             AppEvent::Data => "data",
+            AppEvent::UpdateProgress => "updateProgress",
         }
     }
 }

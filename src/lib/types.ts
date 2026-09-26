@@ -28,6 +28,7 @@ export type { Quality } from './generated/Quality';
 export type { Rank } from './generated/Rank';
 export type { Rarity } from './generated/Rarity';
 export type { RecentGame } from './generated/RecentGame';
+export type { Release } from './generated/Release';
 export type { RunePage } from './generated/RunePage';
 export type { SettingValue } from './generated/SettingValue';
 export type { StatRow } from './generated/StatRow';

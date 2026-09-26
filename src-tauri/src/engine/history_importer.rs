@@ -1,14 +1,21 @@
 use super::Shared;
-use xyra_core::{league::Lcu, model::GameMode, stats};
+use xyra_core::{
+    league::Lcu,
+    model::GameMode,
+    stats::{self, Offer},
+};
 
 #[derive(Default)]
 pub struct HistoryImporter {
     pending: bool,
+    offers: Vec<Offer>,
 }
 
 impl HistoryImporter {
-    pub fn expect_games_of(&mut self, mode: GameMode) {
+    /// Waits for the game that just ended, to store the augment choices Xyra saw with it.
+    pub fn expect_games_of(&mut self, mode: GameMode, offers: Vec<Offer>) {
         self.pending = mode.has_augments();
+        self.offers = offers;
     }
 
     pub fn cancel(&mut self) {
@@ -39,6 +46,9 @@ impl HistoryImporter {
         };
         if added > 0 {
             self.pending = false;
+            if let Some(newest) = games.first_mut() {
+                newest.offers = std::mem::take(&mut self.offers);
+            }
             if let Err(e) = shared.storage.save_games(&games) {
                 shared.log_error("save stats", e);
             }

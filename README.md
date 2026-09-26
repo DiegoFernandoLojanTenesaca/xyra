@@ -43,7 +43,9 @@ counters para la Grieta, tier lists y tus estadísticas. Liviano, en español e 
   enfrentamientos (a quién le gana y contra quién le cuesta) y botones para importar las runas y el set de ítems a tu
   cliente.
 - **Juego:** activa en un clic opciones oficiales del LoL (rango de ataque, cronómetros del minimapa, rango de torres,
-  tamaño del minimapa) y automatiza lo aburrido (mantener Sin bordes, importar runas solas, cerrar la ventana al jugar).
+  tamaño del minimapa) y automatiza lo aburrido (mantener Sin bordes, importar runas solas, cerrar la ventana al jugar,
+  aceptar la partida después de unos segundos).
+- **Un solo ícono:** con "Abrir el LoL con Xyra" (Ajustes), el ícono de Xyra abre también el LoL.
 - **Tier lists:** aumentos por campeón y campeones de ARAM: Caos.
 - **Tus datos:** winrate por campeón, mejores aumentos, nivel, rango y maestrías, separados por cuenta; exportación a CSV.
 - **Extras:** aviso por voz, calibración para otras resoluciones y capturas para reportar fallos.

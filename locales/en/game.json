@@ -43,5 +43,13 @@
     "title": "Close the window while playing",
     "description": "When the game starts the window closes and Xyra stays in the tray, using no memory."
   },
-  "safe": "All of this uses options League already has: it never touches the game or plays for you."
+  "autoAccept": {
+    "title": "Accept matches",
+    "description": "When a match is found, Xyra accepts it for you unless you already accepted or declined it. Riot asked approved apps to drop this feature: use it at your own risk."
+  },
+  "acceptDelay": {
+    "title": "Wait before accepting",
+    "description": "Gives you time to decline it yourself."
+  },
+  "safe": "None of this touches the game or plays for you: it only uses the League client."
 }

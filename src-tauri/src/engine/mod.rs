@@ -1,6 +1,7 @@
 mod card_reader;
 mod catalog_loader;
 mod history_importer;
+mod ready_check;
 mod watch;
 
 pub use card_reader::demo_cards;
@@ -10,6 +11,7 @@ use card_reader::CardReader;
 use catalog_loader::CatalogLoader;
 use history_importer::HistoryImporter;
 use notify::RecommendedWatcher;
+use ready_check::ReadyCheckAcceptor;
 use serde::Serialize;
 use serde_json::Value;
 use std::{
@@ -32,10 +34,13 @@ use xyra_core::{
     game_settings::{self, GameOption, SettingValue},
     gameflow::{self, GameflowPhase},
     league::{self, Installation, Lcu, LcuEvent},
+    matchmaking,
     model::{AppEvent, Build, BuildMode, ChampionInfo, CurrentGame, EngineState, GameMode, ImportTarget, Matchup, Phase, Position},
     opgg, profile,
     stats::{self, StatsSummary, StoredGame},
     storage::Storage,
+    updates::Release,
+    web,
 };
 
 pub const MAIN_WINDOW: &str = "main";
@@ -68,7 +73,9 @@ pub struct Shared {
     available: RwLock<Option<HashSet<u32>>>,
     pub storage: Storage,
     pub installation: Installation,
-    pub opgg: opgg::Client,
+    pub web: web::Client,
+    /// The newer release found by the last update check.
+    pub update: Mutex<Option<Release>>,
     events: Sender<EngineEvent>,
 }
 
@@ -93,6 +100,7 @@ impl Shared {
             champ_select: None,
             build_mode: None,
             cards: Vec::new(),
+            rounds: Vec::new(),
             borderless: league::is_borderless(&installation),
             client_locale: installation.locale.clone(),
             language: config.effective_language(&installation.locale).into(),
@@ -109,7 +117,8 @@ impl Shared {
             available: RwLock::new(None),
             storage,
             installation,
-            opgg: opgg::client(),
+            web: web::client(),
+            update: Mutex::new(None),
             events,
         };
         (shared, received)
@@ -162,7 +171,7 @@ impl Shared {
     }
 
     pub fn fetch_build(&self, champion: u32, mode: BuildMode, position: Option<Position>) -> Result<Build> {
-        opgg::fetch_build(&self.opgg, champion, mode, position, &self.catalog())
+        opgg::fetch_build(&self.web, champion, mode, position, &self.catalog())
     }
 
     pub fn import_build(&self, champion: u32, mode: BuildMode, position: Option<Position>, target: ImportTarget) -> Result<()> {
@@ -229,6 +238,7 @@ struct Engine {
     borderless: Option<bool>,
     borderless_fixed_at: Option<Instant>,
     champ_select: ChampSelectTracker,
+    ready_check: ReadyCheckAcceptor,
     cards: CardReader,
     _watcher: Option<RecommendedWatcher>,
 }
@@ -276,6 +286,7 @@ impl Engine {
             borderless: league::is_borderless(&shared.installation),
             borderless_fixed_at: None,
             champ_select: ChampSelectTracker::default(),
+            ready_check: ReadyCheckAcceptor::default(),
             cards,
             _watcher: watcher,
             shared,
@@ -300,14 +311,14 @@ impl Engine {
 
     fn fetch_champion_tiers(&self) {
         let shared = Arc::clone(&self.shared);
-        thread::spawn(move || match opgg::fetch_champion_tiers(&shared.opgg) {
+        thread::spawn(move || match opgg::fetch_champion_tiers(&shared.web) {
             Ok(tiers) => shared.send(EngineEvent::ChampionTiers(tiers)),
             Err(e) => shared.log_error("OP.GG champion tiers", e),
         });
     }
 
     fn next_deadline(&self) -> Option<Instant> {
-        [self.reconnect.map(|r| r.0), self.champ_select.rune_deadline(), self.cards.next_read()].into_iter().flatten().min()
+        [self.reconnect.map(|r| r.0), self.champ_select.rune_deadline(), self.cards.next_read(), self.ready_check.accept_at].into_iter().flatten().min()
     }
 
     fn handle(&mut self, event: EngineEvent) {
@@ -338,6 +349,12 @@ impl Engine {
         let now = Instant::now();
         if self.reconnect.is_some_and(|(at, _)| at <= now) {
             self.connect();
+        }
+        if self.ready_check.take_due(now)
+            && let Some(lcu) = self.lcu()
+            && let Err(e) = matchmaking::accept_if_waiting(lcu)
+        {
+            self.shared.log_error("auto accept", e);
         }
         if let Some(champion) = self.champ_select.take_due_rune_import(now) {
             let position = self.champ_select.position();
@@ -405,7 +422,7 @@ impl Engine {
             (gameflow::SESSION, data) => self.on_gameflow(data),
             (champ_select::SESSION, data) => self.on_champ_select(data),
             (stats::END_OF_GAME, Some(_)) => {
-                self.history.expect_games_of(self.mode);
+                self.history.expect_games_of(self.mode, self.cards.offers());
                 self.import_games();
             }
             _ => {}
@@ -452,13 +469,16 @@ impl Engine {
     }
 
     fn on_gameflow(&mut self, session: Option<Value>) {
-        let flow = session.and_then(|s| gameflow::parse(&s, self.account.as_deref()).map_err(|e| self.shared.log_error("gameflow", e)).ok());
+        let flow = match session.map(|s| gameflow::parse(&s, self.account.as_deref())).transpose() {
+            Ok(flow) => flow,
+            Err(e) => return self.shared.log_error("gameflow", e),
+        };
         let phase = flow.as_ref().map_or(GameflowPhase::None, |f| f.phase);
         if let Some(flow) = &flow {
             self.mode = flow.mode;
         }
         match (flow, &mut self.game) {
-            (Some(flow), Some(game)) if phase.is_in_game() => game.champion = game.champion.or(flow.champion),
+            (Some(flow), Some(game)) if phase.is_in_game() => game.champion = flow.champion.or(game.champion),
             (Some(flow), None) if phase.is_in_game() => {
                 self.game = Some(GameTracking { mode: flow.mode, champion: flow.champion.or(self.champ_select.last_champion()) });
                 self.on_game_started();
@@ -469,6 +489,7 @@ impl Engine {
             }
             _ => {}
         }
+        self.ready_check.follow(phase == GameflowPhase::ReadyCheck, &self.shared.config());
         if phase == GameflowPhase::ChampSelect {
             self.history.cancel();
             if !self.champ_select.is_active() {
@@ -484,21 +505,29 @@ impl Engine {
         self.load_catalog();
     }
 
+    /// Closes the window when the player asked for it, or minimizes it when it would cover the game on the main screen.
     fn on_game_started(&mut self) {
         self.champ_select.clear();
-        if !self.shared.config().close_window_in_game {
-            return;
-        }
-        if let Some(window) = self.app.get_webview_window(MAIN_WINDOW)
-            && let Err(e) = window.close()
-        {
-            self.shared.log_error("close window in game", e);
+        self.cards.new_game();
+        let Some(window) = self.app.get_webview_window(MAIN_WINDOW) else { return };
+        let on_main_screen = || {
+            Ok::<bool, tauri::Error>(
+                window.current_monitor()?.zip(window.primary_monitor()?).is_some_and(|(current, main)| current.position() == main.position()),
+            )
+        };
+        let result = match self.shared.config().close_window_in_game {
+            true => window.close(),
+            false if on_main_screen().unwrap_or(false) => window.minimize(),
+            false => Ok(()),
+        };
+        if let Err(e) = result {
+            self.shared.log_error("window at game start", e);
         }
     }
 
     fn on_game_ended(&mut self) {
         self.cards.stop();
-        self.history.expect_games_of(self.mode);
+        self.history.expect_games_of(self.mode, self.cards.offers());
         self.check_borderless();
     }
 
@@ -522,7 +551,7 @@ impl Engine {
         for (enemy, position) in self.champ_select.update(parsed, pickable, self.mode, auto_runes) {
             let shared = Arc::clone(&self.shared);
             thread::spawn(move || {
-                let picks = opgg::fetch_counter_picks(&shared.opgg, enemy, position, &shared.catalog()).unwrap_or_else(|e| {
+                let picks = opgg::fetch_counter_picks(&shared.web, enemy, position, &shared.catalog()).unwrap_or_else(|e| {
                     shared.log_error("OP.GG counter picks", e);
                     None
                 });
@@ -572,7 +601,7 @@ impl Engine {
             _ => Phase::NoClient,
         };
         let build_mode = game.as_ref().map(|g| g.mode).or(champ_select.as_ref().map(|c| c.mode)).map(GameMode::build_mode);
-        let (account, cards, borderless) = (self.account.clone(), self.cards.cards().to_vec(), self.borderless);
+        let (account, cards, rounds, borderless) = (self.account.clone(), self.cards.cards().to_vec(), self.cards.rounds().to_vec(), self.borderless);
         update_state(&self.app, &self.shared, |state| {
             state.phase = phase;
             state.account = account;
@@ -580,6 +609,7 @@ impl Engine {
             state.champ_select = champ_select;
             state.build_mode = build_mode;
             state.cards = cards;
+            state.rounds = rounds;
             state.borderless = borderless;
         });
     }

@@ -4,6 +4,7 @@
   import { LANGUAGES, languageName } from '../../i18n';
   import { openFolder } from '../../services/data';
   import Button from '../../ui/Button.svelte';
+  import SegmentedControl from '../../ui/SegmentedControl.svelte';
   import ToggleRow from '../../ui/ToggleRow.svelte';
 
   const t = $derived(app.t);
@@ -13,20 +14,25 @@
 <div class="pair">
   <section class="panel cut box">
     <h3 class="section-title">{t('settings:tabs.general')}</h3>
-    <label class="row">
+    <div class="language">
       <b>{t('settings:language')}</b>
-      <select onchange={(e) => app.saveConfig({ language: e.currentTarget.value || null })}>
-        <option value="" selected={config.language === null}>{t('settings:automaticLanguage')}</option>
-        {#each LANGUAGES as language (language)}
-          <option value={language} selected={config.language === language}>{languageName(language)}</option>
-        {/each}
-      </select>
-    </label>
+      <SegmentedControl
+        options={[['', t('settings:automaticLanguage')], ...LANGUAGES.map((language) => [language, languageName(language)] as [string, string])]}
+        bind:value={() => config.language ?? '', (language) => app.saveConfig({ language: language || null })}
+      />
+      <small class="muted">{t('settings:languageHint')}</small>
+    </div>
     <ToggleRow
       title={t('settings:autostart.title')}
       description={t('settings:autostart.description')}
       checked={config.autostart}
       onchange={() => app.saveConfig({ autostart: !config.autostart })}
+    />
+    <ToggleRow
+      title={t('settings:openLeague.title')}
+      description={t('settings:openLeague.description')}
+      checked={config.open_league}
+      onchange={() => app.saveConfig({ open_league: !config.open_league })}
     />
     <ToggleRow
       title={t('settings:arena.title')}
@@ -61,15 +67,14 @@
   .box {
     padding: var(--space-4);
   }
-  .row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-4);
+  .language {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-2);
     padding: var(--space-1) 0 var(--space-3);
     border-bottom: var(--border-hairline) solid var(--color-line);
   }
-  .row b {
+  .language b {
     font-weight: 600;
   }
   .buttons {

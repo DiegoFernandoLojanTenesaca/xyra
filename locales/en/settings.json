@@ -16,10 +16,15 @@
     "about": "Version, what is new and where the data comes from."
   },
   "language": "Language",
-  "automaticLanguage": "Automatic (client language)",
+  "automaticLanguage": "Automatic",
+  "languageHint": "Automatic uses your League client's language.",
   "autostart": {
     "title": "Start with Windows",
     "description": "Sits in the tray and only works during your games."
+  },
+  "openLeague": {
+    "title": "Open League with Xyra",
+    "description": "Opening Xyra opens League too, so one icon opens both."
   },
   "arena": {
     "title": "Arena (beta)",
@@ -48,11 +53,11 @@
   "dataDeleted": "Done: your games, profile, screenshots and log were deleted.",
   "savedTo": "Saved to {{path}}",
   "noTelemetry": "No telemetry.",
-  "connections": "It only talks to OP.GG, CommunityDragon and your League client.",
+  "connections": "It only connects to OP.GG, CommunityDragon, GitHub (to look for a new version) and your League client.",
   "securityRules": {
     "memory": "Never reads or writes game memory.",
     "injection": "Never injects into the game or opens its process.",
-    "input": "No simulated keys or clicks, no automation.",
+    "input": "It does not simulate keys or clicks, and it does not play for you.",
     "hiddenInfo": "Never reveals hidden information: only public OP.GG data.",
     "overlay": "Only reads the screen and draws on top, like OBS or Discord."
   },

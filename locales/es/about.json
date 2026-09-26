@@ -11,5 +11,15 @@
   },
   "links": "Enlaces",
   "builtWith": "Hecho con Rust, Tauri y Svelte. La capa del juego es nativa: no usa navegador y casi no gasta memoria.",
-  "madeBy": "Creado por"
+  "madeBy": "Creado por",
+  "updates": "Actualizaciones",
+  "checkUpdates": "Buscar actualizaciones",
+  "checking": "Buscando…",
+  "upToDate": "Tienes la última versión (v{{version}}).",
+  "available": "Hay una versión nueva: v{{version}}.",
+  "install": "Descargar e instalar",
+  "updateTo": "Actualizar a v{{version}}",
+  "downloading": "Descargando… {{value}}",
+  "notes": "Ver novedades",
+  "installHint": "Xyra se cierra y abre el instalador; tus ajustes y partidas se conservan."
 }

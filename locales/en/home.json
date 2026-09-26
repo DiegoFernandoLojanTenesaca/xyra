@@ -47,5 +47,12 @@
   "topMayhem": "Top ARAM: Mayhem",
   "ownedOnly": "you own",
   "latestGames": "Your latest games",
-  "voiceHint": "Voice hint"
+  "voiceHint": "Voice hint",
+  "bestForChampion": "Best for {{champion}}",
+  "rounds": "Choices this game",
+  "round": "Round {{number}}",
+  "lastGame": "Your augments with {{champion}}",
+  "followedSummary": "you followed Xyra in {{followed}} of {{seen}}",
+  "followedYes": "It was the recommended one",
+  "followedNo": "It was not the recommended one"
 }

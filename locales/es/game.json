@@ -43,5 +43,13 @@
     "title": "Cerrar la ventana al jugar",
     "description": "Al empezar la partida la ventana se cierra y Xyra sigue en la bandeja, sin gastar memoria."
   },
-  "safe": "Todo esto usa opciones que el LoL ya trae: no toca el juego ni juega por ti."
+  "autoAccept": {
+    "title": "Aceptar partida solo",
+    "description": "Cuando encuentras partida, Xyra la acepta por ti si no la aceptaste ni rechazaste antes. Riot pidió a las apps aprobadas quitar esta función: úsala bajo tu responsabilidad."
+  },
+  "acceptDelay": {
+    "title": "Esperar antes de aceptar",
+    "description": "Te da tiempo de rechazarla tú."
+  },
+  "safe": "Nada de esto toca el juego ni juega por ti: solo usa el cliente del LoL."
 }

@@ -9,4 +9,12 @@ language: string | null,
 /**
  * Vertical offset of the labels, in pixels at a 1200 px tall screen.
  */
-offset_y: number, scale: number, record_screenshots: boolean, autostart: boolean, keep_borderless: boolean, auto_import_runes: boolean, close_window_in_game: boolean, };
+offset_y: number, scale: number, record_screenshots: boolean, autostart: boolean, 
+/**
+ * Opens League when the player opens Xyra.
+ */
+open_league: boolean, keep_borderless: boolean, auto_import_runes: boolean, close_window_in_game: boolean, auto_accept: boolean, 
+/**
+ * Seconds to wait before accepting a found match.
+ */
+accept_delay_seconds: number, };

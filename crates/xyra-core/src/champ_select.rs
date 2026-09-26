@@ -29,7 +29,9 @@ pub struct ChampSelectSession {
 struct Session {
     local_player_cell_id: i64,
     my_team: Vec<Member>,
+    #[serde(default)]
     their_team: Vec<Pick>,
+    #[serde(default)]
     bench_champions: Vec<Pick>,
 }
 
@@ -37,13 +39,16 @@ struct Session {
 #[serde(rename_all = "camelCase")]
 struct Member {
     cell_id: i64,
+    #[serde(default)]
     champion_id: u32,
+    #[serde(default)]
     assigned_position: String,
 }
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Pick {
+    #[serde(default)]
     champion_id: u32,
 }
 

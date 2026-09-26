@@ -49,8 +49,11 @@ struct Session {
 #[serde(rename_all = "camelCase")]
 struct GameData {
     queue: Queue,
+    #[serde(default)]
     team_one: Vec<Player>,
+    #[serde(default)]
     team_two: Vec<Player>,
+    #[serde(default)]
     player_champion_selections: Vec<Player>,
 }
 
@@ -64,6 +67,7 @@ struct Queue {
 #[serde(rename_all = "camelCase")]
 struct Player {
     puuid: Option<String>,
+    #[serde(default)]
     champion_id: u32,
 }
 

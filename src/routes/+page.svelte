@@ -4,6 +4,7 @@
     ChartColumn,
     CircleQuestionMark,
     Crown,
+    Download,
     ExternalLink,
     Gamepad2,
     Hammer,
@@ -114,6 +115,13 @@
       </button>
     {/each}
     <div class="footer">
+      {#if app.update}
+        <button class="update" disabled={app.updateProgress !== null} onclick={app.installUpdate} title={t('about:install')}>
+          <Download size={16} />{app.updateProgress === null
+            ? t('about:updateTo', { version: app.update.version })
+            : t('about:downloading', { value: app.format.percent(app.updateProgress * 100) })}
+        </button>
+      {/if}
       <button class:active={app.page === 'settings' && app.settingsTab === 'help'} onclick={() => app.openSettings('help')}>
         <CircleQuestionMark size={16} />{t('settings:tabs.help')}
       </button>
@@ -298,6 +306,9 @@
     background: var(--color-accent);
     box-shadow: 0 0 var(--space-3) var(--color-accent);
   }
+  nav button :global(svg) {
+    flex: none;
+  }
   nav button.active :global(svg) {
     color: var(--color-accentBright);
   }
@@ -318,6 +329,14 @@
     width: 100%;
     padding: var(--space-2) var(--space-6);
     font-size: var(--text-sm);
+  }
+  .footer .update {
+    color: var(--color-white);
+    background: var(--color-accent);
+  }
+  .footer .update:hover {
+    color: var(--color-white);
+    background: var(--color-accentBright);
   }
   .footer .signature {
     display: flex;

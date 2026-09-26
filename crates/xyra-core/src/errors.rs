@@ -13,6 +13,7 @@ pub enum AppError {
     NoSummoner,
     NoData,
     EmptyCatalog,
+    BadDownload,
     Network(String),
     OpggFormat(String),
     Client(String),

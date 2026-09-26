@@ -5565,6 +5565,7 @@ dependencies = [
  "base64 0.22.1",
  "include_dir",
  "reqwest",
+ "ring",
  "rustls",
  "serde",
  "serde_json",

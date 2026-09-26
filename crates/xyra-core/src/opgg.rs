@@ -2,13 +2,12 @@ use crate::{
     catalog::{Catalog, named},
     errors::{AppError, Result},
     model::{AugmentRow, Build, BuildMode, GameMode, Matchup, Position, Quality, RunePage, grade},
+    web::Client,
 };
-pub use reqwest::blocking::Client;
 use serde::{Deserialize, de::DeserializeOwned};
-use std::{collections::HashMap, sync::Once, time::Duration};
+use std::collections::HashMap;
 
 const API: &str = "https://lol-api-champion.op.gg/api";
-const HTTP_TIMEOUT: Duration = Duration::from_secs(10);
 const MIN_ARENA_GAMES: f64 = 20.0;
 const SITUATIONAL_ITEMS: usize = 6;
 const DEFAULT_RIFT_POSITION: Position = Position::Mid;
@@ -132,13 +131,6 @@ struct Counter {
     champion_id: u32,
     play: f64,
     win: f64,
-}
-
-/// HTTP client for OP.GG, verified against the system's certificate authorities.
-pub fn client() -> Client {
-    static CRYPTO: Once = Once::new();
-    CRYPTO.call_once(|| rustls::crypto::ring::default_provider().install_default().expect("first TLS crypto provider"));
-    Client::builder().timeout(HTTP_TIMEOUT).build().expect("OP.GG HTTP client")
 }
 
 fn fetch<T: DeserializeOwned>(http: &Client, path: &str) -> Result<T> {

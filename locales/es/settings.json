@@ -16,10 +16,15 @@
     "about": "Versión, novedades y de dónde salen los datos."
   },
   "language": "Idioma",
-  "automaticLanguage": "Automático (el del cliente)",
+  "automaticLanguage": "Automático",
+  "languageHint": "Automático usa el idioma de tu cliente del LoL.",
   "autostart": {
     "title": "Iniciar con Windows",
     "description": "Queda en la bandeja y solo trabaja durante tus partidas."
+  },
+  "openLeague": {
+    "title": "Abrir el LoL con Xyra",
+    "description": "Al abrir Xyra también se abre el LoL, así un solo ícono abre los dos."
   },
   "arena": {
     "title": "Arena (beta)",
@@ -48,11 +53,11 @@
   "dataDeleted": "Listo: se borraron tus partidas, perfil, capturas y registro.",
   "savedTo": "Guardado en {{path}}",
   "noTelemetry": "Sin telemetría.",
-  "connections": "Solo se conecta a OP.GG, CommunityDragon y a tu cliente del LoL.",
+  "connections": "Solo se conecta a OP.GG, CommunityDragon, GitHub (para ver si hay versión nueva) y a tu cliente del LoL.",
   "securityRules": {
     "memory": "No lee ni escribe la memoria del juego.",
     "injection": "No inyecta nada en el juego ni abre su proceso.",
-    "input": "No simula teclas ni clics y no automatiza nada.",
+    "input": "No simula teclas ni clics y no juega por ti.",
     "hiddenInfo": "No revela información oculta: solo datos públicos de OP.GG.",
     "overlay": "Solo mira la pantalla y dibuja encima, como OBS o Discord."
   },

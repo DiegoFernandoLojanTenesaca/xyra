@@ -1,5 +1,20 @@
+- Added a Download and install button when a new version is out, which checks the installer SHA-256 before opening it.
+- Added an option to accept found matches after a chosen delay, off by default, that never overrides an answer you already gave.
+- Added an option to open League when you open Xyra, so one desktop icon opens both.
+- Added a choice of Spanish or English when installing, and branded installer images.
+- Added visible language buttons in Settings.
 - Added a notice on the profile screen when the client cannot be read.
 - Added their own errors for when OP.GG or the League client change the shape of their answers.
+- Added the best augments for your champion to Home during a game.
+- Added the augment choices of the current game to Home, with the recommended card of each.
+- Added your chosen augments after each game, marking which were the card Xyra recommended.
+- Added minimizing the Xyra window when a game starts on its screen, so it never covers the cards.
+- Fixed Build and Augments staying on the previous game champion; they now follow the current pick.
+- Fixed labels hiding while the cards were still open when a screen read missed some names, or when another monitor had the focus.
+- Fixed a rerolled card not getting its label back; the new card replaces the old one in its slot.
+- Fixed card names that wrap to two lines not being recognized.
+- Fixed a client update in an unexpected shape ending the game tracking; unreadable updates are now skipped.
+- Fixed the card labels taking longer to appear when the cards had just opened.
 - Updated the client and OP.GG answers to typed models checked when they arrive.
 - Updated the overlay colors to constants generated from the design tokens at build time, with aliases between tokens.
 - Updated champion select, catalog loading and match history import to live in their own services.

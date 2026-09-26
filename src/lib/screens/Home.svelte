@@ -1,10 +1,13 @@
 <script lang="ts">
-  import { Check, Download, Hammer, Layers, Pause, Play, Radio, RefreshCw, Star, Swords, TriangleAlert } from '@lucide/svelte';
+  import { Check, Download, Hammer, Layers, Pause, Play, Radio, RefreshCw, Star, Swords, TriangleAlert, X } from '@lucide/svelte';
   import { app, percent } from '../app.svelte';
   import { championTierColor, qualityColor } from '../design/theme';
   import { around } from '../i18n';
   import { setBorderless, testOverlay } from '../services/engine';
+  import { getAugments } from '../services/league';
+  import { resource } from '../services/resource.svelte';
   import type { ChampionInfo } from '../types';
+  import AugmentChip from '../ui/AugmentChip.svelte';
   import Button from '../ui/Button.svelte';
   import ChampionPortrait from '../ui/ChampionPortrait.svelte';
   import EmptyState from '../ui/EmptyState.svelte';
@@ -15,6 +18,7 @@
   const TOP_CHAMPIONS = 5;
   const RECENT_GAMES = 5;
   const BEST_AUGMENTS = 4;
+  const BEST_FOR_CHAMPION = 6;
   const MIN_BAR = 4;
   const WIN_RATE_DIGITS = 1;
 
@@ -33,6 +37,16 @@
   const counter = $derived(select?.counter_picks[0] ?? null);
   const opponent = $derived(select?.lane_opponent ?? null);
   const topChampions = $derived(app.champions.filter((c) => c.recommendable).slice(0, TOP_CHAMPIONS));
+  const liveChampion = $derived(engine.phase === 'inGame' ? (engine.game?.champion ?? null) : null);
+  const liveMode = $derived(engine.game && app.choices.augment_modes.includes(engine.game.mode) ? engine.game.mode : null);
+  const championAugments = resource(
+    () => (liveChampion && liveMode ? { champion: liveChampion.id, mode: liveMode } : null),
+    ({ champion, mode }) => getAugments(champion, mode),
+  );
+  const bestForChampion = $derived((championAugments.value ?? []).slice(0, BEST_FOR_CHAMPION));
+  const lastGame = $derived(engine.phase === 'inGame' ? null : (stats?.recent.find((game) => game.augments.length) ?? null));
+  const followed = $derived(lastGame?.followed.filter((choice) => choice === true).length ?? 0);
+  const seen = $derived(lastGame?.followed.filter((choice) => choice !== null).length ?? 0);
 
   const hero = $derived.by(() => {
     const game = engine.game;
@@ -144,6 +158,50 @@
       </div>
     {:else}
       <div class="panel cut"><EmptyState icon={Layers} text={t('home:noCards')} /></div>
+    {/if}
+
+    {#if bestForChampion.length && liveChampion}
+      <h3 class="section-title">{t('home:bestForChampion', { champion: liveChampion.name })}</h3>
+      <div class="chips">
+        {#each bestForChampion as augment (augment.id)}
+          <AugmentChip icon={augment.icon} name={augment.name}>
+            <TierBadge label={augment.grade} color={qualityColor(augment.quality)} />
+          </AugmentChip>
+        {/each}
+      </div>
+    {/if}
+
+    {#if engine.rounds.length}
+      <h3 class="section-title">{t('home:rounds')}</h3>
+      <div class="panel cut rounds">
+        {#each engine.rounds as round, i (i)}
+          <div class="round">
+            <b class="muted">{t('home:round', { number: i + 1 })}</b>
+            {#each round as card (card.id)}
+              <AugmentChip icon={card.icon} name={card.name} highlighted={card.best}>
+                {#if card.best}<Star size={14} />{/if}
+                <TierBadge label={card.grade} color={qualityColor(card.quality)} />
+              </AugmentChip>
+            {/each}
+          </div>
+        {/each}
+      </div>
+    {/if}
+
+    {#if lastGame}
+      <h3 class="section-title">
+        {t('home:lastGame', { champion: lastGame.champion.name })}
+        {#if seen}<small>({t('home:followedSummary', { followed, seen })})</small>{/if}
+      </h3>
+      <div class="chips">
+        {#each lastGame.augments as augment, i (augment.id)}
+          {@const choice = lastGame.followed[i]}
+          <AugmentChip icon={augment.icon} name={augment.name} highlighted={choice === true}>
+            {#if choice === true}<span title={t('home:followedYes')}><Check size={14} /></span>
+            {:else if choice === false}<span class="muted" title={t('home:followedNo')}><X size={14} /></span>{/if}
+          </AugmentChip>
+        {/each}
+      </div>
     {/if}
 
     <div class="pair">
@@ -391,6 +449,27 @@
     gap: var(--space-1);
     color: var(--color-warning);
     font-weight: 600;
+  }
+  .chips {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+  .rounds {
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-3);
+  }
+  .round {
+    display: grid;
+    grid-template-columns: var(--size-rangeLabel) repeat(3, minmax(0, 1fr));
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .round b {
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
   }
   .pair {
     display: grid;
