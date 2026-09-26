@@ -1,0 +1,69 @@
+{
+  "done": "Listo.",
+  "unreachable": "No se pudo hablar con tu PC. Revisa que Xyra siga abierto y que estés en la misma red.",
+  "status": {
+    "connecting": "Conectando",
+    "online": "Conectado",
+    "offline": "Sin conexión",
+    "codeChanged": "Código nuevo"
+  },
+  "offline": "No encuentro tu PC. Toca para reintentar.",
+  "tabs": {
+    "live": "Partida",
+    "build": "Build",
+    "meta": "Meta",
+    "stats": "Datos",
+    "settings": "Ajustes"
+  },
+  "pairing": {
+    "title": "Xyra en tu celular",
+    "text": "Conecta la app con Xyra de tu PC y úsalo todo desde aquí: acepta partidas, mira la selección, tu build y el meta.",
+    "codeChanged": "El código de tu PC cambió. Escanéalo de nuevo para seguir conectado.",
+    "steps": {
+      "open": "En tu PC abre Xyra → Ajustes → Celular.",
+      "turnOn": "Enciende el enlace y acepta el aviso de Windows.",
+      "scan": "Toca el botón de abajo y escanea el código."
+    },
+    "scan": "Escanear código",
+    "pasteCode": "Pega el código de emparejamiento",
+    "invalid": "Ese no es un código de Xyra. Escanea el que sale en Ajustes → Celular de tu PC.",
+    "private": "La app habla directo con tu PC por tu red: nada pasa por internet."
+  },
+  "live": {
+    "matchFound": "¡Partida encontrada!",
+    "accept": "Aceptar",
+    "resume": "Reanudar",
+    "yourChampion": "Tu campeón",
+    "import": {
+      "runes": "Runas",
+      "items": "Ítems",
+      "spells": "Hechizos"
+    },
+    "openBuild": "Ver la build",
+    "bench": "Tómalo de la banca",
+    "counters": "Counters contra {{enemy}}",
+    "idle": "Busca partida en tu PC: aquí podrás aceptarla y seguir la selección y tu partida."
+  },
+  "build": {
+    "pick": "Busca un campeón para ver su build."
+  },
+  "settings": {
+    "pc": "Tu PC",
+    "title": "Xyra en la PC",
+    "auto_accept": {
+      "title": "Aceptar partida solo",
+      "description": "Xyra acepta la partida por ti después de unos segundos."
+    },
+    "auto_import_build": {
+      "title": "Importar build sola",
+      "description": "Runas, hechizos e ítems al elegir campeón."
+    },
+    "paused": {
+      "title": "Pausar Xyra",
+      "description": "No lee la pantalla ni dibuja etiquetas."
+    },
+    "order": "Recomendar campeones por",
+    "forget": "Desconectar este celular",
+    "forgetHint": "Para volver a conectarlo tendrás que escanear el código otra vez."
+  }
+}

@@ -2,9 +2,14 @@ import { untrack } from 'svelte';
 import type { AppError } from '../types';
 import { toAppError } from './errors';
 
-export function resource<K, T>(key: () => K | null, load: (key: K) => Promise<T>) {
+/** Loads `load(key)` again whenever the key changes; only the latest request is kept, and failures go through `toError`. */
+export function resource<K, T, E = AppError>(
+  key: () => K | null,
+  load: (key: K) => Promise<T>,
+  toError: (failure: unknown) => E = toAppError as (failure: unknown) => E,
+) {
   let value = $state<T | null>(null);
-  let error = $state<AppError | null>(null);
+  let error = $state<E | null>(null);
   let latest = 0;
   $effect(() => {
     const current = key();
@@ -17,7 +22,7 @@ export function resource<K, T>(key: () => K | null, load: (key: K) => Promise<T>
         if (request === latest) value = result;
       },
       (failure) => {
-        if (request === latest) error = toAppError(failure);
+        if (request === latest) error = toError(failure);
       },
     );
   });

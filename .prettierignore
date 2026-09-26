@@ -10,3 +10,5 @@ icon-drafts
 pnpm-lock.yaml
 *.md
 crates
+mobile/src-tauri
+mobile/dist

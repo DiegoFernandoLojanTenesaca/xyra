@@ -10,6 +10,7 @@ vite.config.ts.timestamp-*
 .DS_Store
 
 /target
+/mobile/dist
 
 /mockups/
 /icon-drafts/

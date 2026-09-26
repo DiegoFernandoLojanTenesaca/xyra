@@ -16,5 +16,5 @@ export default ts.config(
     files: ['**/*.svelte', '**/*.svelte.ts'],
     languageOptions: { parserOptions: { projectService: true, extraFileExtensions: ['.svelte'], parser: ts.parser, svelteConfig } },
   },
-  { ignores: ['build/', '.svelte-kit/', 'target/', 'src-tauri/', 'src/lib/generated/', 'mockups/', 'icon-drafts/'] },
+  { ignores: ['build/', '.svelte-kit/', 'target/', 'src-tauri/', 'src/lib/generated/', 'mockups/', 'icon-drafts/', 'mobile/dist/', 'mobile/src-tauri/'] },
 );

@@ -8,11 +8,11 @@ use serde::{Serialize, de::DeserializeOwned};
 use serde_json::{Value, json};
 use std::{
     io::Cursor,
-    net::{IpAddr, Ipv4Addr, UdpSocket},
+    net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream, UdpSocket},
     os::windows::process::CommandExt,
     process::Command,
     sync::Arc,
-    thread,
+    thread::{self, JoinHandle},
     time::Duration,
 };
 use tauri::{AppHandle, Manager};
@@ -34,15 +34,36 @@ const PAIRING_URI: &str = "xyra://pair";
 const QR_SIZE: u32 = 240;
 const FIREWALL_RULE: &str = "Xyra (celular)";
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+const WAKE_TIMEOUT: Duration = Duration::from_millis(500);
+const WAKE_PAUSE: Duration = Duration::from_millis(50);
+/// Up to two seconds for tiny_http's accept thread to let the port go.
+const WAKE_ATTEMPTS: usize = 40;
 
 /// Serves Xyra to the phone app on the same network while the player keeps it on.
 pub struct PhoneServer {
-    server: Arc<Server>,
+    port: u16,
+    server: Option<Arc<Server>>,
+    listener: Option<JoinHandle<()>>,
 }
 
 impl Drop for PhoneServer {
+    /// Frees the port so the link can start again: tiny_http wakes its accept thread by connecting to the address it
+    /// listens on, which fails for 0.0.0.0 on Windows, so it is woken through localhost until the port refuses.
     fn drop(&mut self) {
-        self.server.unblock();
+        if let Some(server) = self.server.take() {
+            server.unblock();
+            if let Some(listener) = self.listener.take() {
+                listener.join().ok();
+            }
+            drop(server);
+        }
+        let address = SocketAddr::from((Ipv4Addr::LOCALHOST, self.port));
+        for _ in 0..WAKE_ATTEMPTS {
+            if TcpStream::connect_timeout(&address, WAKE_TIMEOUT).is_err() {
+                break;
+            }
+            thread::sleep(WAKE_PAUSE);
+        }
     }
 }
 
@@ -63,14 +84,14 @@ pub fn follow_config(app: &AppHandle) {
 
 fn start(app: &AppHandle) -> Result<PhoneServer> {
     let server = Arc::new(Server::http((Ipv4Addr::UNSPECIFIED, PORT)).map_err(AppError::platform)?);
-    let (listener, app) = (Arc::clone(&server), app.clone());
-    thread::spawn(move || {
-        for request in listener.incoming_requests() {
+    let (requests, app) = (Arc::clone(&server), app.clone());
+    let listener = thread::spawn(move || {
+        for request in requests.incoming_requests() {
             let app = app.clone();
             thread::spawn(move || handle(request, &app));
         }
     });
-    Ok(PhoneServer { server })
+    Ok(PhoneServer { port: PORT, server: Some(server), listener: Some(listener) })
 }
 
 /// The QR code the Xyra phone app scans to pair; None while the link is off.
@@ -229,4 +250,21 @@ fn with_headers(response: Response<Cursor<Vec<u8>>>) -> Response<Cursor<Vec<u8>>
         .into_iter()
         .filter_map(|(name, value)| Header::from_bytes(name, value).ok())
         .fold(response, Response::with_header)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const TEST_PORT: u16 = 47_899;
+
+    #[test]
+    fn frees_the_port_when_the_link_stops() {
+        for _ in 0..3 {
+            let server = Arc::new(Server::http((Ipv4Addr::UNSPECIFIED, TEST_PORT)).expect("the port is free again"));
+            let requests = Arc::clone(&server);
+            let listener = thread::spawn(move || for _ in requests.incoming_requests() {});
+            drop(PhoneServer { port: TEST_PORT, server: Some(server), listener: Some(listener) });
+        }
+    }
 }

@@ -1,0 +1,69 @@
+{
+  "done": "Done.",
+  "unreachable": "Your PC could not be reached. Check that Xyra is still open and that you are on the same network.",
+  "status": {
+    "connecting": "Connecting",
+    "online": "Connected",
+    "offline": "Offline",
+    "codeChanged": "New code"
+  },
+  "offline": "Your PC cannot be reached. Tap to retry.",
+  "tabs": {
+    "live": "Game",
+    "build": "Build",
+    "meta": "Meta",
+    "stats": "Stats",
+    "settings": "Settings"
+  },
+  "pairing": {
+    "title": "Xyra on your phone",
+    "text": "Connect the app with Xyra on your PC and use it all from here: accept matches, follow champion select, your build and the meta.",
+    "codeChanged": "The code on your PC changed. Scan it again to stay connected.",
+    "steps": {
+      "open": "On your PC open Xyra → Settings → Phone.",
+      "turnOn": "Turn the link on and accept the Windows prompt.",
+      "scan": "Tap the button below and scan the code."
+    },
+    "scan": "Scan code",
+    "pasteCode": "Paste the pairing code",
+    "invalid": "That is not a Xyra code. Scan the one in Settings → Phone on your PC.",
+    "private": "The app talks straight to your PC over your network: nothing goes through the internet."
+  },
+  "live": {
+    "matchFound": "Match found!",
+    "accept": "Accept",
+    "resume": "Resume",
+    "yourChampion": "Your champion",
+    "import": {
+      "runes": "Runes",
+      "items": "Items",
+      "spells": "Spells"
+    },
+    "openBuild": "See the build",
+    "bench": "Take it from the bench",
+    "counters": "Counters against {{enemy}}",
+    "idle": "Queue up on your PC: here you can accept the match and follow champion select and your game."
+  },
+  "build": {
+    "pick": "Search a champion to see its build."
+  },
+  "settings": {
+    "pc": "Your PC",
+    "title": "Xyra on the PC",
+    "auto_accept": {
+      "title": "Accept matches by itself",
+      "description": "Xyra accepts the match for you after a few seconds."
+    },
+    "auto_import_build": {
+      "title": "Import build by itself",
+      "description": "Runes, spells and items when you pick a champion."
+    },
+    "paused": {
+      "title": "Pause Xyra",
+      "description": "It neither reads the screen nor draws labels."
+    },
+    "order": "Recommend champions by",
+    "forget": "Disconnect this phone",
+    "forgetHint": "To connect it again you will have to scan the code again."
+  }
+}

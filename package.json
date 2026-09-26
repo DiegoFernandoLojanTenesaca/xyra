@@ -11,6 +11,9 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "tauri": "tauri",
+    "dev:mobile": "vite --config vite.mobile.config.js",
+    "build:mobile": "vite build --config vite.mobile.config.js",
+    "check:mobile": "svelte-check --tsconfig ./mobile/tsconfig.json",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write ."
   },

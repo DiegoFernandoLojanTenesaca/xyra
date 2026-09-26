@@ -51,8 +51,9 @@ momento en que sale. Además: tier lists y tus estadísticas. Liviano, en españ
 - **Meta del parche:** los mejores campeones de clasificatorias por posición, con winrate, uso, bans, si subieron o
   bajaron desde el parche anterior y el enlace a las notas oficiales.
 - **Consejos en partida:** qué habilidad subir y tu siguiente ítem, con el oro que te falta, desde la API oficial del juego.
-- **En el celular:** escanea un QR y acepta la partida, importa la build y sigue la selección y tu partida desde el
-  teléfono, en la misma red Wi-Fi.
+- **Xyra para Android:** empareja la app una vez con el QR de Ajustes → Celular y acepta partidas, sigue la selección,
+  importa runas, ítems y hechizos, mira builds, el meta, tus estadísticas y los consejos en partida, y cambia los ajustes
+  de Xyra desde el teléfono, por tu Wi-Fi o Tailscale.
 - **Un solo ícono:** con "Abrir el LoL con Xyra" (Ajustes), el ícono de Xyra abre también el LoL.
 - **Tier lists:** aumentos por campeón y campeones de ARAM: Caos.
 - **Tus datos:** winrate por campeón, mejores aumentos, nivel, rango y maestrías, separados por cuenta; exportación a CSV.
@@ -79,6 +80,9 @@ dibuja encima. Todos los detalles en [SECURITY.md](SECURITY.md).
 
 Requisitos: Windows 10 u 11 y el reconocimiento de texto de Windows para el idioma de tu cliente (suele venir con el
 idioma de Windows).
+
+**En el celular:** instala `xyra-android-x.y.z.apk` desde [Releases](../../releases) (Android 7 o superior), enciende
+el enlace en Ajustes → Celular de tu PC, acepta el aviso de Windows y escanea el código con la app.
 
 ## Creadores
 
