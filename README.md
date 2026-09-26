@@ -42,8 +42,8 @@ counters para la Grieta, tier lists y tus estadísticas. Liviano, en español e 
 - **Build:** runas, hechizos, ítems y orden de habilidades para ARAM: Caos y para la Grieta (normales, por posición), con
   enfrentamientos (a quién le gana y contra quién le cuesta) y botones para importar las runas, los hechizos y el set de
   ítems a tu cliente.
-- **Juego:** activa en un clic opciones oficiales del LoL (rango de ataque, también siempre visible, cronómetros del
-  minimapa, rango de torres contra la IA, tamaño del minimapa) y automatiza lo aburrido (mantener Sin bordes, importar
+- **Juego:** activa en un clic opciones oficiales del LoL (rango de ataque, cronómetros del minimapa, rango de
+  torres contra la IA, tamaño del minimapa) y automatiza lo aburrido (mantener Sin bordes, importar
   runas, hechizos e ítems solos, cerrar la ventana al jugar, aceptar la partida después de unos segundos).
 - **Recomendaciones a tu gusto:** en Inicio eliges si el top y la banca se ordenan por tier, por tu maestría, por lo que
   más juegas o mixto.

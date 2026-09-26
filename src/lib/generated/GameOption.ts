@@ -3,4 +3,4 @@
 /**
  * The official in-game options Xyra may change.
  */
-export type GameOption = "borderless" | "attackRange" | "alwaysAttackRange" | "minimapTimers" | "turretRange" | "minimapScale" | "flippedMinimap";
+export type GameOption = "borderless" | "attackRange" | "minimapTimers" | "turretRange" | "minimapScale" | "flippedMinimap";

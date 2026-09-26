@@ -98,7 +98,7 @@ pub async fn get_game_settings(shared: State<'_, App>) -> Result<Vec<GameSetting
 }
 
 #[tauri::command]
-pub async fn set_game_setting(shared: State<'_, App>, option: GameOption, value: SettingValue) -> Result<Vec<GameSetting>> {
+pub async fn set_game_setting(shared: State<'_, App>, option: GameOption, value: SettingValue) -> Result<()> {
     let shared = Arc::clone(&shared);
     blocking(move || game_settings::update(&shared.lcu()?, option, value)).await
 }

@@ -2,7 +2,6 @@
   "clientClosed": "Open League and try again.",
   "gameInProgress": "Finish the game and try again.",
   "noFreeRunePage": "You have no free rune pages: delete one and try again.",
-  "noFreeKeySlot": "Your attack-move action already uses both key slots: free one in League Options → Hotkeys.",
   "notInChampSelect": "Summoner spells can only be set during champion select.",
   "noSummoner": "Could not read your account from the client.",
   "noData": "OP.GG has no data for this yet.",

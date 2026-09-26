@@ -219,7 +219,7 @@ impl Shared {
             return Err(AppError::GameInProgress);
         }
         match self.lcu() {
-            Ok(lcu) => game_settings::update(&lcu, GameOption::Borderless, SettingValue::Toggle(true)).map(drop),
+            Ok(lcu) => game_settings::update(&lcu, GameOption::Borderless, SettingValue::Toggle(true)),
             Err(_) => league::set_borderless(&self.installation),
         }
     }
