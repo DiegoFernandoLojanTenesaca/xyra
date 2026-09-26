@@ -20,6 +20,7 @@
   const select = $derived(engine?.champ_select ?? null);
   const game = $derived(engine?.phase === 'inGame' ? engine.game : null);
   const cards = $derived([...(engine?.cards ?? [])].sort((a, b) => a.x - b.x));
+  const can = $derived(link.pc?.permissions ?? { accept: false, import: false, settings: false });
   let notice = $state('');
   let busy = $state(false);
 
@@ -55,7 +56,8 @@
   {#if engine.ready_check}
     <section class="block panel cut accept">
       <h2 class="section-title">{t('mobile:live.matchFound')}</h2>
-      <button class="action primary huge" disabled={busy} onclick={() => run('/api/accept')}>{t('mobile:live.accept')}</button>
+      <button class="action primary huge" disabled={busy || !can.accept} onclick={() => run('/api/accept')}>{t('mobile:live.accept')}</button>
+      {#if !can.accept}<small class="muted">{t('mobile:live.notAllowed')}</small>{/if}
     </section>
   {/if}
   {#if notice}<p class="notice">{notice}</p>{/if}
@@ -74,13 +76,15 @@
       <section class="block panel cut">
         <h2 class="section-title">{t('mobile:live.yourChampion')}</h2>
         {@render row(select.champion, select.champion.rank ? `#${select.champion.rank}` : '')}
-        <div class="actions">
-          {#each IMPORT_TARGETS as target (target)}
-            <button class="action" disabled={busy} onclick={() => run('/api/import', { target })}
-              ><Download size={14} />{t(`mobile:live.import.${target}`)}</button
-            >
-          {/each}
-        </div>
+        {#if can.import}
+          <div class="actions">
+            {#each IMPORT_TARGETS as target (target)}
+              <button class="action" disabled={busy} onclick={() => run('/api/import', { target })}
+                ><Download size={14} />{t(`mobile:live.import.${target}`)}</button
+              >
+            {/each}
+          </div>
+        {/if}
         <button class="action wide" onclick={() => select.champion && mobile.openBuild(select.champion.id, engine.build_mode, select.position)}>
           <Hammer size={14} />{t('mobile:live.openBuild')}
         </button>

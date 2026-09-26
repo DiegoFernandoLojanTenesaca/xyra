@@ -89,9 +89,13 @@ pub struct Config {
 impl Config {
     /// Whether `token` is the phone pairing code, compared in constant time.
     pub fn is_phone_token(&self, token: &str) -> bool {
-        let expected = self.phone_token.as_bytes();
-        !expected.is_empty() && token.len() == expected.len() && token.bytes().zip(expected).fold(0, |diff, (a, b)| diff | (a ^ b)) == 0
+        same_secret(token, &self.phone_token)
     }
+}
+
+/// Compares two secrets in constant time; an empty secret never matches.
+pub fn same_secret(given: &str, expected: &str) -> bool {
+    !expected.is_empty() && given.len() == expected.len() && given.bytes().zip(expected.bytes()).fold(0, |diff, (a, b)| diff | (a ^ b)) == 0
 }
 
 /// A new random pairing code for the phone link.

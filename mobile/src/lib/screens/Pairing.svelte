@@ -1,7 +1,7 @@
 <script lang="ts">
   import { QrCode } from '@lucide/svelte';
   import Logo from '$shared/ui/Logo.svelte';
-  import { link, parsePairing } from '../link.svelte';
+  import { link, LinkError, parsePairing } from '../link.svelte';
   import { mobile } from '../mobile.svelte';
   import { scanQr } from '../scan';
 
@@ -9,14 +9,24 @@
 
   const t = $derived(mobile.t);
   let notice = $state('');
+  let pairing = $state(false);
 
   async function scan() {
     notice = '';
     const raw = await scanQr(t('mobile:pairing.pasteCode'));
     if (raw === null) return;
-    const pairing = parsePairing(raw);
-    if (pairing) link.pair(pairing);
-    else notice = t('mobile:pairing.invalid');
+    const code = parsePairing(raw);
+    if (!code) {
+      notice = t('mobile:pairing.invalid');
+      return;
+    }
+    pairing = true;
+    try {
+      await link.pair(code);
+    } catch (error) {
+      notice = error instanceof LinkError && error.failure.code === 'phoneNotAllowed' ? t('mobile:pairing.expired') : mobile.errorText(error);
+    }
+    pairing = false;
   }
 </script>
 
@@ -31,7 +41,7 @@
     {/each}
   </ol>
 
-  <button class="scan" onclick={scan}><QrCode size={22} />{t('mobile:pairing.scan')}</button>
+  <button class="scan" disabled={pairing} onclick={scan}><QrCode size={22} />{pairing ? t('mobile:pairing.pairing') : t('mobile:pairing.scan')}</button>
   {#if notice}<p class="notice">{notice}</p>{/if}
   <small class="muted">{t('mobile:pairing.private')}</small>
 </div>

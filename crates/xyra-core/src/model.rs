@@ -163,13 +163,57 @@ pub struct Asset {
     pub icon: String,
 }
 
-/// Who the phone app is talking to.
+/// Who the phone app is talking to, and what this phone may do.
 #[derive(Clone, Debug, PartialEq, Serialize, TS)]
 #[ts(export)]
 pub struct PcInfo {
     pub name: String,
     pub version: String,
     pub language: String,
+    pub permissions: PhonePermissions,
+}
+
+/// What a paired phone may do besides looking.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[serde(default)]
+pub struct PhonePermissions {
+    pub accept: bool,
+    pub import: bool,
+    pub settings: bool,
+}
+
+impl Default for PhonePermissions {
+    fn default() -> PhonePermissions {
+        PhonePermissions { accept: true, import: true, settings: true }
+    }
+}
+
+/// A phone paired with the phone link, with the token only it knows.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct PhoneDevice {
+    pub id: String,
+    pub name: String,
+    pub token: String,
+    /// Unix seconds.
+    pub paired_at: u64,
+    #[serde(default)]
+    pub permissions: PhonePermissions,
+}
+
+/// A paired phone as Settings show it.
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[ts(export)]
+pub struct PhoneDeviceView {
+    pub id: String,
+    pub name: String,
+    /// Unix seconds.
+    #[ts(type = "number")]
+    pub paired_at: u64,
+    /// Seconds since its last request; None when it has not connected since Xyra started.
+    #[ts(type = "number | null")]
+    pub seen_ago: Option<u64>,
+    pub permissions: PhonePermissions,
 }
 
 /// The settings the phone app can change.

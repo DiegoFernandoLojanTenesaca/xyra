@@ -18,7 +18,7 @@
   "pairing": {
     "title": "Xyra en tu celular",
     "text": "Conecta la app con Xyra de tu PC y úsalo todo desde aquí: acepta partidas, mira la selección, tu build y el meta.",
-    "codeChanged": "El código de tu PC cambió. Escanéalo de nuevo para seguir conectado.",
+    "codeChanged": "Este celular se desconectó desde tu PC o el código cambió. Escanéalo de nuevo para seguir.",
     "steps": {
       "open": "En tu PC abre Xyra → Ajustes → Celular.",
       "turnOn": "Enciende el enlace y acepta el aviso de Windows.",
@@ -27,7 +27,9 @@
     "scan": "Escanear código",
     "pasteCode": "Pega el código de emparejamiento",
     "invalid": "Ese no es un código de Xyra. Escanea el que sale en Ajustes → Celular de tu PC.",
-    "private": "La app habla directo con tu PC por tu red: nada pasa por internet."
+    "private": "La app habla directo con tu PC por tu red: nada pasa por internet.",
+    "expired": "Ese código ya no vale: escanea el que sale ahora en Ajustes → Celular de tu PC.",
+    "pairing": "Conectando…"
   },
   "live": {
     "matchFound": "¡Partida encontrada!",
@@ -42,7 +44,8 @@
     "openBuild": "Ver la build",
     "bench": "Tómalo de la banca",
     "counters": "Counters contra {{enemy}}",
-    "idle": "Busca partida en tu PC: aquí podrás aceptarla y seguir la selección y tu partida."
+    "idle": "Busca partida en tu PC: aquí podrás aceptarla y seguir la selección y tu partida.",
+    "notAllowed": "Tu PC no deja a este celular aceptar partidas. Cámbialo en Ajustes → Celular."
   },
   "build": {
     "pick": "Busca un campeón para ver su build."
@@ -64,6 +67,7 @@
     },
     "order": "Recomendar campeones por",
     "forget": "Desconectar este celular",
-    "forgetHint": "Para volver a conectarlo tendrás que escanear el código otra vez."
+    "forgetHint": "Para volver a conectarlo tendrás que escanear el código otra vez.",
+    "readOnly": "Solo puedes verlos: tu PC no deja a este celular cambiar ajustes."
   }
 }

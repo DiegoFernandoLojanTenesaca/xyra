@@ -37,7 +37,7 @@ use xyra_core::{
     gameflow::{self, GameflowPhase},
     league::{self, Installation, Lcu, LcuEvent},
     matchmaking,
-    model::{AppEvent, Build, BuildMode, ChampionInfo, CurrentGame, EngineState, GameMode, ImportTarget, Matchup, Meta, Phase, Position},
+    model::{AppEvent, Build, BuildMode, ChampionInfo, CurrentGame, EngineState, GameMode, ImportTarget, Matchup, Meta, Phase, PhoneDevice, Position},
     opgg, profile,
     stats::{self, StatsSummary, StoredGame},
     storage::Storage,
@@ -88,6 +88,10 @@ pub struct Shared {
     state_version: Mutex<u64>,
     state_changed: Condvar,
     pub phone: Mutex<Option<crate::phone::PhoneServer>>,
+    /// Phones paired with the phone link.
+    pub phones: Mutex<Vec<PhoneDevice>>,
+    /// When each paired phone last asked for something, by id.
+    pub phones_seen: Mutex<HashMap<String, Instant>>,
     events: Sender<EngineEvent>,
 }
 
@@ -99,6 +103,10 @@ impl Shared {
         });
         let games = storage.load_games().unwrap_or_else(|e| {
             storage.log_error("stats", &e);
+            Vec::new()
+        });
+        let phones = storage.load_phones().unwrap_or_else(|e| {
+            storage.log_error("paired phones", &e);
             Vec::new()
         });
         let catalog = storage.load_catalog().unwrap_or_else(|e| {
@@ -138,6 +146,8 @@ impl Shared {
             state_version: Mutex::new(0),
             state_changed: Condvar::new(),
             phone: Mutex::new(None),
+            phones: Mutex::new(phones),
+            phones_seen: Mutex::new(HashMap::new()),
             events,
         };
         (shared, received)

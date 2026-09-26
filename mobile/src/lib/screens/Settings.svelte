@@ -44,6 +44,7 @@
   {@const current = settings}
   <section class="block panel cut">
     <h2 class="section-title">{t('mobile:settings.title')}</h2>
+    {#if !link.pc?.permissions.settings}<p class="muted">{t('mobile:settings.readOnly')}</p>{/if}
     {#each TOGGLES as key (key)}
       <ToggleRow
         title={t(`mobile:settings.${key}.title`)}

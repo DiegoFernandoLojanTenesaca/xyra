@@ -21,6 +21,11 @@ export class LinkError extends Error {
   }
 }
 
+/** The phone model Android reports, like "Infinix X6816C", so the PC can tell phones apart. */
+function deviceName() {
+  return /Android [^;]+; ([^;)]+?)(?: Build\/|\))/.exec(navigator.userAgent)?.[1] ?? 'Android';
+}
+
 function saved(): Pairing | null {
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
@@ -39,10 +44,28 @@ class Link {
   #session = 0;
   #retry: ReturnType<typeof setTimeout> | undefined;
 
-  pair = (pairing: Pairing) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(pairing));
-    this.pairing = pairing;
-    this.connect();
+  /** Registers this phone with the PC that showed the code; the phone gets its own token, which the PC can revoke. */
+  pair = async (code: Pairing) => {
+    for (const host of code.hosts) {
+      const base = `http://${host}:${code.port}`;
+      let answer: Answer<{ token: string }>;
+      try {
+        const response = await fetch(address(base, '/api/pair', code.token, { name: deviceName() }), {
+          method: 'POST',
+          signal: AbortSignal.timeout(REACH_TIMEOUT_MS),
+        });
+        answer = await response.json();
+      } catch {
+        continue;
+      }
+      if (!answer.ok) throw new LinkError(answer.error);
+      const pairing = { ...code, token: answer.value.token };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(pairing));
+      this.pairing = pairing;
+      this.connect();
+      return;
+    }
+    throw new Error('unreachable');
   };
 
   forget = () => {

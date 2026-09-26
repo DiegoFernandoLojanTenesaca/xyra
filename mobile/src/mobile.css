@@ -105,3 +105,20 @@
   width: var(--size-thumbSm);
   height: var(--size-thumbSm);
 }
+
+/* The desktop segmented control sizes its options for a window; on a phone they share the width in equal parts. */
+main div[role='tablist'] {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+}
+
+main div[role='tablist'] button {
+  min-width: 0;
+  padding: var(--space-2) 0;
+  font-size: var(--text-xs);
+  letter-spacing: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

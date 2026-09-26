@@ -81,10 +81,26 @@
     "scan": "Scan it with the Xyra app on your phone.",
     "qrAlt": "QR code to open Xyra on your phone",
     "newCode": "Change code",
-    "newCodeHint": "Disconnects the phones that already scanned it.",
+    "newCodeHint": "Phones already connected stay connected; to remove one, disconnect it below.",
     "getApp": "Install the Xyra app for Android from the Xyra downloads.",
     "download": "Download the app",
     "prepare": "Prepare Windows",
-    "prepared": "Done: Windows now lets the app in on your private network."
+    "prepared": "Done: Windows now lets the app in on your private network.",
+    "devices": {
+      "title": "Connected phones",
+      "none": "No phones yet. Scan the code with the Xyra app to connect the first one.",
+      "unnamed": "Phone",
+      "connected": "Connected now",
+      "seen": "Seen {{minutes}} min ago",
+      "notSeen": "Not connected since Xyra opened",
+      "paired": "paired on {{date}}",
+      "permissions": {
+        "accept": "Accept matches",
+        "import": "Import builds",
+        "settings": "Change settings"
+      },
+      "forget": "Disconnect",
+      "hint": "Every phone can see your game, builds and stats; permissions decide what else it can do. A disconnected phone has to scan the code again."
+    }
   }
 }

@@ -62,7 +62,6 @@
   }
   .tools {
     margin-bottom: var(--space-4);
-    overflow-x: auto;
   }
   .list {
     padding: var(--space-2) var(--space-4);

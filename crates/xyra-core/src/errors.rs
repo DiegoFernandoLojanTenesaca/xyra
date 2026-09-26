@@ -13,6 +13,7 @@ pub enum AppError {
     NotInChampSelect,
     PhoneLinkUnavailable,
     WindowsNotPrepared,
+    PhoneNotAllowed,
     NoSummoner,
     NoData,
     EmptyCatalog,

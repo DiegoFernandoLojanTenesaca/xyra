@@ -18,7 +18,7 @@
   "pairing": {
     "title": "Xyra on your phone",
     "text": "Connect the app with Xyra on your PC and use it all from here: accept matches, follow champion select, your build and the meta.",
-    "codeChanged": "The code on your PC changed. Scan it again to stay connected.",
+    "codeChanged": "This phone was disconnected from your PC or the code changed. Scan it again to go on.",
     "steps": {
       "open": "On your PC open Xyra → Settings → Phone.",
       "turnOn": "Turn the link on and accept the Windows prompt.",
@@ -27,7 +27,9 @@
     "scan": "Scan code",
     "pasteCode": "Paste the pairing code",
     "invalid": "That is not a Xyra code. Scan the one in Settings → Phone on your PC.",
-    "private": "The app talks straight to your PC over your network: nothing goes through the internet."
+    "private": "The app talks straight to your PC over your network: nothing goes through the internet.",
+    "expired": "That code is no longer valid: scan the one shown now in Settings → Phone on your PC.",
+    "pairing": "Connecting…"
   },
   "live": {
     "matchFound": "Match found!",
@@ -42,7 +44,8 @@
     "openBuild": "See the build",
     "bench": "Take it from the bench",
     "counters": "Counters against {{enemy}}",
-    "idle": "Queue up on your PC: here you can accept the match and follow champion select and your game."
+    "idle": "Queue up on your PC: here you can accept the match and follow champion select and your game.",
+    "notAllowed": "Your PC does not let this phone accept matches. Change it in Settings → Phone."
   },
   "build": {
     "pick": "Search a champion to see its build."
@@ -64,6 +67,7 @@
     },
     "order": "Recommend champions by",
     "forget": "Disconnect this phone",
-    "forgetHint": "To connect it again you will have to scan the code again."
+    "forgetHint": "To connect it again you will have to scan the code again.",
+    "readOnly": "You can only see them: your PC does not let this phone change settings."
   }
 }

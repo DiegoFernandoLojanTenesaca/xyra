@@ -81,10 +81,26 @@
     "scan": "Escanéalo con la app Xyra de tu celular.",
     "qrAlt": "Código QR para abrir Xyra en el celular",
     "newCode": "Cambiar código",
-    "newCodeHint": "Desconecta a los celulares que ya lo escanearon.",
+    "newCodeHint": "Los celulares ya conectados siguen conectados; para sacar uno, desconéctalo abajo.",
     "getApp": "Instala la app Xyra para Android desde las descargas de Xyra.",
     "download": "Descargar la app",
     "prepare": "Preparar Windows",
-    "prepared": "Listo: Windows ya deja entrar a la app en tu red privada."
+    "prepared": "Listo: Windows ya deja entrar a la app en tu red privada.",
+    "devices": {
+      "title": "Celulares conectados",
+      "none": "Todavía no hay celulares. Escanea el código con la app Xyra para conectar el primero.",
+      "unnamed": "Celular",
+      "connected": "Conectado ahora",
+      "seen": "Visto hace {{minutes}} min",
+      "notSeen": "Sin conexión desde que abriste Xyra",
+      "paired": "emparejado el {{date}}",
+      "permissions": {
+        "accept": "Aceptar partidas",
+        "import": "Importar builds",
+        "settings": "Cambiar ajustes"
+      },
+      "forget": "Desconectar",
+      "hint": "Todos pueden ver tu partida, builds y estadísticas; los permisos deciden qué más pueden hacer. Al desconectar uno, tendrá que escanear el código otra vez."
+    }
   }
 }

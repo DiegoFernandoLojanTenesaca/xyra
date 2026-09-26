@@ -10,7 +10,10 @@ use xyra_core::{
     config::{self, Config},
     errors::{AppError, Result},
     game_settings::{self, GameOption, GameSetting, SettingValue},
-    model::{AppEvent, AugmentRow, Build, BuildMode, ChampionInfo, Choices, EngineState, GameMode, ImportTarget, Meta, PhoneLink, Position},
+    model::{
+        AppEvent, AugmentRow, Build, BuildMode, ChampionInfo, Choices, EngineState, GameMode, ImportTarget, Meta, PhoneDeviceView, PhoneLink, PhonePermissions,
+        Position,
+    },
     opgg,
     profile::{self, Profile},
     stats::{self, StatsSummary},
@@ -86,6 +89,21 @@ pub async fn get_augments(shared: State<'_, App>, champion: u32, mode: GameMode)
 #[tauri::command]
 pub fn get_phone_link(shared: State<App>) -> Result<Option<PhoneLink>> {
     phone::link(&shared)
+}
+
+#[tauri::command]
+pub fn get_phone_devices(shared: State<App>) -> Vec<PhoneDeviceView> {
+    phone::devices(&shared)
+}
+
+#[tauri::command]
+pub fn set_phone_permissions(shared: State<App>, id: String, permissions: PhonePermissions) -> Result<Vec<PhoneDeviceView>> {
+    phone::change_device(&shared, &id, Some(permissions))
+}
+
+#[tauri::command]
+pub fn forget_phone(shared: State<App>, id: String) -> Result<Vec<PhoneDeviceView>> {
+    phone::change_device(&shared, &id, None)
 }
 
 #[tauri::command]

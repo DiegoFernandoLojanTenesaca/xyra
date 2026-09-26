@@ -2,6 +2,7 @@ use crate::{
     catalog::Catalog,
     config::Config,
     errors::{AppError, Result},
+    model::PhoneDevice,
     profile::Profile,
     stats::StoredGame,
 };
@@ -18,6 +19,7 @@ const CONFIG: &str = "config.json";
 const STATS: &str = "stats.json";
 const CATALOG: &str = "catalog.json";
 const PROFILE: &str = "profile.json";
+const PHONES: &str = "phones.json";
 const LOG: &str = "xyra.log";
 const SCREENSHOTS: &str = "screenshots";
 const UPDATES: &str = "updates";
@@ -129,6 +131,14 @@ impl Storage {
 
     pub fn save_config(&self, config: &Config) -> Result<()> {
         self.write(CONFIG, config)
+    }
+
+    pub fn load_phones(&self) -> Result<Vec<PhoneDevice>> {
+        Ok(self.read(PHONES)?.unwrap_or_default())
+    }
+
+    pub fn save_phones(&self, phones: &[PhoneDevice]) -> Result<()> {
+        self.write(PHONES, &phones)
     }
 
     pub fn load_games(&self) -> Result<Vec<StoredGame>> {

@@ -22,7 +22,7 @@
   const champion = $derived(mobile.buildChampion ?? live?.id ?? null);
   const mode = $derived(mobile.buildMode ?? engine?.build_mode ?? 'aram');
   const position = $derived(mode === 'rift' ? (mobile.buildPosition ?? engine?.champ_select?.position ?? null) : null);
-  const canImport = $derived(!!engine?.champ_select?.champion && engine.champ_select.champion.id === champion);
+  const canImport = $derived(!!link.pc?.permissions.import && !!engine?.champ_select?.champion && engine.champ_select.champion.id === champion);
   let query = $state('');
   let notice = $state('');
   let busy = $state(false);
@@ -164,9 +164,6 @@
     display: grid;
     gap: var(--space-2);
     margin: var(--space-3) 0 var(--space-4);
-  }
-  .tools :global([role='tablist']) {
-    overflow-x: auto;
   }
   .runes {
     display: grid;

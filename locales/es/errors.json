@@ -5,6 +5,7 @@
   "notInChampSelect": "Los hechizos solo se pueden poner durante la selección de campeones.",
   "phoneLinkUnavailable": "No se pudo abrir el enlace con el celular: otro programa usa el puerto 47811 o Windows no lo permitió.",
   "windowsNotPrepared": "Windows no quedó listo para el celular: acepta el aviso de administrador para marcar tu red como privada y abrir el puerto de Xyra.",
+  "phoneNotAllowed": "Este celular no tiene permiso para eso: cámbialo en Ajustes → Celular de tu PC.",
   "noSummoner": "No se pudo leer tu cuenta del cliente.",
   "noData": "OP.GG todavía no tiene datos para esto.",
   "emptyCatalog": "El cliente aún no termina de cargar sus datos: espera unos segundos.",

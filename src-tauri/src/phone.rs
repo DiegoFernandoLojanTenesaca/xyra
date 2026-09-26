@@ -14,13 +14,15 @@ use std::{
     sync::Arc,
     thread::{self, JoinHandle},
     time::Duration,
+    time::{Instant, SystemTime, UNIX_EPOCH},
 };
 use tauri::{AppHandle, Manager};
 use tiny_http::{Header, Method, Request, Response, Server};
 use xyra_core::{
+    config::{new_phone_token, same_secret},
     errors::{AppError, Result},
     matchmaking,
-    model::{BuildMode, GameMode, ImportTarget, PcInfo, PhoneLink, PhoneSettings, Position},
+    model::{BuildMode, GameMode, ImportTarget, PcInfo, PhoneDevice, PhoneDeviceView, PhoneLink, PhonePermissions, PhoneSettings, Position},
     opgg,
 };
 
@@ -35,6 +37,8 @@ const QR_SIZE: u32 = 240;
 const FIREWALL_RULE: &str = "Xyra (celular)";
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 const WAKE_TIMEOUT: Duration = Duration::from_millis(500);
+const DEVICE_ID_LENGTH: usize = 12;
+const DEVICE_NAME_LENGTH: usize = 40;
 const WAKE_PAUSE: Duration = Duration::from_millis(50);
 /// Up to two seconds for tiny_http's accept thread to let the port go.
 const WAKE_ATTEMPTS: usize = 40;
@@ -161,9 +165,25 @@ fn handle(request: Request, app: &AppHandle) {
     let url = request.url().to_string();
     let (path, query) = url.split_once('?').unwrap_or((&url, ""));
     let query = Query(query);
-    let response = match (request.method(), path) {
-        _ if !query.get("t").is_some_and(|token| shared.config().is_phone_token(token)) => text(403, "forbidden"),
-        (Method::Get, "/api/pc") => json_response(&pc_info(&shared)),
+    let device = query.get("t").and_then(|token| paired(&shared, token));
+    let response = match (request.method(), path, device) {
+        (Method::Post, "/api/pair", _) => answer(pair(&shared, &query)),
+        (_, _, None) => text(403, "forbidden"),
+        (method, path, Some(device)) => {
+            shared.phones_seen.lock().unwrap().insert(device.id.clone(), Instant::now());
+            route(app, &shared, method, path, &query, &device)
+        }
+    };
+    if let Err(e) = request.respond(response) {
+        shared.log_error("phone link answer", e);
+    }
+}
+
+fn route(app: &AppHandle, shared: &Shared, method: &Method, path: &str, query: &Query, device: &PhoneDevice) -> Response<Cursor<Vec<u8>>> {
+    let allowed = |permitted: bool| if permitted { Ok(()) } else { Err(AppError::PhoneNotAllowed) };
+    let can = device.permissions;
+    match (method, path) {
+        (Method::Get, "/api/pc") => json_response(&pc_info(shared, can)),
         (Method::Get, "/api/state") => {
             let (version, state) = shared.wait_for_state(query.number("after"), LONG_POLL);
             json_response(&json!({ "version": version, "state": state }))
@@ -171,21 +191,96 @@ fn handle(request: Request, app: &AppHandle) {
         (Method::Get, "/api/stats") => json_response(&shared.stats_summary()),
         (Method::Get, "/api/champions") => json_response(&shared.champions()),
         (Method::Get, "/api/meta") => answer(shared.meta()),
-        (Method::Get, "/api/build") => answer(build(&shared, &query)),
-        (Method::Get, "/api/augments") => answer(augments(&shared, &query)),
+        (Method::Get, "/api/build") => answer(build(shared, query)),
+        (Method::Get, "/api/augments") => answer(augments(shared, query)),
         (Method::Get, "/api/settings") => json_response(&PhoneSettings::from(&shared.config())),
-        (Method::Post, "/api/settings") => answer(change_settings(app, &shared, &query)),
-        (Method::Post, "/api/accept") => answer(shared.lcu().and_then(|lcu| matchmaking::accept_if_waiting(&lcu))),
-        (Method::Post, "/api/import") => answer(import(&shared, &query)),
+        (Method::Post, "/api/settings") => answer(allowed(can.settings).and_then(|()| change_settings(app, shared, query))),
+        (Method::Post, "/api/accept") => answer(allowed(can.accept).and_then(|()| shared.lcu()).and_then(|lcu| matchmaking::accept_if_waiting(&lcu))),
+        (Method::Post, "/api/import") => answer(allowed(can.import).and_then(|()| import(shared, query))),
         _ => text(404, "not found"),
-    };
-    if let Err(e) = request.respond(response) {
-        shared.log_error("phone link answer", e);
     }
 }
 
-fn pc_info(shared: &Shared) -> PcInfo {
-    PcInfo { name: std::env::var("COMPUTERNAME").unwrap_or_default(), version: env!("CARGO_PKG_VERSION").into(), language: shared.language().into() }
+/// The paired phone that owns `token`.
+fn paired(shared: &Shared, token: &str) -> Option<PhoneDevice> {
+    shared.phones.lock().unwrap().iter().find(|device| same_secret(token, &device.token)).cloned()
+}
+
+/// Pairs a phone that scanned the QR code: it gets its own token, so it can be disconnected alone.
+fn pair(shared: &Shared, query: &Query) -> Result<Value> {
+    if !query.get("t").is_some_and(|code| shared.config().is_phone_token(code)) {
+        return Err(AppError::PhoneNotAllowed);
+    }
+    let name: String = decode(query.get("name").unwrap_or_default()).chars().take(DEVICE_NAME_LENGTH).collect();
+    let paired_at = SystemTime::now().duration_since(UNIX_EPOCH).map_or(0, |time| time.as_secs());
+    let device =
+        PhoneDevice { id: new_phone_token()[..DEVICE_ID_LENGTH].into(), name, token: new_phone_token(), paired_at, permissions: PhonePermissions::default() };
+    let token = device.token.clone();
+    let mut phones = shared.phones.lock().unwrap();
+    phones.push(device);
+    shared.storage.save_phones(&phones)?;
+    Ok(json!({ "token": token }))
+}
+
+/// Percent-decodes a query value; invalid escapes are kept as they came.
+fn decode(value: &str) -> String {
+    let bytes = value.as_bytes();
+    let mut decoded = Vec::with_capacity(bytes.len());
+    let mut i = 0;
+    while i < bytes.len() {
+        let escaped = (bytes[i] == b'%').then(|| value.get(i + 1..i + 3).and_then(|hex| u8::from_str_radix(hex, 16).ok())).flatten();
+        match (bytes[i], escaped) {
+            (_, Some(byte)) => {
+                decoded.push(byte);
+                i += 3;
+                continue;
+            }
+            (b'+', None) => decoded.push(b' '),
+            (byte, None) => decoded.push(byte),
+        }
+        i += 1;
+    }
+    String::from_utf8_lossy(&decoded).into_owned()
+}
+
+/// The paired phones, with how long ago each one asked for something.
+pub fn devices(shared: &Shared) -> Vec<PhoneDeviceView> {
+    let seen = shared.phones_seen.lock().unwrap();
+    shared
+        .phones
+        .lock()
+        .unwrap()
+        .iter()
+        .map(|device| PhoneDeviceView {
+            id: device.id.clone(),
+            name: device.name.clone(),
+            paired_at: device.paired_at,
+            seen_ago: seen.get(&device.id).map(|at| at.elapsed().as_secs()),
+            permissions: device.permissions,
+        })
+        .collect()
+}
+
+/// Changes or removes a paired phone, saving the list.
+pub fn change_device(shared: &Shared, id: &str, permissions: Option<PhonePermissions>) -> Result<Vec<PhoneDeviceView>> {
+    {
+        let mut phones = shared.phones.lock().unwrap();
+        match permissions {
+            Some(permissions) => phones.iter_mut().filter(|device| device.id == id).for_each(|device| device.permissions = permissions),
+            None => phones.retain(|device| device.id != id),
+        }
+        shared.storage.save_phones(&phones)?;
+    }
+    Ok(devices(shared))
+}
+
+fn pc_info(shared: &Shared, permissions: PhonePermissions) -> PcInfo {
+    PcInfo {
+        name: std::env::var("COMPUTERNAME").unwrap_or_default(),
+        version: env!("CARGO_PKG_VERSION").into(),
+        language: shared.language().into(),
+        permissions,
+    }
 }
 
 fn build(shared: &Shared, query: &Query) -> Result<xyra_core::model::Build> {
@@ -257,6 +352,13 @@ mod tests {
     use super::*;
 
     const TEST_PORT: u16 = 47_899;
+
+    #[test]
+    fn decodes_the_phone_name() {
+        assert_eq!(decode("Infinix%20X6816C"), "Infinix X6816C");
+        assert_eq!(decode("Pixel+8%C3%B1"), "Pixel 8ñ");
+        assert_eq!(decode("100%"), "100%");
+    }
 
     #[test]
     fn frees_the_port_when_the_link_stops() {
