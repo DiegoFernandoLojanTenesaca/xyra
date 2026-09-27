@@ -480,6 +480,7 @@
       .news {
         display: grid;
         grid-template-columns: 1fr 1fr;
+        align-items: start;
         gap: 1rem;
       }
       .news ul {
@@ -599,6 +600,66 @@
         }
       }
 
+      .phones {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1.5rem;
+        padding: 1rem 0 1.5rem;
+      }
+      .phone {
+        margin: 0;
+      }
+      .phone.in:hover {
+        transform: translateY(-8px) scale(1.03);
+      }
+      .phone img {
+        width: 100%;
+        height: auto;
+        border: 7px solid #1c1c20;
+        border-radius: 30px;
+        background: var(--panel);
+        box-shadow:
+          0 0 0 1px var(--line-strong),
+          0 24px 50px -20px rgb(229 19 43 / 0.45);
+        animation: float 6s ease-in-out infinite;
+      }
+      .phone:nth-child(even) img {
+        animation-delay: 3s;
+      }
+      .phone figcaption {
+        font-size: 0.9rem;
+      }
+      .phone-points {
+        margin: 2rem 0;
+      }
+      .timeline {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      .timeline > li {
+        position: relative;
+        padding: 0 0 1.2rem 1.4rem;
+        border-left: 2px solid var(--line-strong);
+      }
+      .timeline > li::before {
+        content: '';
+        position: absolute;
+        left: -7px;
+        top: 0.25rem;
+        width: 12px;
+        height: 12px;
+        background: var(--accent);
+        transform: rotate(45deg);
+      }
+      .timeline b {
+        color: var(--accent-bright);
+        letter-spacing: 0.08em;
+      }
+      .timeline ul {
+        margin: 0.4rem 0 0;
+        padding-left: 1.1rem;
+      }
       /* Motion: an entrance for the hero, a living background, reveals on scroll and a reaction to every hover. */
       body::before,
       body::after {
@@ -849,6 +910,7 @@
         <nav aria-label="Secciones">
           <a href="#funciones">Funciones</a>
           <a href="#estilos">Estilos</a>
+          <a href="#celular">App</a>
           <a href="#seguridad">Seguridad</a>
           <a href="#novedades">Novedades</a>
           <a href="#preguntas">Preguntas</a>
@@ -870,6 +932,9 @@
             <a class="button primary cut download" href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases/latest">
               <svg aria-hidden="true"><use href="#download" /></svg><span class="download-label">Descargar para Windows</span>
             </a>
+            <a class="button cut download-apk" href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases/latest"
+              ><svg aria-hidden="true"><use href="#download" /></svg>App Android</a
+            >
             <a class="button cut" href="https://github.com/DiegoFernandoLojanTenesaca/xyra"
               ><svg aria-hidden="true"><use href="#github" /></svg>Código fuente</a
             >
@@ -978,6 +1043,64 @@
               <h3>Liviano y al día</h3>
               <p>Hecho en Rust, sin navegador mientras juegas. Un solo ícono abre Xyra y el LoL, y se actualiza con un botón.</p>
             </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="celular">
+        <div class="wrap">
+          <div class="intro">
+            <p class="eyebrow">Xyra en tu celular</p>
+            <h2>Tu partida, también en el bolsillo</h2>
+            <p class="lead">
+              Empareja la app para Android con un QR y usa Xyra desde el sofá o mientras esperas en la cola: acepta la partida, prepara tu build y mira el meta
+              sin volver a la PC.
+            </p>
+          </div>
+          <div class="phones">
+            <figure class="phone">
+              <img src="app/pairing.jpg" width="780" height="1688" alt="Conecta con un QR en la app Xyra para Android" loading="lazy" />
+              <figcaption><b>Conecta con un QR.</b> Escanéalo una vez desde la app y tu celular queda emparejado con tu PC.</figcaption>
+            </figure>
+            <figure class="phone">
+              <img src="app/live.jpg" width="780" height="1688" alt="Tu partida al instante en la app Xyra para Android" loading="lazy" />
+              <figcaption><b>Tu partida al instante.</b> Acepta la partida, mira la selección y los consejos mientras juegas.</figcaption>
+            </figure>
+            <figure class="phone">
+              <img src="app/meta.jpg" width="780" height="1688" alt="El meta del parche en la app Xyra para Android" loading="lazy" />
+              <figcaption><b>El meta del parche.</b> Los mejores campeones por posición y quién subió o bajó.</figcaption>
+            </figure>
+            <figure class="phone">
+              <img src="app/build.jpg" width="780" height="1688" alt="Tu build lista en la app Xyra para Android" loading="lazy" />
+              <figcaption><b>Tu build lista.</b> Runas, hechizos e ítems de cualquier campeón; impórtalos en la selección.</figcaption>
+            </figure>
+            <figure class="phone">
+              <img src="app/stats.jpg" width="780" height="1688" alt="Tus datos en la app Xyra para Android" loading="lazy" />
+              <figcaption><b>Tus datos.</b> Tu winrate, tus campeones y tus últimas partidas con sus aumentos.</figcaption>
+            </figure>
+            <figure class="phone">
+              <img src="app/settings.jpg" width="780" height="1688" alt="Xyra desde el sofá en la app Xyra para Android" loading="lazy" />
+              <figcaption><b>Xyra desde el sofá.</b> Activa aceptar partida o la build sola, y pausa Xyra sin ir a la PC.</figcaption>
+            </figure>
+          </div>
+          <div class="grid phone-points">
+            <article class="card cut">
+              <h3>Solo tu red</h3>
+              <p>El celular habla directo con tu PC por tu Wi-Fi o por Tailscale. Nada pasa por internet ni por servidores ajenos.</p>
+            </article>
+            <article class="card cut">
+              <h3>Tú decides quién entra</h3>
+              <p>Cada celular recibe su propia llave. En la PC ves cuáles están conectados, qué pueden hacer y los desconectas con un botón.</p>
+            </article>
+            <article class="card cut">
+              <h3>Siempre al día</h3>
+              <p>Lo que pasa en la PC llega al celular al momento: la partida encontrada, tu campeón, los consejos y las cartas.</p>
+            </article>
+          </div>
+          <div class="actions">
+            <a class="button primary cut download-apk" href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases/latest">
+              <svg aria-hidden="true"><use href="#download" /></svg>Descargar la app para Android
+            </a>
           </div>
         </div>
       </section>
@@ -1094,6 +1217,18 @@
             </figure>
             <figure>
               <button type="button">
+                <img class="shot cut" src="screenshots/meta.jpg" width="1200" height="772" alt="Pantalla Meta de Xyra" loading="lazy" />
+              </button>
+              <figcaption><b>Meta:</b> los mejores del parche por posición, con las notas oficiales.</figcaption>
+            </figure>
+            <figure>
+              <button type="button">
+                <img class="shot cut" src="screenshots/phone.jpg" width="1200" height="772" alt="Ajustes del celular en Xyra" loading="lazy" />
+              </button>
+              <figcaption><b>Celular:</b> el código para emparejar y los celulares conectados.</figcaption>
+            </figure>
+            <figure>
+              <button type="button">
                 <img class="shot cut" src="screenshots/stats.jpg" width="1200" height="772" alt="Estadísticas en Xyra" loading="lazy" />
               </button>
               <figcaption><b>Estadísticas:</b> tu winrate y tus mejores aumentos.</figcaption>
@@ -1170,21 +1305,39 @@
           </div>
           <div class="news">
             <div class="card cut">
-              <h3>Lo nuevo</h3>
-              <ul>
-                <li>Xyra para Android: acepta partidas, sigue la selección y tu build desde el celular.</li>
-                <li>Pantalla Meta con los mejores campeones del parche por posición y quién subió o bajó.</li>
-                <li>Consejos en partida: qué habilidad subir y tu siguiente ítem con el oro que te falta.</li>
-                <li>Build y Aumentos siguen solos al campeón que estás jugando.</li>
-                <li>Runas, hechizos e ítems se ponen solos al elegir campeón.</li>
-                <li>Se actualiza con un botón, sin desinstalar.</li>
-              </ul>
+              <h3>Versiones</h3>
+              <ol class="timeline">
+                <li>
+                  <b>0.5.0</b>
+                  <ul>
+                    <li>Ves en tu PC qué celulares están conectados, qué pueden hacer y los desconectas con un botón.</li>
+                    <li>La app se ve pareja en celulares pequeños y abre la build al instante.</li>
+                  </ul>
+                </li>
+                <li>
+                  <b>0.4.0</b>
+                  <ul>
+                    <li>Xyra para Android: acepta partidas, sigue la selección y tu build desde el celular.</li>
+                    <li>Pantalla Meta con los mejores del parche por posición.</li>
+                    <li>Consejos en partida: qué habilidad subir y tu siguiente ítem.</li>
+                  </ul>
+                </li>
+                <li>
+                  <b>0.3.0</b>
+                  <ul>
+                    <li>Runas, hechizos e ítems solos al elegir campeón.</li>
+                    <li>Recomendaciones por tier, maestría o lo que más juegas.</li>
+                    <li>Se actualiza con un botón, sin desinstalar.</li>
+                  </ul>
+                </li>
+              </ol>
               <p class="muted">Notas completas en <a href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases">GitHub</a>.</p>
             </div>
             <div class="card cut soon">
               <h3>Lo que viene</h3>
               <ul>
                 <li>Un aviso en el celular cuando encuentras partida, aunque tengas la app cerrada.</li>
+                <li>La app se actualiza sola, como Xyra en la PC.</li>
                 <li>Buffs y nerfs del parche para tus campeones.</li>
                 <li>Un botón para tomar de la banca al campeón recomendado.</li>
                 <li>Más idiomas.</li>
@@ -1229,6 +1382,39 @@
               Sí, pueden convivir. Si las dos importan runas solas, deja esa opción activa en una sola, y si tienes todas tus páginas de runas ocupadas, libera
               una para que Xyra tenga la suya.
             </p>
+          </details>
+          <details>
+            <summary>¿Cómo conecto mi celular?</summary>
+            <p>
+              Instala la app para Android, abre Xyra en tu PC y ve a Ajustes → Celular. Enciende el enlace, acepta el aviso de Windows y escanea el código con
+              la app. Solo se hace una vez.
+            </p>
+          </details>
+          <details>
+            <summary>¿Funciona fuera de casa?</summary>
+            <p>Sí, si la PC y el celular están en tu Tailscale. Si no lo usas, el celular tiene que estar en la misma red Wi-Fi que la PC.</p>
+          </details>
+          <details>
+            <summary>¿Alguien más puede conectarse a mi PC?</summary>
+            <p>
+              Solo quien escanee tu código. Cada celular recibe su propia llave: en Ajustes → Celular ves cuáles están conectados, qué pueden hacer y los
+              desconectas con un botón. También puedes cambiar el código cuando quieras.
+            </p>
+          </details>
+          <details>
+            <summary>¿Puedo jugar desde el celular?</summary>
+            <p>
+              No. Desde el celular aceptas la partida, importas la build, cambias ajustes y ves información; elegir campeón y jugar sigue siendo cosa tuya en la
+              PC.
+            </p>
+          </details>
+          <details>
+            <summary>¿Hay app para iPhone?</summary>
+            <p>Por ahora solo para Android 7 o superior.</p>
+          </details>
+          <details>
+            <summary>¿Por qué Windows pide permiso de administrador al activar el celular?</summary>
+            <p>Para marcar tu red de casa como privada y abrir solo el puerto de Xyra en redes privadas. Sin eso, Windows no deja entrar al celular.</p>
           </details>
           <details>
             <summary>¿Cómo se actualiza?</summary>
