@@ -4,61 +4,113 @@
   <a href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases/latest"><img alt="Descargar" src="https://img.shields.io/github/v/release/DiegoFernandoLojanTenesaca/xyra?style=for-the-badge&label=descargar&color=e5132b"></a>
   <a href="https://diegofernandolojantenesaca.github.io/xyra/"><img alt="Sitio web" src="https://img.shields.io/badge/web-xyra-131315?style=for-the-badge"></a>
   <img alt="Windows 10 y 11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-131315?style=for-the-badge">
+  <img alt="Android 7 o superior" src="https://img.shields.io/badge/Android-7%2B-131315?style=for-the-badge">
   <a href="LICENSE"><img alt="Licencia MIT" src="https://img.shields.io/github/license/DiegoFernandoLojanTenesaca/xyra?style=for-the-badge&color=1f1f22"></a>
 </p>
 
-<p align="center"><b>Companion de escritorio para League of Legends.</b> Al elegir campeón te pone runas, hechizos e ítems de
-OP.GG, te sugiere counters en normales y clasificatorias, y en ARAM: Caos y Arena te marca la mejor carta de aumento en el
-momento en que sale. Además: tier lists y tus estadísticas. Liviano, en español e inglés, y sin tocar el juego.</p>
+<p align="center"><b>Companion de League of Legends para todos los modos.</b> Al elegir campeón te pone runas, hechizos e
+ítems de OP.GG, te dice a quién tomar de la banca o contra quién, te marca los buffs y nerfs del parche y, en ARAM: Caos y
+Arena, la mejor carta de aumento en el momento en que sale. Con app para Android que te avisa cuando encuentras partida.
+Liviano, en español e inglés, y sin tocar el juego.</p>
+
+<p align="center">
+  <a href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases/latest"><b>Descargar para Windows</b></a> ·
+  <a href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases/latest"><b>Descargar la app para Android</b></a> ·
+  <a href="https://diegofernandolojantenesaca.github.io/xyra/"><b>Sitio web</b></a>
+</p>
 
 <p align="center"><img src="docs/labels-preview.jpg" alt="Etiquetas de Xyra sobre las cartas de aumento en una partida de ARAM: Caos" width="92%"></p>
 
 *English version below.*
 
+## Novedades
+
+**0.6.0**
+
+- Tu celular suena como el LoL cuando encuentras partida, aunque tengas la app cerrada: la aceptas o rechazas desde el aviso o
+  desde una pantalla al estilo del LoL.
+- En la selección, el celular te muestra la build de tu campeón y la importa toda con un botón.
+- Buffs y nerfs del parche en Meta, leídos de las notas oficiales, empezando por tus campeones.
+- Inicio por modos: Normal, Clasificatoria, ARAM, ARAM: Caos y Arena, cada uno con lo suyo.
+- Un botón para tomar de la banca al campeón recomendado, en la PC y en el celular.
+- Tu cuenta en la barra lateral: historial de todos los modos, maestría por campeón y desafíos a punto de subir.
+- La app del celular se actualiza sola; tier lists de ARAM y Arena; Celular y Ajustes en la barra lateral.
+
+**0.5.0:** celulares emparejados con permisos y desconexión desde la PC. **0.4.0:** app para Android, pantalla Meta y
+consejos en partida. Todas las notas en [Releases](../../releases).
+
 ## Así se ve
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/screenshots/home.jpg" alt="Inicio"><br><b>Inicio:</b> qué carta tomar, tu resumen y el top de ARAM: Caos</td>
-    <td width="50%"><img src="docs/screenshots/build.jpg" alt="Build"><br><b>Build:</b> runas, hechizos, ítems y habilidades, listos para importar</td>
+    <td width="50%"><img src="docs/screenshots/home.jpg" alt="Inicio"><br><b>Inicio:</b> cada modo con lo suyo, de Normal a Arena</td>
+    <td width="50%"><img src="docs/screenshots/meta.jpg" alt="Meta"><br><b>Meta:</b> buffs y nerfs del parche y los mejores de cada modo</td>
   </tr>
   <tr>
+    <td><img src="docs/screenshots/build.jpg" alt="Build"><br><b>Build:</b> runas, hechizos, ítems y habilidades, listos para importar</td>
     <td><img src="docs/screenshots/labels.jpg" alt="Etiquetas"><br><b>Etiquetas:</b> 5 estilos para las marcas sobre las cartas</td>
-    <td><img src="docs/screenshots/game.jpg" alt="Juego"><br><b>Juego:</b> opciones oficiales del LoL y automatizaciones</td>
   </tr>
   <tr>
     <td><img src="docs/screenshots/augments.jpg" alt="Aumentos"><br><b>Aumentos:</b> tier list por campeón, ARAM: Caos y Arena</td>
+    <td><img src="docs/screenshots/phone.jpg" alt="Celular"><br><b>Celular:</b> el código para emparejar y los celulares conectados</td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/history.jpg" alt="Historial"><br><b>Historial:</b> tus partidas de todos los modos con KDA e ítems</td>
+    <td><img src="docs/screenshots/mastery.jpg" alt="Maestría"><br><b>Maestría:</b> cuánto te falta para subir cada campeón</td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/challenges.jpg" alt="Desafíos"><br><b>Desafíos:</b> tu nivel y los que tienes a punto de subir</td>
+    <td><img src="docs/screenshots/game.jpg" alt="Juego"><br><b>Juego:</b> opciones oficiales del LoL y automatizaciones</td>
+  </tr>
+  <tr>
     <td><img src="docs/screenshots/stats.jpg" alt="Estadísticas"><br><b>Estadísticas:</b> tu winrate y tus mejores aumentos</td>
+    <td></td>
   </tr>
 </table>
 
+## Xyra en tu celular
+
+Empareja la app para Android con el QR de Ajustes → Celular y usa Xyra desde el sofá: te avisa cuando encuentras partida
+(aunque la app esté cerrada), aceptas desde el aviso, sigues la selección, importas la build, tomas de la banca y ves el
+meta, tus datos y los consejos en partida. Todo por tu Wi-Fi, sin pasar por internet.
+
+<table>
+  <tr>
+    <td width="33%"><img src="docs/app/pairing.jpg" alt="Emparejar"><br><b>Conecta con un QR</b></td>
+    <td width="33%"><img src="docs/app/match.jpg" alt="Partida encontrada"><br><b>¡Partida encontrada!</b></td>
+    <td width="33%"><img src="docs/app/meta.jpg" alt="Meta"><br><b>Buffs, nerfs y meta</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/app/select.jpg" alt="Selección"><br><b>Tu build en la selección</b></td>
+    <td><img src="docs/app/stats.jpg" alt="Datos"><br><b>Tus datos</b></td>
+    <td><img src="docs/app/settings.jpg" alt="Ajustes"><br><b>Avisos y ajustes</b></td>
+  </tr>
+</table>
+
+**Descárgala:** `xyra-android-x.y.z.apk` en la [última versión](../../releases/latest) (Android 7 o superior). Después
+se actualiza sola desde sus Ajustes.
+
 ## Qué hace
 
-- **Etiquetas sobre las cartas:** en ARAM: Caos y Arena, en 5 estilos (Placa, Insignia, Cinta, Podio, Enfoque). La mejor
-  queda marcada en rojo y las malas te sugieren cambiarlas, en el momento en que salen.
-- **Titular directo:** "Elige ¡Comienza a Emocionarte!" en partida; en la selección, "Toma a Jinx de la banca" o, en la
-  Grieta, "Contra Yasuo, toma a Malzahar".
-- **Solo campeones que puedes jugar:** las recomendaciones (banca, top y counters) saltan los que tu cuenta no tiene ni
-  están gratis.
-- **Build:** runas, hechizos, ítems y orden de habilidades para ARAM: Caos y para la Grieta (normales, por posición), con
-  enfrentamientos (a quién le gana y contra quién le cuesta) y botones para importar las runas, los hechizos y el set de
-  ítems a tu cliente.
-- **Juego:** activa en un clic opciones oficiales del LoL (rango de ataque, cronómetros del minimapa, rango de
-  torres contra la IA, tamaño del minimapa) y automatiza lo aburrido (mantener Sin bordes, importar
-  runas, hechizos e ítems solos, cerrar la ventana al jugar, aceptar la partida después de unos segundos).
-- **Recomendaciones a tu gusto:** en Inicio eliges si el top y la banca se ordenan por tier, por tu maestría, por lo que
-  más juegas o mixto.
-- **Meta del parche:** los mejores campeones de clasificatorias por posición, con winrate, uso, bans, si subieron o
-  bajaron desde el parche anterior y el enlace a las notas oficiales.
+- **Inicio por modos:** Normal, Clasificatoria, ARAM, ARAM: Caos y Arena, cada uno con lo suyo: los mejores del parche
+  por posición, tu rango, las tier lists de ARAM y Arena, tus campeones y tus últimas partidas de ese modo.
+- **Build:** runas, hechizos, ítems y orden de habilidades para ARAM y la Grieta (por posición), con enfrentamientos y
+  botones para importarlos; si quieres, se ponen solos al elegir campeón.
+- **Selección:** "Toma a Jinx de la banca" con un botón para cambiarlo, y en la Grieta, "Contra Yasuo, toma a
+  Malzahar". Solo te recomienda campeones que tienes o están gratis, ordenados por tier, maestría o lo que más juegas.
+- **Meta y parche:** los mejores de la Grieta, ARAM y Arena, y los buffs y nerfs del parche con el motivo de Riot,
+  empezando por tus 15 campeones con más maestría.
+- **Etiquetas sobre las cartas:** en ARAM: Caos y Arena, en 5 estilos. La mejor queda marcada en rojo y las malas te
+  sugieren cambiarlas, en el momento en que salen.
 - **Consejos en partida:** qué habilidad subir y tu siguiente ítem, con el oro que te falta, desde la API oficial del juego.
-- **Xyra para Android:** empareja la app una vez con el QR de Ajustes → Celular y acepta partidas, sigue la selección,
-  importa runas, ítems y hechizos, mira builds, el meta, tus estadísticas y los consejos en partida, y cambia los ajustes
-  de Xyra desde el teléfono, por tu Wi-Fi o Tailscale.
-- **Un solo ícono:** con "Abrir el LoL con Xyra" (Ajustes), el ícono de Xyra abre también el LoL.
-- **Tier lists:** aumentos por campeón y campeones de ARAM: Caos.
+- **Juego:** opciones oficiales del LoL en un clic y lo aburrido en automático: Sin bordes, aceptar la partida, importar
+  la build.
+- **Xyra para Android:** aviso de partida con la app cerrada, aceptar, selección, build, meta y ajustes desde el
+  celular; cada celular con su propia llave y sus permisos, y se desconecta desde la PC.
+- **Tu cuenta:** historial de tus últimas partidas de todos los modos (KDA, oro, daño e ítems), la maestría de cada
+  campeón con lo que falta para subir y tus desafíos, con los que tienes a punto de subir.
 - **Tus datos:** winrate por campeón, mejores aumentos, nivel, rango y maestrías, separados por cuenta; exportación a CSV.
-- **Extras:** aviso por voz, calibración para otras resoluciones y capturas para reportar fallos.
-- **Liviano:** vive en la bandeja del sistema y solo trabaja durante tus partidas.
+- **Liviano y al día:** vive en la bandeja del sistema, solo trabaja durante tus partidas y se actualiza con un botón.
 
 ## Cómo funciona
 
@@ -70,19 +122,45 @@ los clics y nunca toma el foco. Sin navegador mientras juegas.
 ## Seguridad
 
 No lee la memoria del juego, no le inyecta nada, no simula teclas ni clics y no juega por ti: solo mira la pantalla y
-dibuja encima. Todos los detalles en [SECURITY.md](SECURITY.md).
+dibuja encima, y usa las APIs oficiales del cliente para lo que harías tú con un clic. Todos los detalles en
+[SECURITY.md](SECURITY.md).
 
 ## Instalación
 
-1. Descarga `xyra-x.y.z.exe` desde [Releases](../../releases).
+1. Descarga `xyra-x.y.z.exe` desde [Releases](../../releases/latest) e instálalo.
 2. Pon el LoL en **Sin bordes** (Opciones => Video => Modo de ventana). Xyra lo hace por ti con el juego cerrado.
-3. Juega ARAM: Caos. Xyra arranca con Windows y queda en la bandeja.
+3. Juega. Xyra arranca con Windows y queda en la bandeja.
 
 Requisitos: Windows 10 u 11 y el reconocimiento de texto de Windows para el idioma de tu cliente (suele venir con el
 idioma de Windows).
 
-**En el celular:** instala `xyra-android-x.y.z.apk` desde [Releases](../../releases) (Android 7 o superior), enciende
-el enlace en Ajustes → Celular de tu PC, acepta el aviso de Windows y escanea el código con la app.
+**En el celular:** instala `xyra-android-x.y.z.apk`, enciende el enlace en Ajustes → Celular de tu PC, acepta el aviso
+de Windows y escanea el código con la app.
+
+## Preguntas frecuentes
+
+<details><summary><b>¿Me pueden banear por usarlo?</b></summary>
+Xyra solo mira la pantalla y dibuja encima, como OBS o Discord, y usa las APIs oficiales del cliente para importar la
+build, aceptar la partida o cambiar de la banca, lo mismo que harías tú. No lee la memoria del juego ni juega por ti.
+</details>
+<details><summary><b>¿El celular me avisa de la partida con la app cerrada?</b></summary>
+Sí. Con "Avisarme de la partida" encendido en los ajustes de la app, suena y puedes aceptar desde el aviso. Mientras
+espera verás una notificación fija de Xyra.
+</details>
+<details><summary><b>Estoy en el mismo Wi-Fi y el celular no conecta</b></summary>
+Algunos módems no dejan pasar al celular hasta que la PC habla en la red. Xyra se presenta solo mientras el enlace
+está encendido: deja Xyra abierto en la PC unos segundos y el celular vuelve a intentar solo. La app te muestra qué
+revisar.
+</details>
+<details><summary><b>¿De dónde salen los buffs y nerfs?</b></summary>
+De las notas oficiales del parche. Xyra compara los números de cada cambio para marcarlo como buff, nerf o ajuste.
+</details>
+<details><summary><b>¿Cómo se actualiza?</b></summary>
+Xyra te avisa y se actualiza con un botón, sin desinstalar ni perder tus datos. La app del celular, desde sus Ajustes.
+</details>
+<details><summary><b>¿Hay app para iPhone?</b></summary>
+Por ahora solo para Android 7 o superior.
+</details>
 
 ## Creadores
 
@@ -96,22 +174,28 @@ Gracias a OP.GG por las estadísticas y a CommunityDragon por los íconos. Para 
 ## Aviso
 
 Proyecto de la comunidad. Xyra no está respaldado por Riot Games ni refleja sus opiniones; League of Legends es marca de
-Riot Games, Inc. Sin relación con OP.GG. Úsalo bajo tu responsabilidad.
+Riot Games, Inc., igual que el sonido de partida encontrada que usa Xyra. Sin relación con OP.GG. Úsalo bajo tu
+responsabilidad.
 
 ---
 
 ## English
 
-**Xyra** labels **ARAM: Mayhem** and **Arena** augment cards with how good each one is **for your champion**, using OP.GG
-stats. The best card is highlighted and bad ones suggest a reroll. Lightweight, Windows only, Spanish and English. By
+**Xyra** is a League of Legends companion for every mode. It sets your runes, spells and items from OP.GG when you pick
+a champion, tells you who to take from the bench or who counters your lane opponent, marks the patch buffs and nerfs,
+and labels **ARAM: Mayhem** and **Arena** augment cards with how good each one is for your champion. Its Android app
+lets you know when you find a match, even with the app closed. Lightweight, Spanish and English. By
 **@DiegoFernandoLojanTenesaca** (IndagaLab) and **@jahirxtrap** (Xynitra).
 
-- **Labels:** 5 styles, shown the moment the cards appear.
-- **Build:** runes, spells, items, skills and matchups for ARAM: Mayhem and Summoner's Rift, with rune, spell and item set import.
-- **Counters:** in Summoner's Rift champion select, the champions you own that beat your lane opponent.
-- **Game:** official League options in one click, plus automations.
-- **Safe:** screen reading and a native click-through overlay only; no memory access, no injection, no simulated input
-  ([SECURITY.md](SECURITY.md)).
+- **Home by mode:** Normal, Ranked, ARAM, ARAM: Mayhem and Arena, each with its best champions, tier lists and your recent games.
+- **Build:** runes, spells, items, skills and matchups for ARAM and Summoner's Rift, imported by hand or automatically.
+- **Champion select:** a button to take the recommended champion from the bench, and counters in Summoner's Rift.
+- **Meta and patch:** Summoner's Rift, ARAM and Arena tier lists, and the patch buffs and nerfs from the official notes.
+- **Your account:** match history of every mode, champion mastery progress and challenges about to level up.
+- **Phone app:** match notification with the app closed, accept, builds, meta and settings over your own network.
+- **Safe:** screen reading, a native click-through overlay and the client's official APIs only; no memory access, no
+  injection, no simulated input ([SECURITY.md](SECURITY.md)).
 
-Install from [Releases](../../releases), set League to **Borderless** and play. Xyra isn't endorsed by Riot Games and
-doesn't reflect the views or opinions of Riot Games. MIT License.
+Install `xyra-x.y.z.exe` from [Releases](../../releases/latest), set League to **Borderless** and play; the phone app is
+`xyra-android-x.y.z.apk`. Xyra isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games.
+MIT License.

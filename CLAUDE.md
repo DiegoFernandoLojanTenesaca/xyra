@@ -55,7 +55,9 @@ with augments, because nothing announces the cards; it stops as soon as the game
 `master` is the only long-lived branch and nothing runs on push. A release is a tag:
 
 1. Bump `version` in the root `Cargo.toml` (the app, the installer and the About screen read it from there).
-2. Replace `CHANGELOG.md` with the changes since the last release: plain past-tense bullets, no headers.
+2. Replace `CHANGELOG.md` with the changes since the last release: plain past-tense bullets, no headers. Put the same
+   news in the README's "Novedades", the site's version timeline (`docs/index.html`, `#novedades`) and About's
+   `about:changes`, and retake the screenshots that changed (`docs/screenshots`, and the phone app's in `docs/app`).
 3. Bump `version` in `mobile/src-tauri/tauri.conf.json` and `mobile/src-tauri/Cargo.toml` to the same number.
 4. Commit, push, then `git tag 0.4.0 && git push origin 0.4.0`.
 5. Build the Android app and add it to the release: `gh release upload <version> xyra-android-<version>.apk`.
@@ -69,6 +71,12 @@ and publishes it as `xyra-<version>.exe` with `CHANGELOG.md` as the release note
 that shares the design tokens, texts, types and plain UI parts of `src/lib`. It talks over HTTP to the phone link of
 the desktop app (`src-tauri/src/phone.rs`), pairing with the `xyra://pair?hosts=…&port=…&token=…` QR code, and scans
 it with Google's code scanner through `MainActivity.kt` in `mobile/src-tauri/gen/android`. It is not a workspace member.
+`MainActivity.kt` also keeps the page clear of the system bars and exposes three bridges to the page: `XyraWatch` starts
+the foreground service in `MatchWatch.kt` that long-polls the PC and rings on a ready check, `XyraUpdate` downloads a
+newer APK from the GitHub release, checks its SHA-256 and opens Android's installer, and `XyraNetwork` tells the
+connection checklist which network the phone is on. The match notification rings with League's match found sound
+(`res/raw/match_found.mp3`, the same file as `src-tauri/sounds/match_found.mp3` that the desktop plays when asked);
+Android fixes a channel's sound when it is created, so a new sound needs a new channel id.
 
 Building it needs the Android SDK with NDK 27, JDK 17 or newer, the `aarch64-linux-android` and `armv7-linux-androideabi`
 Rust targets and, on Windows, Developer Mode for the symbolic links Tauri creates. The release key lives outside the

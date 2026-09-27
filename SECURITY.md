@@ -28,8 +28,9 @@ aumentos dentro del juego) y nada más. Estas reglas son parte del proyecto: un 
   (selección, partida, fin), de tu campeón y de la cuenta con la que entras, sin consultarlo a cada rato. La conexión es
   solo con `127.0.0.1` y verifica el certificado del cliente con la raíz oficial de Riot (`riotgames.pem`).
 - **Consulta, solo lectura,** los nombres e íconos de aumentos y campeones, qué campeones tiene tu cuenta (para no
-  recomendarte uno bloqueado), tu historial reciente de Caos y Arena (para Estadísticas) y tu perfil: nombre, nivel,
-  región, rango y maestrías (para Ajustes → Perfil). Solo tus propios datos, que el cliente ya te muestra.
+  recomendarte uno bloqueado), tu historial reciente (para Estadísticas, Historial y las partidas de cada modo en
+  Inicio), tu maestría y tus desafíos (para Maestría y Desafíos) y tu perfil: nombre, nivel, región y rango (para Ajustes
+  → Perfil). Solo tus propios datos, que el cliente ya te muestra.
 - **En la selección de la Grieta** mira los campeones rivales que el cliente ya muestra y te sugiere counters con
   estadísticas públicas de OP.GG, como las webs de builds. No revela nada que el juego oculte.
 - **Escribe en el cliente solo cuando tocas "Importar"** en la página Build: crea una página de runas y un set de ítems
@@ -37,11 +38,18 @@ aumentos dentro del juego) y nada más. Estas reglas son parte del proyecto: un 
   Nunca lo hace durante la partida y solo reemplaza las páginas y sets que él mismo creó (los que empiezan con "Xyra · ").
   Si activas **"Importar build sola"** (apagado de fábrica), hace lo mismo en la selección de campeones sin que toques
   el botón: es una preferencia del cliente, no una jugada.
+- **Cambia tu campeón por el de la banca solo cuando tocas "Tomar de la banca"** en ARAM: es la misma llamada al cliente
+  que hacer clic en ese campeón de la banca. Xyra nunca lo hace por su cuenta.
 - **El enlace con el celular** (apagado de fábrica) abre un acceso en tu red local, en el puerto 47811, para la app
   Xyra para Android. Solo responde a quien tenga el código del QR, que se puede cambiar cuando quieras; nada pasa por
   internet. Al encenderlo, Xyra pide permiso de administrador a Windows para marcar tu red como privada y abrir solo ese
   puerto en redes privadas. Desde el celular solo se puede lo mismo que con los botones de Xyra: aceptar la partida,
-  importar runas, ítems y hechizos y cambiar sus ajustes. No elige campeón ni juega por ti.
+  aceptar o rechazar la partida, importar runas, ítems y hechizos, tomar de la banca y cambiar sus ajustes, cada cosa con su
+  permiso por celular. No
+  juega por ti. Si activas el aviso de partida, la app deja un servicio de Android esperando a tu PC por esa misma red.
+- **La app del celular se conecta a internet solo** con GitHub, para ver si hay una versión nueva y, si tocas
+  "Actualizar", bajar la APK, comprobar su SHA-256 y abrir el instalador de Android, que solo la acepta si viene firmada
+  con la misma llave.
 - **Acepta la partida encontrada solo si activas "Aceptar partida solo"** (apagado de fábrica), después de la espera que
   elijas y solo si no la aceptaste ni rechazaste tú. Es una llamada al cliente, como hacía League Akari: no toca el juego.
   Aun así, Riot pidió en 2025 a las apps aprobadas quitar esta función, así que úsala bajo tu responsabilidad.
@@ -50,7 +58,7 @@ aumentos dentro del juego) y nada más. Estas reglas son parte del proyecto: un 
   (`crates/xyra-core/src/game_settings.rs`). Los cronómetros son los que trae el propio juego: Xyra no dibuja cronómetros
   propios (Riot prohíbe, por ejemplo, los de definitivas enemigas).
 - **Se conecta a internet solo** con OP.GG (estadísticas públicas de aumentos, builds y enfrentamientos),
-  CommunityDragon (íconos) y GitHub (para ver si hay una versión nueva y, si tocas "Descargar e instalar", bajar su
+  CommunityDragon (íconos), las notas oficiales del parche en leagueoflegends.com (para los buffs y nerfs) y GitHub (para ver si hay una versión nueva y, si tocas "Descargar e instalar", bajar su
   instalador y comprobar su SHA-256 antes de abrirlo), con la verificación de certificados normal de Windows. Sin telemetría, sin cuentas, sin
   servidores propios.
 
@@ -80,6 +88,7 @@ opens the game process, simulates input, plays or picks for you, reveals hidden 
 screen (like OBS) only during ARAM: Mayhem/Arena games with the game focused, recognizes text with Windows' built-in OCR,
 and draws on its own click-through window (requires **Borderless** mode). It listens to the local client over its
 WebSocket on `127.0.0.1`, verifying its certificate against Riot's root (read-only; it only writes a rune page or an
-item set when you click "Import"), suggests Summoner's Rift counters from public OP.GG stats, and only talks to OP.GG, CommunityDragon and GitHub
+item set when you click "Import", and takes a bench champion only when you click "Take from the bench"), suggests Summoner's Rift
+counters from public OP.GG stats, and only talks to OP.GG, CommunityDragon, the official patch notes and GitHub
 (update check and installer, verified by SHA-256) over the internet. The optional match auto-accept (off by default) is a client call, but Riot asked approved
 apps to drop it in 2025: use it at your own risk. No telemetry.
