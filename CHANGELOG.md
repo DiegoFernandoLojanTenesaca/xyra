@@ -1,14 +1,6 @@
-- Added Xyra for Android: pair it once by scanning the QR code in Settings → Phone, then accept matches, follow champion select, import runes, items and spells, see builds, the meta, your stats and game tips, and change Xyra's settings from your phone, over your Wi-Fi or Tailscale. The installer is `xyra-android-<version>.apk`.
-- Added the phone link in Settings → Phone, off by default and protected by a pairing code; turning it on prepares Windows, through the administrator prompt, to let the phone in on private networks only.
-- Added game tips on Home: the skill to level following the build and the next item of the build, with the gold you still need, read from the game's official local API.
-- Added a Meta screen with the best ranked champions of the patch by position: win, pick and ban rates, tier and how much each one rose or fell since the previous patch, with a link to the official patch notes.
-- Added a notice on Build and Augments while you play, with a button to go back to your champion when you are viewing another one.
-- Added arrow keys, Enter and Escape to the champion search.
-- Added placeholders while Build and Augments load, instead of a line of text.
-- Fixed Build and Augments showing a champion picked by hand earlier instead of the one you are playing.
-- Fixed the Augments mode staying on ARAM: Mayhem or Arena when your next game was in the other mode.
-- Fixed Build keeping the old position when your lane changed during champion select.
-- Fixed the Game screen showing a raw connection error when League was closed; it now asks you to open League.
-- Fixed the automatic build import running in Arena, which has no runes, spells or item sets to import.
-- Updated the texts of the app, the website and the README to present Xyra for every mode: normals, ranked, ARAM and ARAM: Mayhem.
-- Updated the privacy note in Settings → Data to its own title instead of repeating Security.
+- Added the paired phones to Settings → Phone: whether each one is connected or when it was last seen, what it may do (accept matches, import builds, change settings) and a button to disconnect it.
+- Changed pairing so each phone gets its own key when it scans the QR code, and a disconnected phone stops working at once. Phones paired with 0.4.0 need the new app and a new scan.
+- Added links that open the phone app on a tab or on a champion's build.
+- Fixed the order picker in the phone's settings being cut off on small screens.
+- Fixed the phone's Build asking for a build before it was connected to your PC.
+- Updated the website with the phone app, its screenshots, a timeline of the versions and more questions.
