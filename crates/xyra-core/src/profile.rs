@@ -2,6 +2,7 @@ use crate::{
     catalog::{Catalog, named},
     errors::{AppError, Result},
     league::{Lcu, asset_url, parse},
+    model::Asset,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -94,8 +95,18 @@ struct SignedIn {
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct RegionLocale {
     region: String,
+    /// The name players know, like "lan" for LA1.
+    #[serde(default)]
+    web_region: String,
+}
+
+impl RegionLocale {
+    fn name(self) -> String {
+        if self.web_region.is_empty() { self.region } else { self.web_region.to_uppercase() }
+    }
 }
 
 #[derive(Deserialize)]
@@ -118,6 +129,42 @@ struct ChampionMastery {
     champion_id: u32,
     champion_level: u32,
     champion_points: u64,
+    #[serde(default)]
+    champion_points_since_last_level: i64,
+    #[serde(default)]
+    champion_points_until_next_level: i64,
+    #[serde(default)]
+    mark_required_for_next_level: u32,
+    #[serde(default)]
+    tokens_earned: u32,
+    #[serde(default)]
+    highest_grade: String,
+    #[serde(default)]
+    last_play_time: u64,
+}
+
+/// A champion's mastery and how far its next level is.
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[ts(export)]
+pub struct MasteryProgress {
+    pub champion: Asset,
+    pub level: u32,
+    #[ts(type = "number")]
+    pub points: u64,
+    /// Points earned in the current level.
+    #[ts(type = "number")]
+    pub since_level: u64,
+    /// Points still needed for the next level.
+    #[ts(type = "number")]
+    pub until_next: u64,
+    /// Marks the next level asks for and those already earned.
+    pub marks_needed: u32,
+    pub marks: u32,
+    /// Best grade ever earned with it, like "S+"; empty when it has none.
+    pub best_grade: String,
+    /// Unix milliseconds.
+    #[ts(type = "number")]
+    pub last_played: u64,
 }
 
 #[derive(Deserialize)]
@@ -164,7 +211,7 @@ pub fn read(lcu: &Lcu, catalog: &Catalog) -> Result<Profile> {
         tag: summoner.tag_line,
         level: summoner.summoner_level,
         icon: asset_url(&format!("/lol-game-data/assets/v1/profile-icons/{}.jpg", summoner.profile_icon_id)),
-        region: region.region,
+        region: region.name(),
         rank: rank(&lcu.get_as(RANKED_STATS)?),
         masteries: masteries
             .into_iter()
@@ -180,6 +227,28 @@ pub fn read(lcu: &Lcu, catalog: &Catalog) -> Result<Profile> {
 pub fn read_mastery_points(lcu: &Lcu) -> Result<HashMap<u32, u64>> {
     let masteries: Vec<ChampionMastery> = lcu.get_as(MASTERIES)?;
     Ok(masteries.into_iter().map(|m| (m.champion_id, m.champion_points)).collect())
+}
+
+/// Every playable champion the account has mastery on, most points first; special modes' champions are left out.
+pub fn read_masteries(lcu: &Lcu, catalog: &Catalog) -> Result<Vec<MasteryProgress>> {
+    let mut masteries: Vec<ChampionMastery> = lcu.get_as(MASTERIES)?;
+    masteries.retain(|m| catalog.champions.contains_key(&m.champion_id));
+    masteries.sort_by_key(|m| Reverse(m.champion_points));
+    Ok(masteries.into_iter().map(|m| mastery_progress(m, catalog)).collect())
+}
+
+fn mastery_progress(mastery: ChampionMastery, catalog: &Catalog) -> MasteryProgress {
+    MasteryProgress {
+        champion: catalog.champion(mastery.champion_id),
+        level: mastery.champion_level,
+        points: mastery.champion_points,
+        since_level: mastery.champion_points_since_last_level.max(0) as u64,
+        until_next: mastery.champion_points_until_next_level.max(0) as u64,
+        marks_needed: mastery.mark_required_for_next_level,
+        marks: mastery.tokens_earned,
+        best_grade: mastery.highest_grade,
+        last_played: mastery.last_play_time,
+    }
 }
 
 /// Champions the account owns or has free this week.

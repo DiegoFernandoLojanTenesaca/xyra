@@ -3,4 +3,8 @@
 /**
  * What a paired phone may do besides looking.
  */
-export type PhonePermissions = { accept: boolean, import: boolean, settings: boolean, };
+export type PhonePermissions = { accept: boolean, import: boolean, 
+/**
+ * Take the recommended champion from the ARAM bench.
+ */
+bench: boolean, settings: boolean, };

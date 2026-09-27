@@ -1,5 +1,5 @@
 {
-  "subtitle": "The best ranked champions in patch {{patch}}, by position.",
+  "subtitle": "The best champions of patch {{patch}} in Summoner's Rift, ARAM and Arena.",
   "loading": "Loading the meta from OP.GG…",
   "patchNotes": "Patch {{patch}} notes",
   "table": "{{position}} champions",
@@ -11,5 +11,29 @@
   "trend": "Since last patch",
   "openBuild": "See its build in this position",
   "noMatch": "No champion matches the search.",
-  "source": "Ranked stats from every region, by OP.GG. Tap a champion to see its build in that position."
+  "changes": {
+    "title": "Patch changes",
+    "yours": "Your champions",
+    "all": "All",
+    "loading": "Reading the patch notes…",
+    "noneYours": "None of your 15 most mastered champions changed this patch.",
+    "none": "This patch changed no champions.",
+    "verdict": {
+      "buff": "Buff",
+      "nerf": "Nerf",
+      "adjusted": "Adjusted"
+    }
+  },
+  "modes": {
+    "rift": "Summoner's Rift",
+    "aram": "ARAM",
+    "arena": "Arena"
+  },
+  "topFour": "Top 4",
+  "openAugments": "See its Arena augments",
+  "sources": {
+    "rift": "Ranked stats from every region, by OP.GG. Tap a champion to see its build in that position.",
+    "aram": "ARAM stats from every region, by OP.GG. Tap a champion to see its ARAM build.",
+    "arena": "Arena stats from every region, by OP.GG: Top 4 is how many games it finishes among the first four. Tap a champion to see its augments."
+  }
 }

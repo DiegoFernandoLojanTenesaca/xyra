@@ -71,7 +71,7 @@
       "title": "Enlace con el celular",
       "description": "Xyra abre un acceso en tu red para que el celular vea lo mismo que la ventana. Solo gasta memoria mientras está encendido."
     },
-    "sameNetwork": "El celular tiene que estar en la misma red Wi-Fi que la PC, o los dos en tu Tailscale.",
+    "sameNetwork": "El celular tiene que estar en la misma red Wi-Fi que la PC.",
     "firewall": "Al encender el enlace, Xyra prepara Windows: marca tu red como privada y abre solo su puerto. Windows te pedirá permiso de administrador.",
     "canDo": "Desde la app puedes aceptar la partida, ver la selección, la build, el meta y tus estadísticas, e importar runas, ítems y hechizos.",
     "privateTitle": "Solo con tu código.",
@@ -97,10 +97,12 @@
       "permissions": {
         "accept": "Aceptar partidas",
         "import": "Importar builds",
+        "bench": "Tomar de la banca",
         "settings": "Cambiar ajustes"
       },
       "forget": "Desconectar",
       "hint": "Todos pueden ver tu partida, builds y estadísticas; los permisos deciden qué más pueden hacer. Al desconectar uno, tendrá que escanear el código otra vez."
-    }
+    },
+    "linkOn": "Enlace encendido"
   }
 }

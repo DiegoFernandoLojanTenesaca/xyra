@@ -1,5 +1,5 @@
 {
-  "subtitle": "Los mejores campeones de clasificatorias en el parche {{patch}}, por posición.",
+  "subtitle": "Los mejores campeones del parche {{patch}} en la Grieta, ARAM y Arena.",
   "loading": "Cargando el meta de OP.GG…",
   "patchNotes": "Notas del parche {{patch}}",
   "table": "Campeones de {{position}}",
@@ -11,5 +11,29 @@
   "trend": "Desde el parche anterior",
   "openBuild": "Ver su build en esta posición",
   "noMatch": "Ningún campeón coincide con la búsqueda.",
-  "source": "Estadísticas de clasificatorias de todas las regiones, de OP.GG. Toca un campeón para ver su build en esa posición."
+  "changes": {
+    "title": "Cambios del parche",
+    "yours": "Tus campeones",
+    "all": "Todos",
+    "loading": "Leyendo las notas del parche…",
+    "noneYours": "Ninguno de tus 15 campeones con más maestría cambió en este parche.",
+    "none": "Este parche no cambió campeones.",
+    "verdict": {
+      "buff": "Buff",
+      "nerf": "Nerf",
+      "adjusted": "Ajuste"
+    }
+  },
+  "modes": {
+    "rift": "Grieta",
+    "aram": "ARAM",
+    "arena": "Arena"
+  },
+  "topFour": "Top 4",
+  "openAugments": "Ver sus aumentos de Arena",
+  "sources": {
+    "rift": "Estadísticas de clasificatorias de todas las regiones, de OP.GG. Toca un campeón para ver su build en esa posición.",
+    "aram": "Estadísticas de ARAM de todas las regiones, de OP.GG. Toca un campeón para ver su build de ARAM.",
+    "arena": "Estadísticas de Arena de todas las regiones, de OP.GG: Top 4 es cuántas partidas termina entre los cuatro primeros. Toca un campeón para ver sus aumentos."
+  }
 }

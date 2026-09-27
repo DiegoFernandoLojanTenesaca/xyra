@@ -77,6 +77,8 @@ pub struct Config {
     #[serde(alias = "cerrar_en_partida")]
     pub close_window_in_game: bool,
     pub auto_accept: bool,
+    /// Play League's match found sound from Xyra too, for a muted client.
+    pub match_sound: bool,
     /// Seconds to wait before accepting a found match.
     pub accept_delay_seconds: u32,
     pub champion_order: ChampionOrder,
@@ -122,6 +124,7 @@ impl Default for Config {
             auto_import_build: false,
             close_window_in_game: false,
             auto_accept: false,
+            match_sound: false,
             accept_delay_seconds: DEFAULT_ACCEPT_DELAY_SECONDS,
             champion_order: ChampionOrder::default(),
             phone_link: false,

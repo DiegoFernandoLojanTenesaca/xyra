@@ -1,18 +1,38 @@
 <script lang="ts">
-  import { Check, Download, Hammer, Layers, Pause, Play, Radio, RefreshCw, Star, Swords, TriangleAlert, X } from '@lucide/svelte';
-  import { app, percent } from '../app.svelte';
-  import { championTierColor, qualityColor } from '../design/theme';
+  import {
+    ArrowDown,
+    ArrowLeftRight,
+    ArrowUp,
+    ArrowUpDown,
+    Check,
+    Download,
+    Hammer,
+    Layers,
+    Pause,
+    Play,
+    Radio,
+    RefreshCw,
+    Star,
+    Swords,
+    TrendingUp,
+    TriangleAlert,
+    X,
+  } from '@lucide/svelte';
+  import { untrack, type Component } from 'svelte';
+  import { app, HOME_GAME_MODES, HOME_MODES, inHomeMode, percent, type HomeMode } from '../app.svelte';
+  import { championTierColor, championTierLabel, qualityColor } from '../design/theme';
   import { around } from '../i18n';
   import { setBorderless, testOverlay } from '../services/engine';
-  import { getAugments } from '../services/league';
+  import { getAugments, getMeta, getModeChampions, getPatchChanges, getRecentMatches, takeBenchPick } from '../services/league';
   import { resource } from '../services/resource.svelte';
-  import type { ChampionInfo, ChampionOrder } from '../types';
+  import type { ChampionInfo, ChampionOrder, ChangeVerdict } from '../types';
   import AugmentChip from '../ui/AugmentChip.svelte';
   import Button from '../ui/Button.svelte';
   import ChampionPortrait from '../ui/ChampionPortrait.svelte';
   import EmptyState from '../ui/EmptyState.svelte';
   import Logo from '../ui/Logo.svelte';
   import SegmentedControl from '../ui/SegmentedControl.svelte';
+  import Skeleton from '../ui/Skeleton.svelte';
   import StatTile from '../ui/StatTile.svelte';
   import TierBadge from '../ui/TierBadge.svelte';
 
@@ -22,6 +42,11 @@
   const BEST_FOR_CHAMPION = 6;
   const MIN_BAR = 4;
   const WIN_RATE_DIGITS = 1;
+  const POSITION_TOP = 3;
+  const MODE_TOP = 8;
+  const YOUR_CHAMPIONS = 5;
+  const PATCH_CHANGES_SHOWN = 6;
+  const VERDICT_ICONS: Record<ChangeVerdict, Component<{ size?: number }>> = { buff: ArrowUp, nerf: ArrowDown, adjusted: ArrowUpDown };
 
   const t = $derived(app.t);
   const format = $derived(app.format);
@@ -99,9 +124,30 @@
   });
   const [heroBefore, heroAfter] = $derived(hero.strong ? around(hero.title, hero.strong) : [hero.title, '']);
 
-  async function importRunes(champion: number) {
-    app.followGame();
-    notice = await app.importBuild(champion, 'runes');
+  const mode = $derived(app.homeMode);
+  const gameMode = $derived(HOME_GAME_MODES[mode]);
+  const rift = $derived(gameMode === 'summonersRift');
+  const liveGameMode = $derived(engine.game?.mode ?? select?.mode ?? null);
+  const showCards = $derived(liveMode !== null || (engine.phase !== 'inGame' && (mode === 'mayhem' || mode === 'arena')));
+  const meta = resource(() => (rift ? true : null), getMeta);
+  const modeChampions = resource(() => (mode === 'aram' || mode === 'arena' ? mode : null), getModeChampions);
+  const patch = resource(() => app.language, getPatchChanges);
+  const matches = resource(() => (engine.phase === 'noClient' ? null : engine.phase), getRecentMatches);
+  const yourChanges = $derived((patch.value?.champions ?? []).filter((change) => change.yours).slice(0, PATCH_CHANGES_SHOWN));
+  const modeHistory = $derived((matches.value ?? []).filter((game) => inHomeMode(game, mode)));
+  const modeMatches = $derived(modeHistory.slice(0, RECENT_GAMES));
+  const modeWins = $derived(modeHistory.filter((game) => game.win).length);
+
+  $effect(() => {
+    if (liveGameMode) untrack(() => app.followHomeMode(liveGameMode));
+  });
+
+  async function importWholeBuild(champion: number) {
+    notice = await app.importWholeBuild(champion);
+  }
+
+  async function takeFromBench(champion: string) {
+    notice = await takeBenchPick().then(() => t('home:benchTaken', { champion }), app.errorText);
   }
 
   async function switchToBorderless() {
@@ -113,7 +159,7 @@
   <button class="portrait" class:best={highlighted} onclick={() => app.openAugments(champion.id)}>
     <ChampionPortrait {champion} size="var(--size-thumbLg)">
       {#snippet badge()}
-        <TierBadge label={champion.tier ? `T${champion.tier}` : '—'} color={championTierColor(champion.tier)} size="var(--size-thumbSm)" />
+        <TierBadge label={championTierLabel(champion.tier)} color={championTierColor(champion.tier)} size="var(--size-thumbSm)" />
       {/snippet}
     </ChampionPortrait>
   </button>
@@ -136,8 +182,11 @@
   </div>
   <div class="actions">
     {#if engine.phase === 'champSelect' && mine}
+      {#if benchPick}
+        <Button variant="primary" icon={ArrowLeftRight} onclick={() => takeFromBench(benchPick.name)}>{t('home:takeBench')}</Button>
+      {/if}
       <Button icon={Hammer} onclick={() => app.openBuild(mine.id)}>{t('home:openBuild')}</Button>
-      <Button variant="primary" icon={Download} onclick={() => importRunes(mine.id)}>{t('build:importRunes')}</Button>
+      <Button variant={benchPick ? 'default' : 'primary'} icon={Download} onclick={() => importWholeBuild(mine.id)}>{t('build:importAll')}</Button>
     {:else}
       <Button icon={Play} disabled={engine.phase === 'inGame'} onclick={testOverlay}>{t('home:test')}</Button>
       <Button variant="primary" icon={config.paused ? Play : Pause} onclick={() => app.saveConfig({ paused: !config.paused })}>
@@ -146,6 +195,10 @@
     {/if}
   </div>
 </section>
+
+<div class="modes">
+  <SegmentedControl tabs options={HOME_MODES.map((id) => [id, t(`home:modes.${id}`)] as [HomeMode, string])} bind:value={() => mode, app.setHomeMode} />
+</div>
 
 <div class="grid">
   <div class="column">
@@ -178,7 +231,7 @@
       </div>
     {/if}
 
-    {#if engine.phase !== 'inGame' || liveMode}
+    {#if showCards}
       <h3 class="section-title">{engine.phase === 'inGame' ? t('home:cardsOnScreen') : t('home:latestCards')}</h3>
       {#if cards.length}
         <div class="cards">
@@ -228,7 +281,47 @@
       </div>
     {/if}
 
-    {#if lastGame}
+    {#if mode === 'ranked'}
+      <div class="panel cut box rank-card">
+        {#if app.profile?.rank}
+          {@const rank = app.profile.rank}
+          <img src={rank.crest} alt="" />
+          <span
+            ><small class="muted">{t('home:yourRank')}</small><b
+              >{t('settings:rankValue', { tier: t(`common:leagues.${rank.tier}`), division: rank.division, lp: format.number(rank.lp) })}</b
+            ></span
+          >
+        {:else}
+          <span><small class="muted">{t('home:yourRank')}</small><b>{t('settings:unranked')}</b></span>
+        {/if}
+      </div>
+    {/if}
+
+    {#if rift}
+      <h3 class="section-title">{t('home:bestByPosition')}</h3>
+      {#if meta.error}
+        <p class="muted">{app.errorText(meta.error)}</p>
+      {:else if !meta.value}
+        <Skeleton label={t('meta:loading')} rows={3} />
+      {:else}
+        <div class="panel cut positions">
+          {#each meta.value.positions as slot (slot.position)}
+            <div class="position">
+              <h4>{t(`build:positions.${slot.position}`)}</h4>
+              {#each slot.champions.slice(0, POSITION_TOP) as entry (entry.champion.id)}
+                <button class="pick" onclick={() => app.openRiftBuild(entry.champion.id, slot.position)} title={t('meta:openBuild')}>
+                  {#if entry.champion.icon}<img src={entry.champion.icon} alt="" />{/if}
+                  <span class="who"><b>{entry.champion.name}</b><small class="muted">{format.percent(entry.win_rate, WIN_RATE_DIGITS)}</small></span>
+                </button>
+              {/each}
+            </div>
+          {/each}
+        </div>
+        <div><Button icon={TrendingUp} onclick={() => app.openMeta('rift')}>{t('home:openMeta')}</Button></div>
+      {/if}
+    {/if}
+
+    {#if mode === 'mayhem' && lastGame}
       <h3 class="section-title">
         {t('home:lastGame', { champion: lastGame.champion.name })}
         {#if seen}<small>({t('home:followedSummary', { followed, seen })})</small>{/if}
@@ -245,7 +338,45 @@
     {/if}
 
     <div class="pair">
-      {#if topChampions.length}
+      {#if rift && app.profile?.masteries.length}
+        <section>
+          <h3 class="section-title">{t('home:yourChampions')} <small>({t('home:byMastery')})</small></h3>
+          <div class="panel cut list">
+            {#each app.profile.masteries.slice(0, YOUR_CHAMPIONS) as champion, i (champion.id)}
+              <button class="row appear champion" style="--i:{i}" onclick={() => app.openModeBuild(champion.id, 'rift')}>
+                <img src={champion.icon} alt="" />
+                <span>{champion.name}<small class="muted">{t('home:masteryPoints', { points: format.compact(champion.points) })}</small></span>
+              </button>
+            {/each}
+          </div>
+        </section>
+      {:else if mode === 'aram' || mode === 'arena'}
+        <section>
+          <h3 class="section-title">{t(`home:modeTop.${mode}`)}</h3>
+          <small class="muted order-hint">{t(`home:modeTopHint.${mode}`)}</small>
+          {#if modeChampions.error}
+            <p class="muted">{app.errorText(modeChampions.error)}</p>
+          {:else if !modeChampions.value}
+            <Skeleton label={t('meta:loading')} rows={4} />
+          {:else}
+            <div class="panel cut list">
+              {#each modeChampions.value.slice(0, MODE_TOP) as entry, i (entry.champion.id)}
+                <button
+                  class="row appear champion"
+                  style="--i:{i}"
+                  onclick={() => (mode === 'arena' ? app.openModeAugments(entry.champion.id, 'arena') : app.openModeBuild(entry.champion.id, 'aram'))}
+                >
+                  <b class="rank">#{entry.rank}</b>
+                  {#if entry.champion.icon}<img src={entry.champion.icon} alt="" />{/if}
+                  <span>{entry.champion.name}<small class="muted">{format.percent(entry.win_rate, WIN_RATE_DIGITS)}</small></span>
+                  <TierBadge label={championTierLabel(entry.tier)} color={championTierColor(entry.tier)} size="var(--size-thumbSm)" />
+                </button>
+              {/each}
+            </div>
+            <div class="more"><Button icon={TrendingUp} onclick={() => app.openMeta(mode === 'arena' ? 'arena' : 'aram')}>{t('home:openMeta')}</Button></div>
+          {/if}
+        </section>
+      {:else if mode === 'mayhem' && topChampions.length}
         <section>
           <h3 class="section-title">{t('home:topMayhem')} <small>({t('home:ownedOnly')})</small></h3>
           <SegmentedControl
@@ -263,29 +394,35 @@
                   {#if order === 'played'}<small class="muted">{t('home:gamesPlayed', { count: champion.played })}</small>
                   {:else if order !== 'tier'}<small class="muted">{t('home:masteryPoints', { points: format.compact(champion.mastery) })}</small>{/if}</span
                 >
-                <TierBadge label={`T${champion.tier}`} color={championTierColor(champion.tier)} size="var(--size-thumbSm)" />
+                <TierBadge label={championTierLabel(champion.tier)} color={championTierColor(champion.tier)} size="var(--size-thumbSm)" />
               </button>
             {/each}
           </div>
         </section>
       {/if}
-      {#if stats?.recent.length}
-        <section>
-          <h3 class="section-title">{t('home:latestGames')}</h3>
+      <section>
+        <h3 class="section-title">{t('home:latestGames')}</h3>
+        {#if modeMatches.length}
           <div class="panel cut list">
-            {#each stats.recent.slice(0, RECENT_GAMES) as game, i (game.game_id)}
-              <button class="row appear game" class:won={game.win} style="--i:{i}" onclick={() => app.goTo('stats')}>
+            {#each modeMatches as game, i (game.game_id)}
+              <div class="row appear game" class:won={game.win} style="--i:{i}">
                 {#if game.champion.icon}<img src={game.champion.icon} alt="" />{/if}
-                <span>{game.champion.name}<small class="muted">{t(`common:modes.${game.mode}`)}</small></span>
+                <span
+                  >{game.champion.name}<small class="muted"
+                    >{t('home:kda', { kills: game.kills, deaths: game.deaths, assists: game.assists })} · {format.date(game.date)}</small
+                  ></span
+                >
                 <b>{game.win ? t('stats:victory') : t('stats:defeat')}</b>
-              </button>
+              </div>
             {/each}
           </div>
-        </section>
-      {/if}
+        {:else}
+          <p class="muted panel cut box">{t('home:noModeGames', { mode: t(`home:modes.${mode}`) })}</p>
+        {/if}
+      </section>
     </div>
 
-    {#if stats?.augments.length}
+    {#if (mode === 'mayhem' || mode === 'arena') && stats?.augments.length}
       <h3 class="section-title">{t('home:bestAugments')} <small>({t('home:minGames', { count: stats.min_augment_games })})</small></h3>
       <div class="panel cut list">
         {#each stats.augments.slice(0, BEST_AUGMENTS) as augment, i (augment.id)}
@@ -302,8 +439,8 @@
 
   <aside class="column">
     <div class="tiles">
-      <StatTile label={t('stats:games')} value={stats?.games ?? 0} format={format.number} />
-      <StatTile label={t('stats:winRate')} value={stats?.games ? percent(stats.wins, stats.games) : null} format={format.percent} accent />
+      <StatTile label={t('home:recentGames', { mode: t(`home:modes.${mode}`) })} value={modeHistory.length} format={format.number} />
+      <StatTile label={t('stats:winRate')} value={modeHistory.length ? percent(modeWins, modeHistory.length) : null} format={format.percent} accent />
     </div>
 
     {#if select && opponent && select.counter_picks.length}
@@ -331,6 +468,22 @@
           {/each}
         </div>
         {#if !select.bench.length}<p class="muted">{t('home:emptyBench')}</p>{/if}
+      </div>
+    {/if}
+
+    {#if yourChanges.length}
+      <div class="panel cut box">
+        <h3 class="section-title">{t('home:patchYours', { patch: patch.value?.patch })}</h3>
+        <div class="list">
+          {#each yourChanges as change (change.champion.id)}
+            {@const Icon = VERDICT_ICONS[change.verdict]}
+            <button class="row verdict {change.verdict}" onclick={() => app.openMeta('rift')}>
+              {#if change.champion.icon}<img src={change.champion.icon} alt="" />{/if}
+              <span>{change.champion.name}</span>
+              <b><Icon size={14} />{t(`meta:changes.verdict.${change.verdict}`)}</b>
+            </button>
+          {/each}
+        </div>
       </div>
     {/if}
 
@@ -403,8 +556,98 @@
   }
   .actions {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
     gap: var(--space-3);
     z-index: 1;
+  }
+  .modes {
+    margin-bottom: var(--space-5);
+  }
+  .rank-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+  }
+  .rank-card img {
+    width: var(--size-portrait);
+    height: var(--size-portrait);
+  }
+  .rank-card span {
+    display: grid;
+  }
+  .rank-card b {
+    font-size: var(--text-xl);
+  }
+  .position {
+    display: grid;
+    grid-template-columns: var(--size-rangeLabel) repeat(3, minmax(0, 1fr));
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+  }
+  .position + .position {
+    border-top: var(--border-hairline) solid var(--color-line);
+  }
+  .position h4 {
+    margin: 0;
+    color: var(--color-textMuted);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+  .pick {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+    padding: var(--space-1);
+    border: none;
+    background: none;
+    text-align: left;
+  }
+  .pick:hover {
+    background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  }
+  .pick img {
+    width: var(--size-thumbSm);
+    height: var(--size-thumbSm);
+    flex: none;
+  }
+  .who {
+    display: grid;
+    min-width: 0;
+    line-height: 1.2;
+  }
+  .who b {
+    overflow: hidden;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .who small {
+    font-size: var(--text-xs);
+  }
+  .more {
+    margin-top: var(--space-3);
+  }
+  .verdict b {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+  .verdict.buff b {
+    color: var(--color-success);
+  }
+  .verdict.nerf b {
+    color: var(--color-accentBright);
+  }
+  .verdict.adjusted b {
+    color: var(--color-warning);
   }
   .grid {
     display: grid;

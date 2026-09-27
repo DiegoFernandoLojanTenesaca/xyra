@@ -1,18 +1,37 @@
 import { onEvent, getChoices, getConfig, getState, setConfig } from './services/engine';
 import { getStats } from './services/data';
 import { toAppError } from './services/errors';
-import { getChampions, getProfile, importBuild } from './services/league';
+import { getChampions, getProfile, importBuild, importWholeBuild } from './services/league';
 import { checkUpdate, installUpdate } from './services/updates';
 import { BASE_LANGUAGE, formatter, translator } from './i18n';
 import type { BuildMode, ChampionInfo, Choices, Config, EngineState, GameMode, ImportTarget, Position, Profile, Release, StatsSummary } from './types';
 
-export const PAGES = ['home', 'build', 'augments', 'champions', 'meta', 'stats', 'labels', 'game', 'settings'] as const;
+export const PAGES = ['home', 'build', 'augments', 'champions', 'meta', 'stats', 'history', 'mastery', 'challenges', 'labels', 'game', 'settings'] as const;
 export type Page = (typeof PAGES)[number];
 
 export const SETTINGS_TABS = ['general', 'phone', 'profile', 'data', 'security', 'help', 'about'] as const;
 export type SettingsTab = (typeof SETTINGS_TABS)[number];
 
+/** The modes Home shows, each with what matters in it. */
+export const HOME_MODES = ['normal', 'ranked', 'aram', 'mayhem', 'arena'] as const;
+export type HomeMode = (typeof HOME_MODES)[number];
+
+/** The tier lists Meta shows. */
+export const META_MODES = ['rift', 'aram', 'arena'] as const;
+export type MetaMode = (typeof META_MODES)[number];
+
 const CHAMPION_PAGES: readonly Page[] = ['build', 'augments'];
+const HOME_MODE_KEY = 'xyra-home-mode';
+/** The Home tab of each game mode; the Rift has two, normal and ranked. */
+const HOME_TABS: Partial<Record<GameMode, HomeMode>> = { aram: 'aram', mayhem: 'mayhem', arena: 'arena', summonersRift: 'normal' };
+/** The game mode of each Home tab; normal and ranked are both the Rift. */
+export const HOME_GAME_MODES: Record<HomeMode, GameMode> = { normal: 'summonersRift', ranked: 'summonersRift', aram: 'aram', mayhem: 'mayhem', arena: 'arena' };
+
+/** Whether a game of the match history belongs to a Home mode. */
+export const inHomeMode = (game: { mode: GameMode; ranked: boolean }, mode: HomeMode) =>
+  game.mode === HOME_GAME_MODES[mode] && (mode === 'ranked' ? game.ranked : mode === 'normal' ? !game.ranked : true);
+
+const savedHomeMode = () => HOME_MODES.find((mode) => mode === localStorage.getItem(HOME_MODE_KEY)) ?? 'normal';
 
 const playing = (state: EngineState | null) => state?.champ_select?.champion?.id ?? state?.game?.champion?.id ?? null;
 
@@ -37,6 +56,8 @@ class App {
   /** Mode of the Augments tier list; null shows the first mode with augments. */
   augmentMode = $state<GameMode | null>(null);
   positionOverride = $state<Position | null>(null);
+  homeMode = $state<HomeMode>(savedHomeMode());
+  metaMode = $state<MetaMode>('rift');
   profileError = $state('');
   newGames = $state(0);
   update = $state<Release | null>(null);
@@ -131,6 +152,36 @@ class App {
     this.showPage('build');
   };
 
+  /** Opens the build of a champion in ARAM or the Rift, in the position OP.GG sees most. */
+  openModeBuild = (champion: number, mode: BuildMode) => {
+    this.selectedChampion = champion;
+    this.buildMode = mode;
+    this.positionOverride = null;
+    this.showPage('build');
+  };
+
+  openMeta = (mode: MetaMode) => {
+    this.metaMode = mode;
+    this.showPage('meta');
+  };
+
+  openModeAugments = (champion: number, mode: GameMode) => {
+    this.augmentMode = mode;
+    this.openAugments(champion);
+  };
+
+  setHomeMode = (mode: HomeMode) => {
+    this.homeMode = mode;
+    localStorage.setItem(HOME_MODE_KEY, mode);
+  };
+
+  /** Shows the Home tab of the mode being played; a Rift game keeps normal or ranked, whichever is open. */
+  followHomeMode = (mode: GameMode) => {
+    const tab = HOME_TABS[mode];
+    if (!tab || (tab === 'normal' && this.homeMode === 'ranked')) return;
+    this.homeMode = tab;
+  };
+
   openSettings = (tab: SettingsTab) => {
     this.settingsTab = tab;
     this.goTo('settings');
@@ -175,6 +226,17 @@ class App {
   errorText = (error: unknown) => {
     const failure = toAppError(error);
     return this.t(`errors:${failure.code}`, { detail: 'detail' in failure ? failure.detail : '' });
+  };
+
+  /** Imports runes, items and spells of the champion being played, as the client's champion select asks for them. */
+  importWholeBuild = async (champion: number) => {
+    this.followGame();
+    try {
+      await importWholeBuild(champion, this.buildMode, this.buildMode === 'rift' ? this.positionOverride : null);
+      return this.t('build:imported.all');
+    } catch (error) {
+      return this.errorText(error);
+    }
   };
 
   importBuild = async (champion: number, target: ImportTarget) => {

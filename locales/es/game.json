@@ -51,5 +51,9 @@
     "title": "Esperar antes de aceptar",
     "description": "Te da tiempo de rechazarla tú."
   },
-  "safe": "Nada de esto toca el juego ni juega por ti: solo usa el cliente del LoL."
+  "safe": "Nada de esto toca el juego ni juega por ti: solo usa el cliente del LoL.",
+  "matchSound": {
+    "title": "Sonar al encontrar partida",
+    "description": "Toca el sonido de partida encontrada del LoL también desde Xyra. El cliente ya suena solo: enciéndelo si lo tienes en silencio."
+  }
 }

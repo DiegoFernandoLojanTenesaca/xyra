@@ -1,0 +1,21 @@
+{
+  "subtitle": "Your mastery with each champion and how far the next level is.",
+  "loading": "Reading your mastery…",
+  "champions": "Champions",
+  "points": "Total points",
+  "highLevel": "Level {{level}} or higher",
+  "marks": "Marks earned",
+  "sort": {
+    "points": "Most points",
+    "next": "Closest to level up",
+    "recent": "Recent"
+  },
+  "level": "Lv {{level}}",
+  "pointsValue": "{{points}} points",
+  "untilNext": "{{points}} to level up",
+  "marksValue": "Marks {{marks}}/{{needed}}",
+  "bestGrade": "Best grade {{grade}}",
+  "openBuild": "See its build",
+  "none": "No champion matches.",
+  "marksReady": "Marks ready"
+}

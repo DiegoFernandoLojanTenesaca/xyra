@@ -71,7 +71,7 @@
       "title": "Phone link",
       "description": "Xyra opens an access point on your network so your phone sees the same as the window. It only uses memory while it is on."
     },
-    "sameNetwork": "Your phone has to be on the same Wi-Fi as your PC, or both on your Tailscale.",
+    "sameNetwork": "Your phone has to be on the same Wi-Fi as your PC.",
     "firewall": "When you turn the link on, Xyra prepares Windows: it marks your network as private and opens only its port. Windows will ask for administrator approval.",
     "canDo": "From the app you can accept the match, follow champion select, see the build, the meta and your stats, and import runes, items and spells.",
     "privateTitle": "Only with your code.",
@@ -97,10 +97,12 @@
       "permissions": {
         "accept": "Accept matches",
         "import": "Import builds",
+        "bench": "Take from the bench",
         "settings": "Change settings"
       },
       "forget": "Disconnect",
       "hint": "Every phone can see your game, builds and stats; permissions decide what else it can do. A disconnected phone has to scan the code again."
-    }
+    },
+    "linkOn": "Link on"
   }
 }

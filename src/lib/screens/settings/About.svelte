@@ -20,7 +20,11 @@
     {#each CREATORS as creator (creator.user)}
       <button onclick={() => openExternal(githubProfile(creator.user))} title={githubProfile(creator.user)}>
         <img class="diamond" src={creator.photo} alt="" />
-        <span><b>{githubHandle(creator.user)}</b><small class="accent">{creator.team}</small></span>
+        <span
+          ><b>{githubHandle(creator.user)}</b><small class="facts"
+            ><span>{t(`about:roles.${creator.role}`)}</span><span class="accent">{creator.team}</span></small
+          ></span
+        >
       </button>
     {/each}
   </div>

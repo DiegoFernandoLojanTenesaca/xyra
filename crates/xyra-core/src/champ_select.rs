@@ -16,6 +16,7 @@ use std::{
 pub const SESSION: &str = "/lol-champ-select/v1/session";
 const PICKABLE: &str = "/lol-champ-select/v1/pickable-champion-ids";
 const MY_SELECTION: &str = "/lol-champ-select/v1/session/my-selection";
+const BENCH_SWAP: &str = "/lol-champ-select/v1/session/bench/swap";
 /// How long a pick must stay before its build is imported.
 const AUTO_IMPORT_SETTLE: Duration = Duration::from_secs(3);
 
@@ -90,6 +91,11 @@ pub fn set_spells(lcu: &Lcu, spells: [u32; 2]) -> Result<()> {
     let current = session.my_team.iter().find(|member| member.cell_id == session.local_player_cell_id).map(|member| (member.spell1_id, member.spell2_id));
     let [first, second] = spell_keys(spells, current);
     lcu.request(Method::PATCH, MY_SELECTION, Some(&json!({ "spell1Id": first, "spell2Id": second }))).map(drop)
+}
+
+/// Takes a champion from the ARAM bench, as clicking it in the client does.
+pub fn take_from_bench(lcu: &Lcu, champion: u32) -> Result<()> {
+    lcu.request(Method::POST, &format!("{BENCH_SWAP}/{champion}"), None).map(drop)
 }
 
 fn spell_keys([first, second]: [u32; 2], current: Option<(u32, u32)>) -> [u32; 2] {

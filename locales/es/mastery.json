@@ -1,0 +1,21 @@
+{
+  "subtitle": "Tu maestría con cada campeón y cuánto te falta para el siguiente nivel.",
+  "loading": "Leyendo tu maestría…",
+  "champions": "Campeones",
+  "points": "Puntos en total",
+  "highLevel": "Nivel {{level}} o más",
+  "marks": "Marcas ganadas",
+  "sort": {
+    "points": "Más puntos",
+    "next": "Por subir",
+    "recent": "Recientes"
+  },
+  "level": "Nv {{level}}",
+  "pointsValue": "{{points}} puntos",
+  "untilNext": "Faltan {{points}} para subir",
+  "marksValue": "Marcas {{marks}}/{{needed}}",
+  "bestGrade": "Mejor nota {{grade}}",
+  "openBuild": "Ver su build",
+  "none": "Ningún campeón coincide.",
+  "marksReady": "Marcas listas"
+}

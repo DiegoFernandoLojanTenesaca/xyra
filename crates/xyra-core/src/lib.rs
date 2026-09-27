@@ -1,5 +1,6 @@
 pub mod cards;
 pub mod catalog;
+pub mod challenges;
 pub mod champ_select;
 pub mod client_import;
 pub mod config;
@@ -12,6 +13,7 @@ pub mod live_game;
 pub mod matchmaking;
 pub mod model;
 pub mod opgg;
+pub mod patch_notes;
 pub mod profile;
 pub mod stats;
 pub mod storage;

@@ -1,0 +1,12 @@
+{
+  "subtitle": "Tus últimas 20 partidas de todos los modos, del cliente del LoL.",
+  "all": "Todas",
+  "loading": "Leyendo tu historial…",
+  "empty": "No tienes partidas recientes en este modo.",
+  "kda": "KDA promedio",
+  "ratio": "KDA {{value}}",
+  "farm": "{{count}} súbditos",
+  "gold": "{{value}} de oro",
+  "damage": "{{value}} de daño",
+  "source": "Datos del historial oficial de tu cliente: los mismos que ves en tu perfil del LoL."
+}

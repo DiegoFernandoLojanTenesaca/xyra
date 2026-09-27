@@ -20,6 +20,10 @@ open_league: boolean, keep_borderless: boolean,
  */
 auto_import_build: boolean, close_window_in_game: boolean, auto_accept: boolean, 
 /**
+ * Play League's match found sound from Xyra too, for a muted client.
+ */
+match_sound: boolean, 
+/**
  * Seconds to wait before accepting a found match.
  */
 accept_delay_seconds: number, champion_order: ChampionOrder, 

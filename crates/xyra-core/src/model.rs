@@ -180,12 +180,14 @@ pub struct PcInfo {
 pub struct PhonePermissions {
     pub accept: bool,
     pub import: bool,
+    /// Take the recommended champion from the ARAM bench.
+    pub bench: bool,
     pub settings: bool,
 }
 
 impl Default for PhonePermissions {
     fn default() -> PhonePermissions {
-        PhonePermissions { accept: true, import: true, settings: true }
+        PhonePermissions { accept: true, import: true, bench: true, settings: true }
     }
 }
 
@@ -295,6 +297,46 @@ pub struct MetaChampion {
     pub ban_rate: f64,
     /// Places gained since the previous patch; negative when it dropped.
     pub trend: Option<i32>,
+}
+
+/// Whether a patch made a champion stronger, weaker or changed it both ways.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub enum ChangeVerdict {
+    Buff,
+    Nerf,
+    Adjusted,
+}
+
+/// What the official patch notes changed on one champion.
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[ts(export)]
+pub struct ChampionChange {
+    pub champion: Asset,
+    pub verdict: ChangeVerdict,
+    /// Why the designers changed it.
+    pub context: String,
+    pub groups: Vec<ChangeGroup>,
+    /// One of the champions the player has the most mastery on.
+    pub yours: bool,
+}
+
+/// The changed lines of one ability, or of the base stats.
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[ts(export)]
+pub struct ChangeGroup {
+    pub title: String,
+    pub lines: Vec<String>,
+}
+
+/// Champion changes of the current patch, from its official notes.
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[ts(export)]
+pub struct PatchChanges {
+    pub patch: String,
+    pub notes_url: String,
+    pub champions: Vec<ChampionChange>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, TS)]

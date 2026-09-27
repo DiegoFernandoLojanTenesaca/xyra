@@ -24,7 +24,7 @@
   "bestPick": "Mejor opción",
   "cardsOnScreen": "Cartas en pantalla",
   "latestCards": "Últimas cartas",
-  "noCards": "Cuando te salgan cartas en ARAM: Caos aparecerán aquí.",
+  "noCards": "Cuando te salgan cartas de aumento en ARAM: Caos o Arena aparecerán aquí.",
   "bench": "Banca · selección",
   "emptyBench": "Sin campeones en la banca.",
   "gameWindow": "Ventana del juego",
@@ -81,5 +81,31 @@
   "skillHint": "Según el orden de habilidades de la build",
   "nextItem": "Siguiente ítem de la build",
   "canBuy": "Ya puedes comprarlo",
-  "goldMissing": "Te faltan {{gold}} de oro"
+  "goldMissing": "Te faltan {{gold}} de oro",
+  "takeBench": "Tomar de la banca",
+  "benchTaken": "Listo: ahora juegas con {{champion}}.",
+  "modes": {
+    "normal": "Normal",
+    "ranked": "Clasificatoria",
+    "aram": "ARAM",
+    "mayhem": "ARAM: Caos",
+    "arena": "Arena"
+  },
+  "yourRank": "Tu rango en clasificatoria",
+  "bestByPosition": "Los mejores del parche por posición",
+  "openMeta": "Ver el meta completo",
+  "yourChampions": "Tus campeones",
+  "modeTop": {
+    "aram": "Top de ARAM",
+    "arena": "Top de Arena"
+  },
+  "modeTopHint": {
+    "aram": "Victorias en ARAM según OP.GG. Toca uno para ver su build.",
+    "arena": "Partidas en el top 4 según OP.GG. Toca uno para ver sus aumentos."
+  },
+  "noModeGames": "No tienes partidas recientes de {{mode}}.",
+  "kda": "{{kills}}/{{deaths}}/{{assists}}",
+  "patchYours": "Tus campeones en el parche {{patch}}",
+  "byMastery": "por maestría",
+  "recentGames": "Partidas de {{mode}}"
 }

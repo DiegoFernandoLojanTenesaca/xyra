@@ -51,5 +51,9 @@
     "title": "Wait before accepting",
     "description": "Gives you time to decline it yourself."
   },
-  "safe": "None of this touches the game or plays for you: it only uses the League client."
+  "safe": "None of this touches the game or plays for you: it only uses the League client.",
+  "matchSound": {
+    "title": "Ring when a match is found",
+    "description": "Plays League's match found sound from Xyra too. The client already rings: turn it on if you keep it muted."
+  }
 }

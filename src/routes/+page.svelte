@@ -8,13 +8,17 @@
     ExternalLink,
     Gamepad2,
     Hammer,
+    History as HistoryIcon,
     House,
     Layers,
+    Medal,
     Minus,
     Settings as SettingsIcon,
+    Smartphone,
     Square,
     Tag,
     TrendingUp,
+    Trophy,
     X,
   } from '@lucide/svelte';
   import { getCurrentWindow } from '@tauri-apps/api/window';
@@ -24,10 +28,13 @@
   import { APP_NAME, openExternal, REPOSITORY, STUDIOS } from '$lib/project';
   import Augments from '$lib/screens/Augments.svelte';
   import Build from '$lib/screens/Build.svelte';
+  import Challenges from '$lib/screens/Challenges.svelte';
   import Champions from '$lib/screens/Champions.svelte';
   import Game from '$lib/screens/Game.svelte';
+  import History from '$lib/screens/History.svelte';
   import Home from '$lib/screens/Home.svelte';
   import Labels from '$lib/screens/Labels.svelte';
+  import Mastery from '$lib/screens/Mastery.svelte';
   import Meta from '$lib/screens/Meta.svelte';
   import Settings from '$lib/screens/Settings.svelte';
   import Stats from '$lib/screens/Stats.svelte';
@@ -45,6 +52,12 @@
     { page: 'labels', icon: Tag },
     { page: 'game', icon: Gamepad2 },
   ] as const satisfies { page: Page; icon: unknown }[];
+  /** Pages about the signed-in account, read from the client. */
+  const ACCOUNT = [
+    { page: 'history', icon: HistoryIcon },
+    { page: 'mastery', icon: Medal },
+    { page: 'challenges', icon: Trophy },
+  ] as const satisfies { page: Page; icon: unknown }[];
 
   const SCREENS: Record<Page, Component> = {
     home: Home,
@@ -53,6 +66,9 @@
     champions: Champions,
     meta: Meta,
     stats: Stats,
+    history: History,
+    mastery: Mastery,
+    challenges: Challenges,
     labels: Labels,
     game: Game,
     settings: Settings,
@@ -118,6 +134,16 @@
         {#if item.page === 'stats' && app.newGames}<span class="badge">+{app.newGames}</span>{/if}
       </button>
     {/each}
+    <button class:active={app.page === 'settings' && app.settingsTab === 'phone'} onclick={() => app.openSettings('phone')}>
+      <Smartphone size={18} />{t('settings:tabs.phone')}
+      {#if app.config?.phone_link}<span class="live diamond" title={t('settings:phone.linkOn')}></span>{/if}
+    </button>
+    <span class="group">{t('common:nav.account')}</span>
+    {#each ACCOUNT as item (item.page)}
+      <button class:active={app.page === item.page} onclick={() => app.goTo(item.page)}>
+        <item.icon size={18} />{t(`common:nav.${item.page}`)}
+      </button>
+    {/each}
     <div class="footer">
       {#if app.update}
         <button class="update" disabled={app.updateProgress !== null} onclick={app.installUpdate} title={t('about:install')}>
@@ -126,6 +152,9 @@
             : t('about:downloading', { value: app.format.percent(app.updateProgress * 100) })}
         </button>
       {/if}
+      <button class:active={app.page === 'settings' && app.settingsTab !== 'help' && app.settingsTab !== 'phone'} onclick={() => app.openSettings('general')}>
+        <SettingsIcon size={16} />{t('common:nav.settings')}
+      </button>
       <button class:active={app.page === 'settings' && app.settingsTab === 'help'} onclick={() => app.openSettings('help')}>
         <CircleQuestionMark size={16} />{t('settings:tabs.help')}
       </button>
@@ -274,7 +303,8 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
-    padding: var(--space-6) 0 var(--space-4);
+    padding: var(--space-5) 0 var(--space-4);
+    overflow-y: auto;
     background: var(--color-chrome);
     border-right: var(--border-hairline) solid var(--color-line);
   }
@@ -283,7 +313,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-4);
-    padding: var(--space-3) var(--space-6);
+    padding: var(--space-2) var(--space-6);
     border: none;
     background: none;
     color: var(--color-textMuted);
@@ -316,6 +346,14 @@
   nav button.active :global(svg) {
     color: var(--color-accentBright);
   }
+  .group {
+    padding: var(--space-4) var(--space-6) var(--space-1);
+    color: var(--color-textFaint);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+  }
   .badge {
     margin-left: auto;
     padding: 0 var(--space-2);
@@ -323,6 +361,13 @@
     letter-spacing: var(--tracking-normal);
     background: var(--color-accent);
     color: var(--color-white);
+  }
+  .live {
+    width: var(--space-2);
+    height: var(--space-2);
+    margin-left: auto;
+    background: var(--color-success);
+    box-shadow: 0 0 var(--space-2) var(--color-success);
   }
   .footer {
     margin-top: auto;

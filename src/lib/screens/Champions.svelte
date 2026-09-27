@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Crown } from '@lucide/svelte';
   import { app } from '../app.svelte';
-  import { championTierColor } from '../design/theme';
+  import { championTierColor, championTierLabel } from '../design/theme';
   import ChampionPortrait from '../ui/ChampionPortrait.svelte';
   import EmptyState from '../ui/EmptyState.svelte';
   import PageHeader from '../ui/PageHeader.svelte';
@@ -27,7 +27,7 @@
 {#each tiers as group (group.tier)}
   <section class="tier panel cut" style="--tier-color:{championTierColor(group.tier)}">
     <div class="label">
-      <TierBadge label={group.tier ? `T${group.tier}` : '—'} color={championTierColor(group.tier)} size="var(--size-thumbLg)" />
+      <TierBadge label={championTierLabel(group.tier)} color={championTierColor(group.tier)} size="var(--size-thumbLg)" />
       <small>{app.format.number(group.champions.length)}</small>
     </div>
     <div class="grid">

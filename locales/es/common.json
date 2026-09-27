@@ -59,7 +59,11 @@
     "stats": "Estadísticas",
     "labels": "Etiquetas",
     "game": "Juego",
-    "settings": "Ajustes"
+    "settings": "Ajustes",
+    "history": "Historial",
+    "mastery": "Maestría",
+    "challenges": "Desafíos",
+    "account": "Tu cuenta"
   },
   "searchChampion": "Buscar campeón…",
   "games_one": "{{count, number}} partida",

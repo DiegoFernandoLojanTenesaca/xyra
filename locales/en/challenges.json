@@ -1,0 +1,23 @@
+{
+  "subtitle": "Your challenge level and the ones about to level up.",
+  "loading": "Reading your challenges…",
+  "points": "Points",
+  "toNext": "To the next level",
+  "top": "You are in the top",
+  "overall": "{{level}} challenge level",
+  "categories": "By category",
+  "category": {
+    "COLLECTION": "Collection",
+    "TEAMWORK": "Teamwork",
+    "EXPERTISE": "Expertise",
+    "VETERANCY": "Veterancy",
+    "IMAGINATION": "Imagination",
+    "LEGACY": "Legacy"
+  },
+  "topValue": "top {{value}}",
+  "closest": "About to level up",
+  "nextLevel": "→ {{level}}",
+  "noLevel": "No level",
+  "noneClose": "You have no challenges in progress.",
+  "source": "Official data from your client. Play the close ones to level them up fast."
+}

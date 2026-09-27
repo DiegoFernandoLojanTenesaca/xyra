@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
-  import { championTierColor } from '../design/theme';
+  import { championTierColor, championTierLabel } from '../design/theme';
   import type { ChampionInfo } from '../types';
   import TierBadge from './TierBadge.svelte';
 
@@ -14,7 +14,7 @@
     <span class="muted facts">
       {#if showTier}
         <span class="tier">
-          <TierBadge label={champion.tier ? `T${champion.tier}` : '—'} color={championTierColor(champion.tier)} size="var(--size-thumbSm)" />
+          <TierBadge label={championTierLabel(champion.tier)} color={championTierColor(champion.tier)} size="var(--size-thumbSm)" />
           #{champion.rank ?? '—'}
         </span>
       {/if}

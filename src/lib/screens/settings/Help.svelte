@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { ExternalLink, Folder } from '@lucide/svelte';
+  import { ExternalLink, Folder, Smartphone } from '@lucide/svelte';
   import { app } from '../../app.svelte';
-  import { CREATORS, githubHandle, githubProfile, LINKS, openExternal } from '../../project';
+  import { LINKS, openExternal } from '../../project';
   import { openFolder } from '../../services/data';
   import Button from '../../ui/Button.svelte';
 
@@ -9,31 +9,27 @@
 
   const t = $derived(app.t);
   const steps = $derived(Object.values(t('help:steps', { returnObjects: true }) as Record<string, string>));
+  const phoneSteps = $derived(Object.values(t('help:phoneSteps', { returnObjects: true }) as Record<string, string>));
   const faq = $derived(Object.values(t('help:faq', { returnObjects: true }) as Record<string, Answer>));
 </script>
 
+{#snippet guide(title: string, list: string[])}
+  <h3 class="section-title">{title}</h3>
+  <ol>
+    {#each list as step, i (i)}
+      <li><span class="diamond number">{i + 1}</span>{step}</li>
+    {/each}
+  </ol>
+{/snippet}
+
 <div class="pair">
   <section class="panel cut box">
-    <h3 class="section-title">{t('help:gettingStarted')}</h3>
-    <ol>
-      {#each steps as step, i (i)}
-        <li><span class="diamond number">{i + 1}</span>{step}</li>
-      {/each}
-    </ol>
+    {@render guide(t('help:gettingStarted'), steps)}
   </section>
 
   <section class="panel cut box">
-    <h3 class="section-title">{t('help:creators')}</h3>
-    {#each CREATORS as creator (creator.user)}
-      <button class="creator" onclick={() => openExternal(githubProfile(creator.user))} title={githubProfile(creator.user)}>
-        <img class="diamond" src={creator.photo} alt={githubHandle(creator.user)} />
-        <span class="who">
-          <b>{githubHandle(creator.user)}</b>
-          <small class="facts"><span>{t(`help:roles.${creator.role}`)}</span><span class="accent">{creator.team}</span></small>
-        </span>
-      </button>
-    {/each}
-    <p class="muted thanks">{t('help:thanks')}</p>
+    {@render guide(t('help:phoneTitle'), phoneSteps)}
+    <div class="phone-link"><Button icon={Smartphone} onclick={() => app.openSettings('phone')}>{t('help:phoneSetup')}</Button></div>
   </section>
 </div>
 
@@ -91,44 +87,8 @@
     font-weight: 800;
     font-size: var(--text-md);
   }
-  .creator {
-    display: flex;
-    align-items: center;
-    gap: var(--space-4);
-    width: 100%;
-    padding: var(--space-3) var(--space-2);
-    border: none;
-    background: none;
-    text-align: left;
-  }
-  .creator:hover {
-    background: color-mix(in srgb, var(--color-accent) 8%, transparent);
-  }
-  .creator + .creator {
-    border-top: var(--border-hairline) solid var(--color-line);
-  }
-  .creator img {
-    width: var(--size-portrait);
-    height: var(--size-portrait);
-    flex: none;
-  }
-  .who {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-width: 0;
-  }
-  .who small {
-    letter-spacing: var(--tracking-wide);
-    text-transform: uppercase;
-    color: var(--color-textMuted);
-  }
-  small {
-    font-size: var(--text-sm);
-  }
-  .thanks {
-    margin: var(--space-3) 0 0;
-    font-size: var(--text-sm);
+  .phone-link {
+    margin-top: var(--space-4);
   }
   .faq {
     display: grid;

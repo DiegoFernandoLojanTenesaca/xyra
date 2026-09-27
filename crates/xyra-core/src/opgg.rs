@@ -110,6 +110,25 @@ struct TierData {
 }
 
 #[derive(Deserialize)]
+struct ModeChampion {
+    id: u32,
+    #[serde(default)]
+    is_rip: bool,
+    average_stats: Option<ModeStats>,
+}
+
+/// ARAM answers a win rate; Arena answers games and top-four finishes, which it calls wins.
+#[derive(Deserialize)]
+struct ModeStats {
+    win_rate: Option<f64>,
+    win: Option<f64>,
+    play: Option<f64>,
+    pick_rate: Option<f64>,
+    ban_rate: Option<f64>,
+    tier_data: TierData,
+}
+
+#[derive(Deserialize)]
 pub(crate) struct BuildData {
     summary: Summary,
     runes: Vec<RuneStats>,
@@ -269,6 +288,39 @@ fn meta(list: RankedList, catalog: &Catalog) -> Meta {
     Meta { patch: patch_name(&list.meta.version), positions }
 }
 
+/// Champion tier list of ARAM or Arena, best first; Arena's win rate is its share of top-four finishes.
+pub fn fetch_mode_champions(http: &Client, mode: GameMode, catalog: &Catalog) -> Result<Vec<MetaChampion>> {
+    let path = match mode {
+        GameMode::Aram => "global/champions/aram",
+        GameMode::Arena => "global/champions/arena",
+        _ => return Err(AppError::NoData),
+    };
+    Ok(mode_champions(fetch(http, path)?, catalog))
+}
+
+fn mode_champions(list: Vec<ModeChampion>, catalog: &Catalog) -> Vec<MetaChampion> {
+    let mut champions: Vec<MetaChampion> = list
+        .into_iter()
+        .filter(|champion| !champion.is_rip && catalog.champions.contains_key(&champion.id))
+        .filter_map(|champion| {
+            let stats = champion.average_stats?;
+            let win_rate = stats.win_rate.or_else(|| Some(stats.win? / stats.play?.max(1.0)))?;
+            let tier = &stats.tier_data;
+            Some(MetaChampion {
+                champion: catalog.champion(champion.id),
+                tier: tier.tier,
+                rank: tier.rank,
+                win_rate: win_rate * 100.0,
+                pick_rate: stats.pick_rate.unwrap_or_default() * 100.0,
+                ban_rate: stats.ban_rate.unwrap_or_default() * 100.0,
+                trend: tier.rank_prev_patch.map(|previous| previous as i32 - tier.rank as i32),
+            })
+        })
+        .collect();
+    champions.sort_by_key(|c| c.rank);
+    champions
+}
+
 /// "16.19" becomes "26.19"; anything else is kept as it came.
 fn patch_name(version: &str) -> String {
     match version.split_once('.').and_then(|(major, minor)| Some((major.parse::<u32>().ok()?, minor))) {
@@ -407,6 +459,21 @@ mod tests {
         let top = &meta.positions.iter().find(|p| p.position == Position::Top).unwrap().champions;
         assert_eq!(top[0].trend, None);
         assert_eq!(patch_name("latest"), "latest");
+    }
+
+    #[test]
+    fn reads_aram_and_arena_lists_best_first() {
+        let catalog = Catalog { champions: [1, 2, 3].map(|id| (id, (format!("C{id}"), String::new()))).into(), ..Catalog::default() };
+        let list: Vec<ModeChampion> = serde_json::from_value(json!([
+            { "id": 1, "average_stats": { "win_rate": 0.51, "pick_rate": 0.06, "ban_rate": null, "tier_data": { "tier": 2, "rank": 9, "rank_prev_patch": 4 } } },
+            { "id": 2, "average_stats": { "win": 60.0, "play": 100.0, "pick_rate": 0.1, "ban_rate": 0.05, "tier_data": { "tier": 1, "rank": 1, "rank_prev_patch": null } } },
+            { "id": 3, "is_rip": true, "average_stats": null },
+            { "id": 60086, "average_stats": { "win_rate": 0.5, "tier_data": { "tier": 1, "rank": 2, "rank_prev_patch": null } } }
+        ]))
+        .unwrap();
+        let champions = mode_champions(list, &catalog);
+        assert_eq!(champions.iter().map(|c| (c.champion.id, c.trend)).collect::<Vec<_>>(), [(2, None), (1, Some(-5))]);
+        assert_eq!((champions[0].win_rate.round(), champions[1].ban_rate), (60.0, 0.0));
     }
 
     fn ranked(runes: Value, counters: Value) -> BuildData {

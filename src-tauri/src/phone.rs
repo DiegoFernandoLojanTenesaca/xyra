@@ -11,7 +11,10 @@ use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream, UdpSocket},
     os::windows::process::CommandExt,
     process::Command,
-    sync::Arc,
+    sync::{
+        Arc,
+        mpsc::{self, RecvTimeoutError, Sender},
+    },
     thread::{self, JoinHandle},
     time::Duration,
     time::{Instant, SystemTime, UNIX_EPOCH},
@@ -29,9 +32,15 @@ use xyra_core::{
 pub const PORT: u16 = 47811;
 /// A state request waits this long for a change before answering with the same state.
 const LONG_POLL: Duration = Duration::from_secs(20);
-/// Connecting a UDP socket sends nothing and only picks the interface that reaches the address: the home network
-/// through a public address, and Tailscale through its DNS address when it is running.
-const ROUTE_PROBES: [(Ipv4Addr, u16); 2] = [(Ipv4Addr::new(8, 8, 8, 8), 80), (Ipv4Addr::new(100, 100, 100, 100), 53)];
+/// Connecting a UDP socket sends nothing and only picks the interface that reaches the address: the home network,
+/// through a public address.
+const ROUTE_PROBE: (Ipv4Addr, u16) = (Ipv4Addr::new(8, 8, 8, 8), 80);
+/// How often the PC introduces itself on the home network while the link is on.
+const ANNOUNCE_EVERY: Duration = Duration::from_secs(30);
+/// The discard port: the packets only make the PC known on the network, nobody needs to read them.
+const DISCARD_PORT: u16 = 9;
+/// Host numbers of a /24 home network, without its network and broadcast addresses.
+const HOSTS: std::ops::RangeInclusive<u8> = 1..=254;
 const PAIRING_URI: &str = "xyra://pair";
 const QR_SIZE: u32 = 240;
 const FIREWALL_RULE: &str = "Xyra (celular)";
@@ -48,12 +57,18 @@ pub struct PhoneServer {
     port: u16,
     server: Option<Arc<Server>>,
     listener: Option<JoinHandle<()>>,
+    /// Dropping the sender stops the announcements.
+    announcer: Option<(Sender<()>, JoinHandle<()>)>,
 }
 
 impl Drop for PhoneServer {
     /// Frees the port so the link can start again: tiny_http wakes its accept thread by connecting to the address it
     /// listens on, which fails for 0.0.0.0 on Windows, so it is woken through localhost until the port refuses.
     fn drop(&mut self) {
+        if let Some((stop, announcer)) = self.announcer.take() {
+            drop(stop);
+            announcer.join().ok();
+        }
         if let Some(server) = self.server.take() {
             server.unblock();
             if let Some(listener) = self.listener.take() {
@@ -95,7 +110,25 @@ fn start(app: &AppHandle) -> Result<PhoneServer> {
             thread::spawn(move || handle(request, &app));
         }
     });
-    Ok(PhoneServer { port: PORT, server: Some(server), listener: Some(listener) })
+    let (stop, stopped) = mpsc::channel::<()>();
+    let announcer = thread::spawn(move || {
+        while {
+            announce();
+            matches!(stopped.recv_timeout(ANNOUNCE_EVERY), Err(RecvTimeoutError::Timeout))
+        } {}
+    });
+    Ok(PhoneServer { port: PORT, server: Some(server), listener: Some(listener), announcer: Some((stop, announcer)) })
+}
+
+/// Some routers keep a phone from reaching the PC until the PC has sent something on the network, so it sends an empty
+/// packet to every address of the home network: that makes the router and each device learn where the PC is.
+fn announce() {
+    let Some(IpAddr::V4(own)) = lan_address() else { return };
+    let Ok(socket) = UdpSocket::bind((own, 0)) else { return };
+    let [a, b, c, me] = own.octets();
+    for host in HOSTS.filter(|&host| host != me) {
+        socket.send_to(&[], (Ipv4Addr::new(a, b, c, host), DISCARD_PORT)).ok();
+    }
 }
 
 /// The QR code the Xyra phone app scans to pair; None while the link is off.
@@ -107,8 +140,9 @@ pub fn link(shared: &Shared) -> Result<Option<PhoneLink>> {
     if shared.phone.lock().unwrap().is_none() {
         return Err(AppError::PhoneLinkUnavailable);
     }
-    let hosts = local_addresses().iter().map(IpAddr::to_string).collect::<Vec<_>>().join(",");
-    let pairing = format!("{PAIRING_URI}?hosts={hosts}&port={PORT}&token={}", config.phone_token);
+    announce();
+    let host = lan_address().map(|address| address.to_string()).unwrap_or_default();
+    let pairing = format!("{PAIRING_URI}?hosts={host}&port={PORT}&token={}", config.phone_token);
     let qr = QrCode::new(&pairing).map_err(AppError::platform)?.render::<svg::Color>().min_dimensions(QR_SIZE, QR_SIZE).build();
     Ok(Some(PhoneLink { qr }))
 }
@@ -129,18 +163,11 @@ pub fn prepare_windows() -> Result<()> {
     if status.success() { Ok(()) } else { Err(AppError::WindowsNotPrepared) }
 }
 
-/// This PC's addresses on the home network and on Tailscale, the ones a phone can reach.
-fn local_addresses() -> Vec<IpAddr> {
-    let mut addresses = Vec::new();
-    for probe in ROUTE_PROBES {
-        let address = UdpSocket::bind((Ipv4Addr::UNSPECIFIED, 0)).and_then(|socket| socket.connect(probe).and_then(|()| socket.local_addr()));
-        if let Ok(address) = address
-            && !addresses.contains(&address.ip())
-        {
-            addresses.push(address.ip());
-        }
-    }
-    addresses
+/// This PC's address on the home network, the one a phone can reach.
+fn lan_address() -> Option<IpAddr> {
+    let socket = UdpSocket::bind((Ipv4Addr::UNSPECIFIED, 0)).ok()?;
+    socket.connect(ROUTE_PROBE).ok()?;
+    Some(socket.local_addr().ok()?.ip())
 }
 
 /// Query parameters of a request, already split; values are plain ASCII the app sends unencoded.
@@ -191,12 +218,18 @@ fn route(app: &AppHandle, shared: &Shared, method: &Method, path: &str, query: &
         (Method::Get, "/api/stats") => json_response(&shared.stats_summary()),
         (Method::Get, "/api/champions") => json_response(&shared.champions()),
         (Method::Get, "/api/meta") => answer(shared.meta()),
+        (Method::Get, "/api/patch") => answer(shared.patch_changes()),
+        (Method::Get, "/api/matches") => answer(shared.recent_matches()),
+        (Method::Get, "/api/masteries") => answer(shared.masteries()),
+        (Method::Get, "/api/challenges") => answer(shared.challenges()),
         (Method::Get, "/api/build") => answer(build(shared, query)),
         (Method::Get, "/api/augments") => answer(augments(shared, query)),
         (Method::Get, "/api/settings") => json_response(&PhoneSettings::from(&shared.config())),
         (Method::Post, "/api/settings") => answer(allowed(can.settings).and_then(|()| change_settings(app, shared, query))),
         (Method::Post, "/api/accept") => answer(allowed(can.accept).and_then(|()| shared.lcu()).and_then(|lcu| matchmaking::accept_if_waiting(&lcu))),
+        (Method::Post, "/api/decline") => answer(allowed(can.accept).and_then(|()| shared.lcu()).and_then(|lcu| matchmaking::decline_if_waiting(&lcu))),
         (Method::Post, "/api/import") => answer(allowed(can.import).and_then(|()| import(shared, query))),
+        (Method::Post, "/api/bench") => answer(allowed(can.bench).and_then(|()| shared.take_bench_pick())),
         _ => text(404, "not found"),
     }
 }
@@ -316,12 +349,19 @@ fn change_settings(app: &AppHandle, shared: &Shared, query: &Query) -> Result<Ph
     Ok(PhoneSettings::from(&apply_config(app, shared, config)?))
 }
 
-/// Imports part of the build of the champion picked in the current champion select.
+/// The value of `target` that imports runes, items and spells at once.
+const WHOLE_BUILD: &str = "all";
+
+/// Imports the build, or part of it, of the champion picked in the current champion select.
 fn import(shared: &Shared, query: &Query) -> Result<()> {
-    let target: ImportTarget = query.parse("target").ok_or(AppError::NoData)?;
     let select = shared.state.lock().unwrap().champ_select.clone().ok_or(AppError::NotInChampSelect)?;
     let champion = select.champion.ok_or(AppError::NotInChampSelect)?;
-    shared.import_build(champion.id, select.mode.build_mode(), select.position, target)
+    let mode = select.mode.build_mode();
+    if query.get("target") == Some(WHOLE_BUILD) {
+        return shared.import_whole_build(champion.id, mode, select.position);
+    }
+    let target: ImportTarget = query.parse("target").ok_or(AppError::NoData)?;
+    shared.import_build(champion.id, mode, select.position, target)
 }
 
 fn answer(result: Result<impl Serialize>) -> Response<Cursor<Vec<u8>>> {
@@ -366,7 +406,7 @@ mod tests {
             let server = Arc::new(Server::http((Ipv4Addr::UNSPECIFIED, TEST_PORT)).expect("the port is free again"));
             let requests = Arc::clone(&server);
             let listener = thread::spawn(move || for _ in requests.incoming_requests() {});
-            drop(PhoneServer { port: TEST_PORT, server: Some(server), listener: Some(listener) });
+            drop(PhoneServer { port: TEST_PORT, server: Some(server), listener: Some(listener), announcer: None });
         }
     }
 }

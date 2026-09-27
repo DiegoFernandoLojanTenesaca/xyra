@@ -24,7 +24,7 @@
   "bestPick": "Best pick",
   "cardsOnScreen": "Cards on screen",
   "latestCards": "Latest cards",
-  "noCards": "Your ARAM: Mayhem augment cards will show up here.",
+  "noCards": "When augment cards show up in ARAM: Mayhem or Arena they will appear here.",
   "bench": "Bench · champ select",
   "emptyBench": "No champions on the bench.",
   "gameWindow": "Game window",
@@ -81,5 +81,31 @@
   "skillHint": "Following the build's skill order",
   "nextItem": "Next item of the build",
   "canBuy": "You can buy it now",
-  "goldMissing": "{{gold}} gold to go"
+  "goldMissing": "{{gold}} gold to go",
+  "takeBench": "Take from the bench",
+  "benchTaken": "Done: you now play {{champion}}.",
+  "modes": {
+    "normal": "Normal",
+    "ranked": "Ranked",
+    "aram": "ARAM",
+    "mayhem": "ARAM: Mayhem",
+    "arena": "Arena"
+  },
+  "yourRank": "Your ranked tier",
+  "bestByPosition": "Best of the patch by position",
+  "openMeta": "See the whole meta",
+  "yourChampions": "Your champions",
+  "modeTop": {
+    "aram": "ARAM top",
+    "arena": "Arena top"
+  },
+  "modeTopHint": {
+    "aram": "ARAM win rate from OP.GG. Tap one to see its build.",
+    "arena": "Top-four finishes from OP.GG. Tap one to see its augments."
+  },
+  "noModeGames": "You have no recent {{mode}} games.",
+  "kda": "{{kills}}/{{deaths}}/{{assists}}",
+  "patchYours": "Your champions in patch {{patch}}",
+  "byMastery": "by mastery",
+  "recentGames": "{{mode}} games"
 }

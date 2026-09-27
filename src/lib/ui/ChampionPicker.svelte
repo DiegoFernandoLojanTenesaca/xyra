@@ -1,6 +1,6 @@
 <script lang="ts">
   import { app } from '../app.svelte';
-  import { championTierColor } from '../design/theme';
+  import { championTierColor, championTierLabel } from '../design/theme';
   import type { ChampionInfo } from '../types';
   import SearchInput from './SearchInput.svelte';
   import TierBadge from './TierBadge.svelte';
@@ -53,7 +53,7 @@
           <button class:active={i === active} aria-current={i === active} onclick={() => pick(champion)}>
             <img src={champion.icon} alt="" />
             <span>{champion.name}</span>
-            <TierBadge label={champion.tier ? `T${champion.tier}` : '—'} color={championTierColor(champion.tier)} size="var(--size-thumbSm)" />
+            <TierBadge label={championTierLabel(champion.tier)} color={championTierColor(champion.tier)} size="var(--size-thumbSm)" />
           </button>
         </li>
       {/each}

@@ -4,10 +4,14 @@
   "riot": "Xyra no está respaldado por Riot Games ni refleja sus opiniones. League of Legends es marca de Riot Games, Inc.",
   "whatsNew": "Novedades de esta versión",
   "changes": {
-    "counters": "Counters en la selección de la Grieta y enfrentamientos en cada build.",
-    "ownership": "Solo te recomienda campeones que tienes o están gratis.",
-    "accounts": "Sigue a la cuenta con la que entres: perfil y estadísticas de cada una.",
-    "live": "Se entera al instante de lo que pasa en el cliente, sin consultarlo a cada rato."
+    "match": "Pantalla de partida encontrada en el celular, con el sonido del LoL, para aceptar o rechazar.",
+    "select": "En la selección, la build de tu campeón en el celular y un botón para importarla toda.",
+    "modes": "Inicio por modos: Normal, Clasificatoria, ARAM, ARAM: Caos y Arena, cada uno con lo suyo.",
+    "notify": "Tu celular te avisa cuando encuentras partida, aunque tengas la app cerrada, y puedes aceptarla desde el aviso.",
+    "phoneUpdate": "La app del celular se actualiza sola desde sus Ajustes, como Xyra en la PC.",
+    "patch": "Buffs y nerfs del parche para tus campeones, en Meta y en el celular.",
+    "bench": "Un botón para tomar de la banca al campeón recomendado, en la PC y en el celular.",
+    "account": "Tu cuenta en la barra lateral: historial de todos los modos, maestría y desafíos a punto de subir."
   },
   "links": "Enlaces",
   "builtWith": "Hecho con Rust, Tauri y Svelte. La capa del juego es nativa: no usa navegador y casi no gasta memoria.",
@@ -21,5 +25,9 @@
   "updateTo": "Actualizar a v{{version}}",
   "downloading": "Descargando… {{value}}",
   "notes": "Ver novedades",
-  "installHint": "Xyra se cierra y abre el instalador; tus ajustes y partidas se conservan."
+  "installHint": "Xyra se cierra y abre el instalador; tus ajustes y partidas se conservan.",
+  "roles": {
+    "creator": "Creador",
+    "coCreator": "Cocreador"
+  }
 }

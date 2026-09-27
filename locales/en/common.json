@@ -59,7 +59,11 @@
     "stats": "Stats",
     "labels": "Labels",
     "game": "Game",
-    "settings": "Settings"
+    "settings": "Settings",
+    "history": "History",
+    "mastery": "Mastery",
+    "challenges": "Challenges",
+    "account": "Your account"
   },
   "searchChampion": "Search champion…",
   "games_one": "{{count, number}} game",

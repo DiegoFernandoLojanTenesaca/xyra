@@ -4,10 +4,14 @@
   "riot": "Xyra isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games. League of Legends is a trademark of Riot Games, Inc.",
   "whatsNew": "What's new in this version",
   "changes": {
-    "counters": "Counters in Summoner's Rift champion select and matchups in every build.",
-    "ownership": "Only recommends champions you own or have for free.",
-    "accounts": "Follows the account you sign in with: profile and stats for each one.",
-    "live": "Learns what happens in the client the moment it happens, without asking over and over."
+    "match": "Match found screen on the phone, with League's sound, to accept or decline.",
+    "select": "Your champion's build on the phone in champion select, with one button to import it all.",
+    "modes": "Home by mode: Normal, Ranked, ARAM, ARAM: Mayhem and Arena, each with what matters in it.",
+    "notify": "Your phone lets you know when you find a match, even with the app closed, and you can accept it from the notification.",
+    "phoneUpdate": "The phone app updates itself from its Settings, like Xyra on the PC.",
+    "patch": "Patch buffs and nerfs for your champions, in Meta and on your phone.",
+    "bench": "A button to take the recommended champion from the bench, on the PC and on your phone.",
+    "account": "Your account in the sidebar: history of every mode, mastery and challenges about to level up."
   },
   "links": "Links",
   "builtWith": "Made with Rust, Tauri and Svelte. The in-game overlay is native: no browser, almost no memory.",
@@ -21,5 +25,9 @@
   "updateTo": "Update to v{{version}}",
   "downloading": "Downloading… {{value}}",
   "notes": "What's new",
-  "installHint": "Xyra closes and opens the installer; your settings and games are kept."
+  "installHint": "Xyra closes and opens the installer; your settings and games are kept.",
+  "roles": {
+    "creator": "Creator",
+    "coCreator": "Co-creator"
+  }
 }

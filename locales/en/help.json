@@ -2,9 +2,9 @@
   "gettingStarted": "Getting started",
   "steps": {
     "borderless": "Set League to Borderless: Xyra switches it for you from Home.",
-    "joinGame": "Jump into an ARAM: Mayhem game (or Arena, if you turn it on).",
-    "pickRed": "When the cards show up, take the one with the red frame: it is the best for your champion.",
-    "importRunes": "In champion select, open Build and import your runes in one click."
+    "pick": "When you pick a champion, Xyra sets your runes, spells and items and tells you who to take from the bench or who counters your opponent.",
+    "cards": "In ARAM: Mayhem and Arena, take the card with the red frame: it is the best for your champion.",
+    "meta": "Before playing, check Meta for the best champions of the patch and the buffs and nerfs to yours."
   },
   "faqTitle": "FAQ",
   "faq": {
@@ -31,6 +31,30 @@
     "ocr": {
       "question": "Xyra does not recognize the cards",
       "answer": "Windows needs text recognition for your client language: add it in Settings → Time & language → Language."
+    },
+    "notify": {
+      "question": "How does my phone let me know when I find a match?",
+      "answer": "With the app paired and \"Tell me about the match\" on in its Settings, a notification rings even with the app closed, and you can accept from it. While it waits you will see a pinned Xyra notification."
+    },
+    "bench": {
+      "question": "What does \"Take from the bench\" do?",
+      "answer": "In ARAM, when the bench has a better champion than yours by the order you chose for recommendations, the button swaps it for you, just as clicking it in the client. It only acts when you press it."
+    },
+    "patch": {
+      "question": "Where do the buffs and nerfs come from?",
+      "answer": "From the official patch notes. Xyra compares the numbers of each change to mark it as a buff, a nerf or an adjustment; open it in Meta to see the details and Riot's reason."
+    },
+    "order": {
+      "question": "How does Xyra choose which champion to recommend?",
+      "answer": "By OP.GG's tier, your mastery, what you play the most or a mix. Change it on Home or from your phone."
+    },
+    "away": {
+      "question": "Does the phone work away from home?",
+      "answer": "No: your phone has to be on the same Wi-Fi as your PC. That way nothing goes through the internet."
+    },
+    "update": {
+      "question": "How does it update?",
+      "answer": "Xyra tells you when there is a new version and updates with one button in Settings → About, without uninstalling or losing your data. The phone app updates from its Settings."
     }
   },
   "supportTitle": "Something not working?",
@@ -39,10 +63,11 @@
   "viewCode": "View the code",
   "openLog": "Open log",
   "releases": "Downloads and news",
-  "creators": "Creators",
-  "roles": {
-    "creator": "Creator",
-    "coCreator": "Co-creator"
+  "phoneTitle": "Your phone",
+  "phoneSteps": {
+    "install": "Install the Xyra app for Android from the downloads.",
+    "turnOn": "Here, in Settings → Phone, turn on the link and accept the Windows prompt.",
+    "scan": "Scan the code with the app: it lets you know when you find a match, even with the app closed."
   },
-  "thanks": "Thanks to OP.GG for the stats and to CommunityDragon for the icons."
+  "phoneSetup": "Set up the phone"
 }

@@ -11,6 +11,8 @@ export function formatter(language: string) {
     seconds: (value: number) => numbers({ style: 'unit', unit: 'second', unitDisplay: 'narrow' }).format(value),
     kilobytes: (bytes: number) => numbers({ style: 'unit', unit: 'kilobyte', maximumFractionDigits: 0 }).format(Math.max(1, bytes / BYTES_PER_KILOBYTE)),
     date: (iso: string) => dates.format(new Date(iso)),
+    /** A length of time as minutes and seconds, like 18:43. */
+    clock: (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`,
   };
 }
 

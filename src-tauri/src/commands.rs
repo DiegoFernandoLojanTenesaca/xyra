@@ -7,16 +7,17 @@ use tauri::{AppHandle, Manager, State};
 use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_opener::OpenerExt;
 use xyra_core::{
+    challenges::Challenges,
     config::{self, Config},
     errors::{AppError, Result},
     game_settings::{self, GameOption, GameSetting, SettingValue},
     model::{
-        AppEvent, AugmentRow, Build, BuildMode, ChampionInfo, Choices, EngineState, GameMode, ImportTarget, Meta, PhoneDeviceView, PhoneLink, PhonePermissions,
-        Position,
+        AppEvent, AugmentRow, Build, BuildMode, ChampionInfo, Choices, EngineState, GameMode, ImportTarget, Meta, MetaChampion, PatchChanges, PhoneDeviceView,
+        PhoneLink, PhonePermissions, Position,
     },
     opgg,
-    profile::{self, Profile},
-    stats::{self, StatsSummary},
+    profile::{self, MasteryProgress, Profile},
+    stats::{self, MatchSummary, StatsSummary},
     storage::{DataFolder, DataUsage},
     updates::{self, Release},
 };
@@ -118,6 +119,42 @@ pub async fn get_meta(shared: State<'_, App>) -> Result<Meta> {
 }
 
 #[tauri::command]
+pub async fn get_recent_matches(shared: State<'_, App>) -> Result<Vec<MatchSummary>> {
+    let shared = Arc::clone(&shared);
+    blocking(move || shared.recent_matches()).await
+}
+
+#[tauri::command]
+pub async fn get_masteries(shared: State<'_, App>) -> Result<Vec<MasteryProgress>> {
+    let shared = Arc::clone(&shared);
+    blocking(move || shared.masteries()).await
+}
+
+#[tauri::command]
+pub async fn get_challenges(shared: State<'_, App>) -> Result<Challenges> {
+    let shared = Arc::clone(&shared);
+    blocking(move || shared.challenges()).await
+}
+
+#[tauri::command]
+pub async fn get_mode_champions(shared: State<'_, App>, mode: GameMode) -> Result<Vec<MetaChampion>> {
+    let shared = Arc::clone(&shared);
+    blocking(move || shared.mode_champions(mode)).await
+}
+
+#[tauri::command]
+pub async fn get_patch_changes(shared: State<'_, App>) -> Result<PatchChanges> {
+    let shared = Arc::clone(&shared);
+    blocking(move || shared.patch_changes()).await
+}
+
+#[tauri::command]
+pub async fn take_bench_pick(shared: State<'_, App>) -> Result<()> {
+    let shared = Arc::clone(&shared);
+    blocking(move || shared.take_bench_pick()).await
+}
+
+#[tauri::command]
 pub async fn get_build(shared: State<'_, App>, champion: u32, mode: BuildMode, position: Option<Position>) -> Result<Build> {
     let shared = Arc::clone(&shared);
     blocking(move || shared.fetch_build(champion, mode, position)).await
@@ -127,6 +164,12 @@ pub async fn get_build(shared: State<'_, App>, champion: u32, mode: BuildMode, p
 pub async fn import_build(shared: State<'_, App>, champion: u32, target: ImportTarget, mode: BuildMode, position: Option<Position>) -> Result<()> {
     let shared = Arc::clone(&shared);
     blocking(move || shared.import_build(champion, mode, position, target)).await
+}
+
+#[tauri::command]
+pub async fn import_whole_build(shared: State<'_, App>, champion: u32, mode: BuildMode, position: Option<Position>) -> Result<()> {
+    let shared = Arc::clone(&shared);
+    blocking(move || shared.import_whole_build(champion, mode, position)).await
 }
 
 #[tauri::command]

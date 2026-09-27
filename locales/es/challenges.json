@@ -1,0 +1,23 @@
+{
+  "subtitle": "Tu nivel de desafíos y los que tienes a punto de subir.",
+  "loading": "Leyendo tus desafíos…",
+  "points": "Puntos",
+  "toNext": "Para el siguiente nivel",
+  "top": "Estás en el top",
+  "overall": "Nivel {{level}} en desafíos",
+  "categories": "Por categoría",
+  "category": {
+    "COLLECTION": "Colección",
+    "TEAMWORK": "Trabajo en equipo",
+    "EXPERTISE": "Experiencia",
+    "VETERANCY": "Veteranía",
+    "IMAGINATION": "Imaginación",
+    "LEGACY": "Legado"
+  },
+  "topValue": "top {{value}}",
+  "closest": "A punto de subir",
+  "nextLevel": "→ {{level}}",
+  "noLevel": "Sin nivel",
+  "noneClose": "No tienes desafíos en curso.",
+  "source": "Datos oficiales de tu cliente. Juega los que están cerca para subirlos rápido."
+}

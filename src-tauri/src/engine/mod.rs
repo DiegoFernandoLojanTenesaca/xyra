@@ -7,7 +7,7 @@ mod watch;
 
 pub use card_reader::demo_cards;
 
-use crate::screen;
+use crate::{screen, voice::Chime};
 use card_reader::CardReader;
 use catalog_loader::CatalogLoader;
 use game_tips::GameTipsReader;
@@ -29,6 +29,7 @@ use std::{
 use tauri::{AppHandle, Emitter, Manager};
 use xyra_core::{
     catalog::Catalog,
+    challenges::{self, Challenges},
     champ_select::{self, ChampSelectTracker},
     client_import,
     config::Config,
@@ -37,9 +38,13 @@ use xyra_core::{
     gameflow::{self, GameflowPhase},
     league::{self, Installation, Lcu, LcuEvent},
     matchmaking,
-    model::{AppEvent, Build, BuildMode, ChampionInfo, CurrentGame, EngineState, GameMode, ImportTarget, Matchup, Meta, Phase, PhoneDevice, Position},
-    opgg, profile,
-    stats::{self, StatsSummary, StoredGame},
+    model::{
+        AppEvent, Build, BuildMode, ChampionInfo, CurrentGame, EngineState, GameMode, ImportTarget, Matchup, Meta, MetaChampion, PatchChanges, Phase,
+        PhoneDevice, Position,
+    },
+    opgg, patch_notes,
+    profile::{self, MasteryProgress},
+    stats::{self, MatchSummary, StatsSummary, StoredGame},
     storage::Storage,
     updates::Release,
     web,
@@ -47,6 +52,8 @@ use xyra_core::{
 
 pub const MAIN_WINDOW: &str = "main";
 const META_MAX_AGE: Duration = Duration::from_secs(60 * 60);
+/// How many of the most mastered champions count as the player's own in the patch changes.
+const YOUR_CHAMPIONS: usize = 15;
 const SUBSCRIPTIONS: [&str; 4] = [profile::CURRENT_SUMMONER, gameflow::SESSION, champ_select::SESSION, stats::END_OF_GAME];
 const RECONNECT_DELAY: Duration = Duration::from_secs(2);
 const MAX_RECONNECTS: u32 = 5;
@@ -84,6 +91,10 @@ pub struct Shared {
     pub update: Mutex<Option<Release>>,
     /// The ranked tier list and when it was read.
     meta: Mutex<Option<(Instant, Meta)>>,
+    /// The ARAM and Arena tier lists and when each was read.
+    mode_champions: Mutex<HashMap<GameMode, (Instant, Vec<MetaChampion>)>>,
+    /// The champion changes of the patch, when they were read and in which language.
+    patch_changes: Mutex<Option<(Instant, &'static str, PatchChanges)>>,
     /// Counts state changes so the phone link can wait for the next one.
     state_version: Mutex<u64>,
     state_changed: Condvar,
@@ -143,6 +154,8 @@ impl Shared {
             web: web::client(),
             update: Mutex::new(None),
             meta: Mutex::new(None),
+            patch_changes: Mutex::new(None),
+            mode_champions: Mutex::new(HashMap::new()),
             state_version: Mutex::new(0),
             state_changed: Condvar::new(),
             phone: Mutex::new(None),
@@ -222,6 +235,76 @@ impl Shared {
         Ok(meta)
     }
 
+    /// The last games of every mode, from the client's match history.
+    pub fn recent_matches(&self) -> Result<Vec<MatchSummary>> {
+        Ok(stats::recent_matches(stats::read_history(&self.lcu()?)?, &self.catalog()))
+    }
+
+    /// Every champion the account has mastery on, with how far each next level is.
+    pub fn masteries(&self) -> Result<Vec<MasteryProgress>> {
+        profile::read_masteries(&self.lcu()?, &self.catalog())
+    }
+
+    pub fn challenges(&self) -> Result<Challenges> {
+        challenges::read(&self.lcu()?)
+    }
+
+    /// The tier list of ARAM or Arena, read again from OP.GG once it is older than an hour.
+    pub fn mode_champions(&self, mode: GameMode) -> Result<Vec<MetaChampion>> {
+        if let Some((read_at, champions)) = self.mode_champions.lock().unwrap().get(&mode)
+            && read_at.elapsed() < META_MAX_AGE
+        {
+            return Ok(champions.clone());
+        }
+        let champions = opgg::fetch_mode_champions(&self.web, mode, &self.catalog())?;
+        self.mode_champions.lock().unwrap().insert(mode, (Instant::now(), champions.clone()));
+        Ok(champions)
+    }
+
+    /// The champion changes of the current patch in the app's language, marking the player's champions; the client
+    /// has to have been open once so the notes' champions can be told apart.
+    pub fn patch_changes(&self) -> Result<PatchChanges> {
+        let language = self.language();
+        let cached = self
+            .patch_changes
+            .lock()
+            .unwrap()
+            .as_ref()
+            .filter(|(read_at, read_in, _)| read_at.elapsed() < META_MAX_AGE && *read_in == language)
+            .map(|(_, _, changes)| changes.clone());
+        let mut changes = match cached {
+            Some(changes) => changes,
+            None => {
+                let catalog = self.catalog();
+                if catalog.champion_aliases.is_empty() {
+                    return Err(AppError::ClientClosed);
+                }
+                let changes = patch_notes::fetch(&self.web, &self.meta()?.patch, language, &catalog)?;
+                *self.patch_changes.lock().unwrap() = Some((Instant::now(), language, changes.clone()));
+                changes
+            }
+        };
+        let yours = self.most_mastered(YOUR_CHAMPIONS);
+        for change in &mut changes.champions {
+            change.yours = yours.contains(&change.champion.id);
+        }
+        Ok(changes)
+    }
+
+    /// The `count` champions the player has the most mastery points on.
+    fn most_mastered(&self, count: usize) -> HashSet<u32> {
+        let mastery = self.mastery.read().unwrap();
+        let mut ranked: Vec<(&u32, &u64)> = mastery.iter().filter(|(_, points)| **points > 0).collect();
+        ranked.sort_by(|a, b| b.1.cmp(a.1));
+        ranked.into_iter().take(count).map(|(id, _)| *id).collect()
+    }
+
+    /// Swaps the player's champion for the one Xyra recommends from the ARAM bench.
+    pub fn take_bench_pick(&self) -> Result<()> {
+        let pick = self.state.lock().unwrap().champ_select.as_ref().and_then(|select| select.bench_pick.as_ref().map(|pick| pick.id));
+        champ_select::take_from_bench(&self.lcu()?, pick.ok_or(AppError::NotInChampSelect)?)
+    }
+
     pub fn fetch_build(&self, champion: u32, mode: BuildMode, position: Option<Position>) -> Result<Build> {
         opgg::fetch_build(&self.web, champion, mode, position, &self.catalog())
     }
@@ -233,15 +316,17 @@ impl Shared {
 
     /// Imports runes, items and spells of the picked champion; one failing does not stop the others.
     pub fn auto_import(&self, champion: u32, mode: BuildMode, position: Option<Position>) {
-        let (lcu, build) = match self.lcu().and_then(|lcu| Ok((lcu, self.fetch_build(champion, mode, position)?))) {
-            Ok(ready) => ready,
-            Err(e) => return self.log_error("auto import build", e),
-        };
-        for target in ImportTarget::ALL {
-            if let Err(e) = self.apply_build(&lcu, &build, target) {
-                self.log_error(&format!("auto import {target:?}"), e);
-            }
+        if let Err(e) = self.import_whole_build(champion, mode, position) {
+            self.log_error("auto import build", e);
         }
+    }
+
+    /// Imports runes, items and spells from one read of the build; one failing does not stop the others, and the first
+    /// failure is returned.
+    pub fn import_whole_build(&self, champion: u32, mode: BuildMode, position: Option<Position>) -> Result<()> {
+        let lcu = self.lcu()?;
+        let build = self.fetch_build(champion, mode, position)?;
+        ImportTarget::ALL.into_iter().map(|target| self.apply_build(&lcu, &build, target)).fold(Ok(()), Result::and)
     }
 
     fn apply_build(&self, lcu: &Lcu, build: &Build, target: ImportTarget) -> Result<()> {
@@ -316,6 +401,7 @@ struct Engine {
     cards: CardReader,
     tips: GameTipsReader,
     in_ready_check: bool,
+    chime: Option<Chime>,
     _watcher: Option<RecommendedWatcher>,
 }
 
@@ -366,6 +452,7 @@ impl Engine {
             cards,
             tips: GameTipsReader::new(),
             in_ready_check: false,
+            chime: Chime::new().map_err(|e| shared.log_error("match sound", e)).ok(),
             _watcher: watcher,
             shared,
         }
@@ -580,8 +667,16 @@ impl Engine {
             }
             _ => {}
         }
+        let found = phase == GameflowPhase::ReadyCheck && !self.in_ready_check;
         self.in_ready_check = phase == GameflowPhase::ReadyCheck;
         self.ready_check.follow(self.in_ready_check, &self.shared.config());
+        if found
+            && self.shared.config().match_sound
+            && let Some(chime) = &self.chime
+            && let Err(e) = chime.match_found()
+        {
+            self.shared.log_error("match sound", e);
+        }
         if phase == GameflowPhase::ChampSelect {
             self.history.cancel();
             if !self.champ_select.is_active() {

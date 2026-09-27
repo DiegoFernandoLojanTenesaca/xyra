@@ -2,9 +2,9 @@
   "gettingStarted": "Cómo empezar",
   "steps": {
     "borderless": "Pon el LoL en modo Sin bordes: Xyra lo cambia por ti desde Inicio.",
-    "joinGame": "Entra a una partida de ARAM: Caos (o Arena, si la activas).",
-    "pickRed": "Cuando salgan las cartas, toma la del marco rojo: es la mejor para tu campeón.",
-    "importRunes": "En la selección de campeones, abre Build e importa tus runas con un clic."
+    "pick": "Al elegir campeón, Xyra te pone runas, hechizos e ítems y te dice a quién tomar de la banca o contra quién.",
+    "cards": "En ARAM: Caos y Arena, toma la carta del marco rojo: es la mejor para tu campeón.",
+    "meta": "Antes de jugar, mira en Meta los mejores del parche y los buffs y nerfs de tus campeones."
   },
   "faqTitle": "Preguntas frecuentes",
   "faq": {
@@ -31,6 +31,30 @@
     "ocr": {
       "question": "Xyra no reconoce las cartas",
       "answer": "Windows necesita el reconocimiento de texto del idioma de tu cliente: agrégalo en Configuración → Hora e idioma → Idioma."
+    },
+    "notify": {
+      "question": "¿Cómo me avisa el celular cuando encuentro partida?",
+      "answer": "Con la app emparejada y \"Avisarme de la partida\" encendido en sus Ajustes, suena un aviso aunque la app esté cerrada, y puedes aceptar desde ahí. Mientras espera, verás una notificación fija de Xyra."
+    },
+    "bench": {
+      "question": "¿Qué hace \"Tomar de la banca\"?",
+      "answer": "En ARAM, cuando la banca tiene un campeón mejor que el tuyo según cómo ordenas las recomendaciones, el botón lo cambia por ti, igual que si lo tocaras en el cliente. Solo actúa cuando lo pulsas."
+    },
+    "patch": {
+      "question": "¿De dónde salen los buffs y nerfs?",
+      "answer": "De las notas oficiales del parche. Xyra compara los números de cada cambio para marcarlo como buff, nerf o ajuste; ábrelo en Meta para ver el detalle y el motivo que da Riot."
+    },
+    "order": {
+      "question": "¿Cómo elige Xyra qué campeón recomendarme?",
+      "answer": "Por el tier de OP.GG, tu maestría, lo que más juegas o una mezcla. Cámbialo en Inicio o desde el celular."
+    },
+    "away": {
+      "question": "¿El celular funciona fuera de casa?",
+      "answer": "No: el celular tiene que estar en la misma red Wi-Fi que tu PC. Así nada pasa por internet."
+    },
+    "update": {
+      "question": "¿Cómo se actualiza?",
+      "answer": "Xyra te avisa cuando hay versión nueva y se actualiza con un botón en Ajustes → Acerca de, sin desinstalar ni perder tus datos. La app del celular se actualiza desde sus Ajustes."
     }
   },
   "supportTitle": "¿Algo no funciona?",
@@ -39,10 +63,11 @@
   "viewCode": "Ver el código",
   "openLog": "Abrir registro",
   "releases": "Descargas y novedades",
-  "creators": "Creadores",
-  "roles": {
-    "creator": "Creador",
-    "coCreator": "Cocreador"
+  "phoneTitle": "Tu celular",
+  "phoneSteps": {
+    "install": "Instala la app Xyra para Android desde las descargas.",
+    "turnOn": "Aquí, en Ajustes → Celular, enciende el enlace y acepta el aviso de Windows.",
+    "scan": "Escanea el código con la app: te avisa cuando encuentres partida, aunque la tengas cerrada."
   },
-  "thanks": "Gracias a OP.GG por las estadísticas y a CommunityDragon por los íconos."
+  "phoneSetup": "Configurar el celular"
 }

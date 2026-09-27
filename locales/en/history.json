@@ -1,0 +1,12 @@
+{
+  "subtitle": "Your last 20 games of every mode, from the League client.",
+  "all": "All",
+  "loading": "Reading your history…",
+  "empty": "You have no recent games in this mode.",
+  "kda": "Average KDA",
+  "ratio": "KDA {{value}}",
+  "farm": "{{count}} CS",
+  "gold": "{{value}} gold",
+  "damage": "{{value}} damage",
+  "source": "From your client's official match history: the same you see in your League profile."
+}

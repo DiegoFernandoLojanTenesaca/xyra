@@ -14,6 +14,8 @@ pub const END_OF_GAME: &str = "/lol-end-of-game/v1/eog-stats-block";
 const MIN_AUGMENT_GAMES: u32 = 2;
 const TOP_AUGMENTS: usize = 15;
 const RECENT_GAMES: usize = 10;
+/// Solo/duo and flex queues.
+const RANKED_QUEUES: [u32; 2] = [420, 440];
 const UTF8_BOM: char = '\u{feff}';
 const CSV_LINE_END: &str = "\r\n";
 
@@ -75,7 +77,38 @@ struct HistoryGame {
     game_id: u64,
     game_mode: String,
     game_creation_date: String,
+    #[serde(default)]
+    queue_id: u32,
+    /// Seconds.
+    #[serde(default)]
+    game_duration: u32,
     participants: Vec<Participant>,
+}
+
+/// A game of any mode from the client's match history.
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[ts(export)]
+pub struct MatchSummary {
+    #[ts(type = "number")]
+    pub game_id: u64,
+    /// ISO 8601, UTC.
+    pub date: String,
+    pub champion: Asset,
+    pub mode: GameMode,
+    pub ranked: bool,
+    pub win: bool,
+    pub kills: u32,
+    pub deaths: u32,
+    pub assists: u32,
+    pub level: u32,
+    /// Minions and monsters killed.
+    pub farm: u32,
+    pub gold: u32,
+    pub damage: u32,
+    /// Seconds.
+    pub duration: u32,
+    /// The items the game ended with, in their slots.
+    pub items: Vec<Asset>,
 }
 
 #[derive(Deserialize)]
@@ -89,6 +122,36 @@ struct Participant {
 #[serde(rename_all = "camelCase")]
 struct ParticipantStats {
     win: bool,
+    #[serde(default)]
+    kills: u32,
+    #[serde(default)]
+    deaths: u32,
+    #[serde(default)]
+    assists: u32,
+    #[serde(default)]
+    champ_level: u32,
+    #[serde(default)]
+    total_minions_killed: u32,
+    #[serde(default)]
+    neutral_minions_killed: u32,
+    #[serde(default)]
+    gold_earned: u32,
+    #[serde(default)]
+    total_damage_dealt_to_champions: u32,
+    #[serde(default)]
+    item0: u32,
+    #[serde(default)]
+    item1: u32,
+    #[serde(default)]
+    item2: u32,
+    #[serde(default)]
+    item3: u32,
+    #[serde(default)]
+    item4: u32,
+    #[serde(default)]
+    item5: u32,
+    #[serde(default)]
+    item6: u32,
     player_augment_1: Option<u32>,
     player_augment_2: Option<u32>,
     player_augment_3: Option<u32>,
@@ -110,6 +173,41 @@ impl ParticipantStats {
 /// Adds the ARAM: Mayhem and Arena games of the account's recent match history that are not stored yet.
 pub fn read_history(lcu: &Lcu) -> Result<MatchHistory> {
     lcu.get_as(MATCH_HISTORY)
+}
+
+/// The history's games of every mode, newest first.
+pub fn recent_matches(history: MatchHistory, catalog: &Catalog) -> Vec<MatchSummary> {
+    history
+        .games
+        .games
+        .into_iter()
+        .filter_map(|game| {
+            let player = game.participants.into_iter().next()?;
+            let stats = &player.stats;
+            let items = [stats.item0, stats.item1, stats.item2, stats.item3, stats.item4, stats.item5, stats.item6]
+                .into_iter()
+                .filter(|item| catalog.items.contains_key(item))
+                .map(|item| named(&catalog.items, item))
+                .collect();
+            Some(MatchSummary {
+                game_id: game.game_id,
+                date: game.game_creation_date,
+                champion: catalog.champion(player.champion_id),
+                mode: GameMode::from_client(&game.game_mode),
+                ranked: RANKED_QUEUES.contains(&game.queue_id),
+                win: player.stats.win,
+                kills: stats.kills,
+                deaths: stats.deaths,
+                assists: stats.assists,
+                level: stats.champ_level,
+                farm: stats.total_minions_killed + stats.neutral_minions_killed,
+                gold: stats.gold_earned,
+                damage: stats.total_damage_dealt_to_champions,
+                duration: game.game_duration,
+                items,
+            })
+        })
+        .collect()
 }
 
 /// Adds the augment games of the history that are not stored yet and returns how many.
@@ -330,5 +428,20 @@ mod tests {
 
         let renamed = json!({ "games": { "games": [{ "gameId": 12, "gameMode": "KIWI", "gameCreationDate": "", "participants": [{ "championId": 1, "stats": { "victory": true } }] }] }});
         assert!(matches!(parse::<MatchHistory>(MATCH_HISTORY, &renamed), Err(AppError::ClientFormat(_))));
+    }
+
+    #[test]
+    fn summarizes_games_of_every_mode() {
+        let history = json!({ "games": { "games": [
+            { "gameId": 2, "gameMode": "CLASSIC", "queueId": 420, "gameCreationDate": "2026-09-25T10:00:00.000Z",
+              "participants": [{ "championId": 1, "stats": { "win": true, "kills": 7, "deaths": 2, "assists": 9 } }] },
+            { "gameId": 1, "gameMode": "ARAM", "queueId": 450, "gameCreationDate": "2026-09-24T10:00:00.000Z",
+              "participants": [{ "championId": 1, "stats": { "win": false } }] }
+        ]}});
+        let matches = recent_matches(parse(MATCH_HISTORY, &history).unwrap(), &Catalog::default());
+        assert_eq!(
+            matches.iter().map(|m| (m.game_id, m.mode, m.ranked, m.win, m.kills)).collect::<Vec<_>>(),
+            [(2, GameMode::SummonersRift, true, true, 7), (1, GameMode::Aram, false, false, 0)]
+        );
     }
 }

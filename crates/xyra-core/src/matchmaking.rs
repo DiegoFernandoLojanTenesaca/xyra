@@ -4,6 +4,7 @@ use serde::Deserialize;
 
 const READY_CHECK: &str = "/lol-matchmaking/v1/ready-check";
 const ACCEPT: &str = "/lol-matchmaking/v1/ready-check/accept";
+const DECLINE: &str = "/lol-matchmaking/v1/ready-check/decline";
 
 #[derive(Clone, Copy, Debug, PartialEq, Deserialize)]
 enum ReadyCheckState {
@@ -35,11 +36,20 @@ impl ReadyCheck {
 
 /// Accepts the found match unless the player already answered it; returns whether it accepted.
 pub fn accept_if_waiting(lcu: &Lcu) -> Result<bool> {
+    answer_if_waiting(lcu, ACCEPT)
+}
+
+/// Declines the found match unless the player already answered it; returns whether it declined.
+pub fn decline_if_waiting(lcu: &Lcu) -> Result<bool> {
+    answer_if_waiting(lcu, DECLINE)
+}
+
+fn answer_if_waiting(lcu: &Lcu, answer: &str) -> Result<bool> {
     let check: ReadyCheck = lcu.get_as(READY_CHECK)?;
     if !check.is_waiting() {
         return Ok(false);
     }
-    lcu.request(Method::POST, ACCEPT, None)?;
+    lcu.request(Method::POST, answer, None)?;
     Ok(true)
 }
 

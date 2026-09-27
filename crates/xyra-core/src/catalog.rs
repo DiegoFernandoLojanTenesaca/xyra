@@ -23,6 +23,9 @@ pub struct Catalog {
     pub augments: NamedAssets,
     pub augment_names: HashMap<String, Vec<u32>>,
     pub champions: NamedAssets,
+    /// Champion ids by their lowercase internal name, like "masteryi", which the official sites use.
+    #[serde(default)]
+    pub champion_aliases: HashMap<String, u32>,
     pub rarity: HashMap<u32, Rarity>,
     pub items: NamedAssets,
     /// Total gold cost of each item.
@@ -69,6 +72,8 @@ struct AugmentEntry {
 struct ChampionEntry {
     id: i64,
     name: String,
+    #[serde(default)]
+    alias: String,
     square_portrait_path: String,
 }
 
@@ -89,6 +94,7 @@ impl Catalog {
         }
         let champions: Vec<ChampionEntry> = lcu.get_as(CHAMPIONS)?;
         for champion in champions.into_iter().filter(|c| PLAYABLE_CHAMPION_IDS.contains(&c.id)) {
+            catalog.champion_aliases.insert(champion.alias.to_lowercase(), champion.id as u32);
             catalog.champions.insert(champion.id as u32, (champion.name, asset_url(&champion.square_portrait_path)));
         }
         if catalog.augment_names.is_empty() || catalog.champions.is_empty() {

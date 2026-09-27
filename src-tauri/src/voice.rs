@@ -1,10 +1,14 @@
 use windows::{
     Media::{Core::MediaSource, Playback::MediaPlayer, SpeechSynthesis::SpeechSynthesizer},
+    Storage::Streams::{DataWriter, InMemoryRandomAccessStream},
     core::{HSTRING, Result},
 };
 use xyra_core::{cards::Card, i18n};
 
 const SIDES: [&str; 3] = ["overlay:voice.left", "overlay:voice.middle", "overlay:voice.right"];
+/// League's match found sound, © Riot Games.
+const MATCH_FOUND: &[u8] = include_bytes!("../sounds/match_found.mp3");
+const MP3: &str = "audio/mpeg";
 
 pub struct Voice {
     synthesizer: SpeechSynthesizer,
@@ -26,6 +30,28 @@ impl Voice {
         }
         let audio = self.synthesizer.SynthesizeTextToStreamAsync(&HSTRING::from(text))?.join()?;
         self.player.SetSource(&MediaSource::CreateFromStream(&audio, &audio.ContentType()?)?)?;
+        self.player.Play()
+    }
+}
+
+/// Plays League's match found sound.
+pub struct Chime {
+    player: MediaPlayer,
+}
+
+impl Chime {
+    pub fn new() -> Result<Chime> {
+        Ok(Chime { player: MediaPlayer::new()? })
+    }
+
+    pub fn match_found(&self) -> Result<()> {
+        let stream = InMemoryRandomAccessStream::new()?;
+        let writer = DataWriter::CreateDataWriter(&stream)?;
+        writer.WriteBytes(MATCH_FOUND)?;
+        writer.StoreAsync()?.join()?;
+        writer.DetachStream()?;
+        stream.Seek(0)?;
+        self.player.SetSource(&MediaSource::CreateFromStream(&stream, &HSTRING::from(MP3))?)?;
         self.player.Play()
     }
 }

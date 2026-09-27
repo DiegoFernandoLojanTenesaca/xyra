@@ -22,7 +22,8 @@
   "imported": {
     "runes": "Done: the rune page is now active in your client.",
     "items": "Done: the set shows up in the in-game shop for this champion.",
-    "spells": "Done: spells set, each on the key where you already had it."
+    "spells": "Done: spells set, each on the key where you already had it.",
+    "all": "Done: runes, items and spells are in your client."
   },
   "loading": "Loading OP.GG build…",
   "pickRate": "{{value}} pick rate",
@@ -38,5 +39,6 @@
     "mid": "Mid",
     "adc": "Bot",
     "support": "Support"
-  }
+  },
+  "importAll": "Import build"
 }

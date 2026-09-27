@@ -22,7 +22,8 @@
   "imported": {
     "runes": "Listo: la página de runas ya está activa en tu cliente.",
     "items": "Listo: el set aparece en la tienda del juego con este campeón.",
-    "spells": "Listo: hechizos puestos, cada uno en la tecla donde ya lo tenías."
+    "spells": "Listo: hechizos puestos, cada uno en la tecla donde ya lo tenías.",
+    "all": "Listo: runas, ítems y hechizos en tu cliente."
   },
   "loading": "Cargando build de OP.GG…",
   "pickRate": "{{value}} de uso",
@@ -38,5 +39,6 @@
     "mid": "Medio",
     "adc": "Tirador",
     "support": "Soporte"
-  }
+  },
+  "importAll": "Importar build"
 }
