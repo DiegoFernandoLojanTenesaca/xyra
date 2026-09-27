@@ -7,10 +7,13 @@ export type Tab = (typeof TABS)[number];
 
 const deviceLanguage = () => navigator.language.split('-')[0];
 
+/** The address can open a tab, and Build on a champion: #meta, #build/222. */
+const [linkedTab, linkedChampion] = location.hash.slice(1).split('/');
+
 /** What the phone app shows: the tab, the champion open in Build and the texts in the PC's language. */
 class Mobile {
-  tab = $state<Tab>(TABS.find((tab) => `#${tab}` === location.hash) ?? 'live');
-  buildChampion = $state<number | null>(null);
+  tab = $state<Tab>(TABS.find((tab) => tab === linkedTab) ?? 'live');
+  buildChampion = $state<number | null>(Number(linkedChampion) || null);
   buildMode = $state<BuildMode | null>(null);
   buildPosition = $state<Position | null>(null);
   language = $derived(link.pc?.language ?? (LANGUAGES.includes(deviceLanguage()) ? deviceLanguage() : BASE_LANGUAGE));

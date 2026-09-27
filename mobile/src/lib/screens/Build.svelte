@@ -33,7 +33,7 @@
     (failure) => failure,
   );
   const build = resource(
-    () => (champion === null ? null : { champion, mode, position }),
+    () => (champion === null || link.status !== 'online' ? null : { champion, mode, position }),
     (key) => link.call<Build>('GET', '/api/build', key),
     (failure) => failure,
   );
