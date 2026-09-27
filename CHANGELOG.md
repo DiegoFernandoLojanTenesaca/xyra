@@ -1,6 +1,20 @@
-- Added the paired phones to Settings → Phone: whether each one is connected or when it was last seen, what it may do (accept matches, import builds, change settings) and a button to disconnect it.
-- Changed pairing so each phone gets its own key when it scans the QR code, and a disconnected phone stops working at once. Phones paired with 0.4.0 need the new app and a new scan.
-- Added links that open the phone app on a tab or on a champion's build.
-- Fixed the order picker in the phone's settings being cut off on small screens.
-- Fixed the phone's Build asking for a build before it was connected to your PC.
-- Updated the website with the phone app, its screenshots, a timeline of the versions and more questions.
+- Added a match notification on your phone: it rings with League's match found sound when your PC finds a match, even with the app closed, and has buttons to accept or decline it; turn it off or try it in the phone's Settings.
+- Added a Match found screen to the phone app, in the style of League's, with Accept and Decline.
+- Added your champion's build to the phone during champion select, with one button to import runes, items and spells; Home on the PC also imports the whole build at once.
+- Added an option in Game to play the match found sound on the PC too, for a muted client.
+- Added typing the pairing code by hand in the phone's scanner, when the QR cannot be scanned.
+- Added updates to the phone app: it tells you when there is a new version and installs it with one button, keeping your pairing.
+- Added the patch buffs and nerfs to Meta, read from the official patch notes, with your 15 most mastered champions first and every change with Riot's reason; Home also lists the ones of your champions.
+- Added a button to take the recommended champion from the ARAM bench, on the PC and on the phone, with its own permission for each paired phone.
+- Added modes to Home: Normal, Ranked, ARAM, ARAM: Mayhem and Arena, each with what matters in it, like the best champions by position, your rank, the ARAM and Arena tier lists and your recent games of that mode.
+- Added ARAM and Arena tier lists to Meta.
+- Added History, Mastery and Challenges under "Your account" in the sidebar, read from the client: your last 20 games of every mode with KDA, farm, gold, damage and items; every champion's mastery with the points and marks the next level needs; and your challenge level, each category and the challenges about to level up.
+- Added History, Mastery and Challenges to the phone app's Stats tab.
+- Added Phone and Settings to the sidebar.
+- Added a checklist to the phone app when it cannot reach your PC: whether it is on Wi-Fi and on the same network, and what to do next.
+- Fixed phones not reaching the PC on routers that only connect Wi-Fi devices once the PC has talked on the network: while the link is on, Xyra introduces itself on your network.
+- Changed the phone app icon to show the whole logo on a dark background.
+- Changed the region next to your name to the one players know, like LAN instead of LA1.
+- Changed Help to show how to connect your phone and more questions; the creators are now only in About.
+- Fixed OP.GG's top tier showing an empty badge; it now shows OP.
+- Fixed the phone app's content being covered by the navigation buttons on some phones.
