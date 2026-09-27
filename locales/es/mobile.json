@@ -33,7 +33,6 @@
   },
   "live": {
     "matchFound": "¡Partida encontrada!",
-    "accept": "Aceptar",
     "resume": "Reanudar",
     "yourChampion": "Tu campeón",
     "import": {
@@ -45,7 +44,12 @@
     "bench": "Tómalo de la banca",
     "counters": "Counters contra {{enemy}}",
     "idle": "Busca partida en tu PC: aquí podrás aceptarla y seguir la selección y tu partida.",
-    "notAllowed": "Tu PC no deja a este celular aceptar partidas. Cámbialo en Ajustes → Celular."
+    "notAllowed": "Tu PC no deja a este celular aceptar partidas. Cámbialo en Ajustes → Celular.",
+    "takeBench": "Tomar de la banca",
+    "acceptBig": "¡Aceptar!",
+    "decline": "Rechazar",
+    "accepted": "Aceptada: espera a los demás…",
+    "declined": "Rechazaste la partida"
   },
   "build": {
     "pick": "Busca un campeón para ver su build."
@@ -69,5 +73,62 @@
     "forget": "Desconectar este celular",
     "forgetHint": "Para volver a conectarlo tendrás que escanear el código otra vez.",
     "readOnly": "Solo puedes verlos: tu PC no deja a este celular cambiar ajustes."
+  },
+  "notify": {
+    "watchingChannel": "Esperando partida",
+    "matchChannel": "Partida encontrada",
+    "watching": "Xyra espera tu partida",
+    "watchingText": "Te aviso cuando encuentres partida en tu PC.",
+    "matchFound": "¡Partida encontrada!",
+    "matchText": "Acéptala desde aquí o en tu PC.",
+    "accept": "Aceptar",
+    "accepted": "Partida aceptada",
+    "acceptFailed": "No se pudo aceptar",
+    "champSelect": "Estás en la selección de campeón",
+    "champSelectText": "Vuelve a tu PC para elegir campeón.",
+    "testDone": "Así te avisará Xyra cuando encuentres partida.",
+    "decline": "Rechazar",
+    "declined": "Partida rechazada"
+  },
+  "phone": {
+    "title": "Este celular",
+    "watch": {
+      "title": "Avisarme de la partida",
+      "description": "Suena cuando encuentras partida, aunque la app esté cerrada. Mientras espera verás una notificación fija."
+    },
+    "version": "Xyra para Android {{version}}",
+    "test": "Probar aviso"
+  },
+  "update": {
+    "banner": "Hay una versión nueva de la app: v{{version}}. Toca para actualizar.",
+    "available": "Hay una versión nueva: v{{version}}.",
+    "upToDate": "Tienes la última versión.",
+    "checking": "Buscando…",
+    "check": "Buscar actualizaciones",
+    "install": "Actualizar",
+    "downloading": "Descargando… {{value}}",
+    "failed": "No se pudo descargar la actualización. Inténtalo otra vez.",
+    "hint": "Android te pedirá permiso para instalarla; tu emparejamiento se conserva."
+  },
+  "help": {
+    "title": "No encuentro tu PC",
+    "wifi": "Tu celular está en Wi-Fi",
+    "noWifi": "Tu celular no está en Wi-Fi",
+    "sameNetwork": "Está en la misma red que tu PC",
+    "otherNetwork": "Está en otra red que tu PC",
+    "cause": {
+      "waiting": "Tu PC todavía no responde. Xyra se presenta solo en tu red cada poco: espera unos segundos y el celular vuelve a intentar solo.",
+      "otherNetwork": "Conecta el celular al mismo Wi-Fi que tu PC.",
+      "noWifi": "Conéctate al Wi-Fi de tu casa, el mismo de tu PC.",
+      "unknown": "Conecta el celular al mismo Wi-Fi que tu PC y vuelve a intentarlo."
+    },
+    "open": "Revisa también que Xyra esté abierto en tu PC con el enlace encendido en Ajustes → Celular.",
+    "retry": "Reintentar"
+  },
+  "stats": {
+    "augments": "Aumentos",
+    "history": "Historial",
+    "mastery": "Maestría",
+    "challenges": "Desafíos"
   }
 }

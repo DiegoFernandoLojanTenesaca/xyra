@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { ChartColumn, Hammer, Radio, RefreshCw, Settings as SettingsIcon, TrendingUp } from '@lucide/svelte';
+  import { ChartColumn, Download, Hammer, Radio, RefreshCw, Settings as SettingsIcon, TrendingUp } from '@lucide/svelte';
   import { onMount, type Component } from 'svelte';
   import Logo from '$shared/ui/Logo.svelte';
+  import { android, type WatchTexts } from './lib/android.svelte';
   import { link } from './lib/link.svelte';
   import { mobile, TABS, type Tab } from './lib/mobile.svelte';
   import Build from './lib/screens/Build.svelte';
@@ -10,14 +11,40 @@
   import Pairing from './lib/screens/Pairing.svelte';
   import Settings from './lib/screens/Settings.svelte';
   import Stats from './lib/screens/Stats.svelte';
+  import MatchFound from './lib/MatchFound.svelte';
+  import Troubleshoot from './lib/Troubleshoot.svelte';
 
   const SCREENS: Record<Tab, Component> = { live: Live, build: Build, meta: Meta, stats: Stats, settings: Settings };
   const ICONS: Record<Tab, Component<{ size?: number }>> = { live: Radio, build: Hammer, meta: TrendingUp, stats: ChartColumn, settings: SettingsIcon };
+  const WATCH_TEXTS = [
+    'watchingChannel',
+    'matchChannel',
+    'watching',
+    'watchingText',
+    'matchFound',
+    'matchText',
+    'accept',
+    'accepted',
+    'acceptFailed',
+    'decline',
+    'declined',
+    'champSelect',
+    'champSelectText',
+    'testDone',
+  ] as const;
 
   const t = $derived(mobile.t);
   const Screen = $derived(SCREENS[mobile.tab]);
 
-  onMount(link.connect);
+  onMount(() => {
+    link.connect();
+    android.check();
+  });
+
+  $effect(() => {
+    const texts = Object.fromEntries(WATCH_TEXTS.map((key) => [key, t(`mobile:notify.${key}`)])) as WatchTexts;
+    android.follow(link.status === 'codeChanged' ? null : link.pairing, texts);
+  });
 </script>
 
 {#if !link.pairing || link.status === 'codeChanged'}
@@ -33,11 +60,21 @@
 
     {#if link.status === 'offline'}
       <button class="banner" onclick={link.connect}><RefreshCw size={14} />{t('mobile:offline')}</button>
+    {:else if android.release && mobile.tab !== 'settings'}
+      <button class="banner" onclick={() => (mobile.tab = 'settings')}
+        ><Download size={14} />{t('mobile:update.banner', { version: android.release.version })}</button
+      >
     {/if}
 
     <main>
-      {#key mobile.tab}<Screen />{/key}
+      {#if link.status === 'offline'}
+        <Troubleshoot hosts={link.pairing.hosts} onretry={link.connect} />
+      {:else}
+        {#key mobile.tab}<Screen />{/key}
+      {/if}
     </main>
+
+    <MatchFound />
 
     <nav>
       {#each TABS as tab (tab)}

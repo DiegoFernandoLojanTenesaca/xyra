@@ -33,7 +33,6 @@
   },
   "live": {
     "matchFound": "Match found!",
-    "accept": "Accept",
     "resume": "Resume",
     "yourChampion": "Your champion",
     "import": {
@@ -45,7 +44,12 @@
     "bench": "Take it from the bench",
     "counters": "Counters against {{enemy}}",
     "idle": "Queue up on your PC: here you can accept the match and follow champion select and your game.",
-    "notAllowed": "Your PC does not let this phone accept matches. Change it in Settings → Phone."
+    "notAllowed": "Your PC does not let this phone accept matches. Change it in Settings → Phone.",
+    "takeBench": "Take from the bench",
+    "acceptBig": "Accept!",
+    "decline": "Decline",
+    "accepted": "Accepted: waiting for the others…",
+    "declined": "You declined the match"
   },
   "build": {
     "pick": "Search a champion to see its build."
@@ -69,5 +73,62 @@
     "forget": "Disconnect this phone",
     "forgetHint": "To connect it again you will have to scan the code again.",
     "readOnly": "You can only see them: your PC does not let this phone change settings."
+  },
+  "notify": {
+    "watchingChannel": "Waiting for a match",
+    "matchChannel": "Match found",
+    "watching": "Xyra is waiting for your match",
+    "watchingText": "I will let you know when your PC finds a match.",
+    "matchFound": "Match found!",
+    "matchText": "Accept it from here or on your PC.",
+    "accept": "Accept",
+    "accepted": "Match accepted",
+    "acceptFailed": "Could not accept",
+    "champSelect": "You are in champion select",
+    "champSelectText": "Go back to your PC to pick a champion.",
+    "testDone": "That is how Xyra will let you know when you find a match.",
+    "decline": "Decline",
+    "declined": "Match declined"
+  },
+  "phone": {
+    "title": "This phone",
+    "watch": {
+      "title": "Tell me about the match",
+      "description": "Rings when you find a match, even with the app closed. While it waits you will see a pinned notification."
+    },
+    "version": "Xyra for Android {{version}}",
+    "test": "Test the notification"
+  },
+  "update": {
+    "banner": "A new version of the app is out: v{{version}}. Tap to update.",
+    "available": "A new version is out: v{{version}}.",
+    "upToDate": "You have the latest version.",
+    "checking": "Checking…",
+    "check": "Check for updates",
+    "install": "Update",
+    "downloading": "Downloading… {{value}}",
+    "failed": "The update could not be downloaded. Try again.",
+    "hint": "Android will ask for permission to install it; your pairing is kept."
+  },
+  "help": {
+    "title": "I can't find your PC",
+    "wifi": "Your phone is on Wi-Fi",
+    "noWifi": "Your phone is not on Wi-Fi",
+    "sameNetwork": "It is on the same network as your PC",
+    "otherNetwork": "It is on a different network than your PC",
+    "cause": {
+      "waiting": "Your PC does not answer yet. Xyra introduces itself on your network every little while: wait a few seconds and the phone tries again on its own.",
+      "otherNetwork": "Connect your phone to the same Wi-Fi as your PC.",
+      "noWifi": "Connect to your home Wi-Fi, the same as your PC.",
+      "unknown": "Connect your phone to the same Wi-Fi as your PC and try again."
+    },
+    "open": "Also check that Xyra is open on your PC with the link on in Settings → Phone.",
+    "retry": "Try again"
+  },
+  "stats": {
+    "augments": "Augments",
+    "history": "History",
+    "mastery": "Mastery",
+    "challenges": "Challenges"
   }
 }

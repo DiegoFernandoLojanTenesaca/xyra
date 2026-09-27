@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { Monitor, Unlink } from '@lucide/svelte';
+  import { BellRing, Download, Monitor, RefreshCw, Smartphone, Unlink } from '@lucide/svelte';
   import type { ChampionOrder, PhoneSettings } from '$shared/types';
   import SegmentedControl from '$shared/ui/SegmentedControl.svelte';
   import ToggleRow from '$shared/ui/ToggleRow.svelte';
+  import { android } from '../android.svelte';
   import { link } from '../link.svelte';
   import { mobile } from '../mobile.svelte';
 
@@ -39,6 +40,42 @@
     <small class="muted">{link.pc ? `Xyra ${link.pc.version}` : ''}</small>
   </div>
 </section>
+
+{#if android.available}
+  <section class="block panel cut">
+    <h2 class="section-title">{t('mobile:phone.title')}</h2>
+    <ToggleRow
+      title={t('mobile:phone.watch.title')}
+      description={t('mobile:phone.watch.description')}
+      checked={android.watching}
+      onchange={() => android.setWatching(!android.watching)}
+    />
+    {#if android.watching && link.pairing}
+      <button class="action wide test" onclick={android.testWatch}><BellRing size={14} />{t('mobile:phone.test')}</button>
+    {/if}
+    <div class="row app">
+      <Smartphone size={20} />
+      <span class="grow">
+        <b>{t('mobile:phone.version', { version: android.version })}</b>
+        <small class:accent={android.release} class="muted">
+          {#if android.failed}{t('mobile:update.failed')}
+          {:else if android.progress !== null}{t('mobile:update.downloading', { value: mobile.format.percent(android.progress) })}
+          {:else if android.release}{t('mobile:update.available', { version: android.release.version })}
+          {:else if android.checking}{t('mobile:update.checking')}
+          {:else}{t('mobile:update.upToDate')}{/if}
+        </small>
+      </span>
+    </div>
+    {#if android.release}
+      <button class="action primary wide" disabled={android.progress !== null} onclick={android.install}
+        ><Download size={14} />{t('mobile:update.install')}</button
+      >
+      <p class="muted hint">{t('mobile:update.hint')}</p>
+    {:else}
+      <button class="action wide" disabled={android.checking} onclick={android.check}><RefreshCw size={14} />{t('mobile:update.check')}</button>
+    {/if}
+  </section>
+{/if}
 
 {#if settings}
   {@const current = settings}
@@ -78,6 +115,18 @@
     width: 100%;
   }
   .hint {
+    font-size: var(--text-sm);
+  }
+  .app {
+    margin-bottom: var(--space-3);
+  }
+  .test {
+    margin: var(--space-2) 0 var(--space-4);
+  }
+  .app .grow {
+    display: grid;
+  }
+  .app small {
     font-size: var(--text-sm);
   }
 </style>

@@ -34,7 +34,7 @@ function saved(): Pairing | null {
   }
 }
 
-/** The connection with Xyra on the PC: finds it on the home network or Tailscale and follows its state. */
+/** The connection with Xyra on the PC: finds it on the home network and follows its state. */
 class Link {
   pairing = $state<Pairing | null>(saved());
   status = $state<LinkStatus>('connecting');
@@ -81,7 +81,7 @@ class Link {
     const pairing = this.pairing;
     if (!pairing) return;
     const session = this.#stop();
-    this.status = 'connecting';
+    if (this.status !== 'offline') this.status = 'connecting';
     for (const host of pairing.hosts) {
       const base = `http://${host}:${pairing.port}`;
       try {

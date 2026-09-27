@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { Download, Hammer, Play, Star } from '@lucide/svelte';
+  import { ArrowLeftRight, Download, Hammer, Play, Star } from '@lucide/svelte';
   import { qualityColor } from '$shared/design/theme';
   import { resource } from '$shared/services/resource.svelte';
-  import type { AugmentRow, Asset, StatsSummary } from '$shared/types';
+  import type { AugmentRow, Asset, Build, StatsSummary } from '$shared/types';
   import Skeleton from '$shared/ui/Skeleton.svelte';
   import TierBadge from '$shared/ui/TierBadge.svelte';
   import { link } from '../link.svelte';
@@ -20,7 +20,7 @@
   const select = $derived(engine?.champ_select ?? null);
   const game = $derived(engine?.phase === 'inGame' ? engine.game : null);
   const cards = $derived([...(engine?.cards ?? [])].sort((a, b) => a.x - b.x));
-  const can = $derived(link.pc?.permissions ?? { accept: false, import: false, settings: false });
+  const can = $derived(link.pc?.permissions ?? { accept: false, import: false, bench: false, settings: false });
   let notice = $state('');
   let busy = $state(false);
 
@@ -29,18 +29,30 @@
     () => link.get<StatsSummary>('/api/stats'),
     (failure) => failure,
   );
+  const build = resource(
+    () =>
+      select?.champion && link.status === 'online'
+        ? { champion: select.champion.id, mode: engine?.build_mode ?? (select.mode === 'summonersRift' ? 'rift' : 'aram'), position: select.position }
+        : null,
+    (key) => link.call<Build>('GET', '/api/build', key),
+    (failure) => failure,
+  );
   const augments = resource(
     () => (game?.champion && AUGMENT_MODES.includes(game.mode) ? { champion: game.champion.id, mode: game.mode } : null),
     (key) => link.call<AugmentRow[]>('GET', '/api/augments', key),
     (failure) => failure,
   );
 
-  async function run(path: string, params: Record<string, string> = {}) {
+  async function run(path: string, params: Record<string, string> = {}, done = 'mobile:done') {
     busy = true;
-    notice = await mobile.act('POST', path, params);
+    notice = await mobile.act('POST', path, params, done);
     busy = false;
   }
 </script>
+
+{#snippet icon(asset: Asset)}
+  {#if asset.icon}<img src={asset.icon} alt={asset.name} title={asset.name} />{/if}
+{/snippet}
 
 {#snippet row(asset: Asset, detail = '')}
   <div class="row">
@@ -53,13 +65,6 @@
 {#if !engine}
   <Skeleton label={t('mobile:status.connecting')} rows={5} />
 {:else}
-  {#if engine.ready_check}
-    <section class="block panel cut accept">
-      <h2 class="section-title">{t('mobile:live.matchFound')}</h2>
-      <button class="action primary huge" disabled={busy || !can.accept} onclick={() => run('/api/accept')}>{t('mobile:live.accept')}</button>
-      {#if !can.accept}<small class="muted">{t('mobile:live.notAllowed')}</small>{/if}
-    </section>
-  {/if}
   {#if notice}<p class="notice">{notice}</p>{/if}
 
   <section class="block panel cut phase">
@@ -76,10 +81,46 @@
       <section class="block panel cut">
         <h2 class="section-title">{t('mobile:live.yourChampion')}</h2>
         {@render row(select.champion, select.champion.rank ? `#${select.champion.rank}` : '')}
+        {#if build.value}
+          {@const current = build.value}
+          <div class="preview">
+            <div class="line">
+              <small class="muted">{t('build:spells')}</small>
+              <span class="icons"
+                >{#each current.spells as spell, i (i)}{@render icon(spell)}{/each}</span
+              >
+            </div>
+            <div class="line">
+              <small class="muted">{t('build:runes')}</small>
+              <span class="icons">
+                {#if current.runes.primary[0]}{@render icon(current.runes.primary[0])}{/if}
+                {@render icon(current.runes.primary_style)}{@render icon(current.runes.secondary_style)}
+              </span>
+            </div>
+            <div class="line">
+              <small class="muted">{t('build:blocks.core')}</small>
+              <span class="icons"
+                >{#each current.core_items as item, i (i)}{@render icon(item)}{/each}</span
+              >
+            </div>
+            {#if current.skill_priority.length}
+              <div class="line">
+                <small class="muted">{t('build:maxFirst')}</small><b class="accent">{current.skill_priority.join(' › ')}</b>
+              </div>
+            {/if}
+          </div>
+        {:else if build.error}
+          <p class="muted">{mobile.errorText(build.error)}</p>
+        {:else}
+          <Skeleton label={t('build:loading')} rows={2} />
+        {/if}
         {#if can.import}
+          <button class="action primary wide" disabled={busy} onclick={() => run('/api/import', { target: 'all' }, 'build:imported.all')}>
+            <Download size={14} />{t('build:importAll')}
+          </button>
           <div class="actions">
             {#each IMPORT_TARGETS as target (target)}
-              <button class="action" disabled={busy} onclick={() => run('/api/import', { target })}
+              <button class="action" disabled={busy} onclick={() => run('/api/import', { target }, `build:imported.${target}`)}
                 ><Download size={14} />{t(`mobile:live.import.${target}`)}</button
               >
             {/each}
@@ -94,6 +135,10 @@
       <section class="block panel cut">
         <h2 class="section-title">{t('mobile:live.bench')}</h2>
         {@render row(select.bench_pick, select.bench_pick.rank ? `#${select.bench_pick.rank}` : '')}
+        {#if can.bench}
+          <button class="action primary wide" disabled={busy} onclick={() => run('/api/bench')}><ArrowLeftRight size={14} />{t('mobile:live.takeBench')}</button
+          >
+        {/if}
       </section>
     {/if}
     {#if select.lane_opponent && select.counter_picks.length}
@@ -199,13 +244,24 @@
     width: 100%;
     margin-top: var(--space-2);
   }
-  .huge {
-    width: 100%;
-    padding: var(--space-6);
-    font-size: var(--text-xl);
+  .preview {
+    display: grid;
+    gap: var(--space-2);
+    margin: var(--space-3) 0;
   }
-  .accept {
-    border-color: var(--color-accent);
+  .line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+  .icons {
+    display: flex;
+    gap: var(--space-1);
+  }
+  .icons img {
+    width: var(--size-thumbSm);
+    height: var(--size-thumbSm);
   }
   .key {
     display: grid;
