@@ -4,11 +4,8 @@
   "riot": "Xyra isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games. League of Legends is a trademark of Riot Games, Inc.",
   "whatsNew": "What's new in this version",
   "changes": {
-    "lp": "The LP of each ranked game in Home → Ranked and on the phone, with your day in a chart.",
-    "skins": "Your skin at random or your favorite, put on by itself in champion select: turn it on in Game.",
-    "loot": "Loot: claim forgotten rewards, open what needs no key and forge keys, asking first when needed.",
-    "discord": "Your game on your Discord profile: turn it on in Settings → General.",
-    "guide": "A guide in Help and tidier menus, with no cut or overlapping text."
+    "withLeague": "Xyra opens with League: opening League brings Xyra up by itself. It no longer opens League.",
+    "skins": "Fixed the random or favorite skin, which sometimes did not go on in champion select."
   },
   "links": "Links",
   "builtWith": "Made with Rust, Tauri and Svelte. The in-game overlay is native: no browser, almost no memory.",

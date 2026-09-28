@@ -26,16 +26,13 @@ encuentras partida. Liviano, en español e inglés, y sin tocar el juego.</p>
 
 ## Novedades
 
-**1.0.0, la primera versión estable**
+**1.1.0**
 
-- **Tu LP:** cuánto te dio o te quitó cada clasificatoria, con tu día en una gráfica, en la PC y el celular.
-- **Tu skin, sola:** al tener campeón, una de tus skins al azar o tu favorita.
-- **Botín:** recompensas olvidadas, cofres y llaves, con confirmación antes de lo que no se deshace.
-- **Discord:** tu perfil muestra «Jugando a Xyra» con tu modo, campeón y KDA.
-- **Guía de uso** en Ayuda y menús más ordenados, sin textos cortados.
+- **Xyra se abre con el LoL:** al abrir el LoL, Xyra aparece solo (Ajustes → General). Ya no abre el LoL al abrirlo.
+- Arreglada la skin al azar o favorita, que a veces no se ponía en la selección.
 
-**0.9.0:** Sala con tus amigos, KDA en vivo y «Siguiendo a Xyra». **0.8.0:** aviso de nueva versión en la PC y el
-celular. Todas las notas en [Releases](../../releases). Las versiones siguen el
+**1.0.0, la primera versión estable:** tu LP por partida, tu skin al azar o favorita, Botín, Discord y una guía de uso.
+**0.9.0:** Sala con tus amigos, KDA en vivo y «Siguiendo a Xyra». Todas las notas en [Releases](../../releases). Las versiones siguen el
 [versionado semántico](https://semver.org/lang/es/): el tercer número sube con arreglos y el segundo con funciones
 nuevas.
 
@@ -117,7 +114,8 @@ se actualiza sola desde sus Ajustes.
 - **Tu cuenta:** historial de tus últimas partidas de todos los modos (KDA, oro, daño, hechizos e ítems), la
   maestría de cada campeón con lo que falta para subir y tus desafíos, con los que tienes a punto de subir.
 - **Tus datos:** winrate por campeón, mejores aumentos, nivel, rango y maestrías, separados por cuenta; exportación a CSV.
-- **Liviano y al día:** vive en la bandeja del sistema, solo trabaja durante tus partidas y se actualiza con un botón.
+- **Liviano y al día:** vive en la bandeja del sistema, aparece al abrir el LoL, solo trabaja durante tus partidas y se
+  actualiza con un botón.
 
 ## Cómo funciona
 
@@ -146,7 +144,7 @@ dibuja encima, y usa las APIs oficiales del cliente para lo que harías tú con 
    sigue.
 6. **Después:** el LP de cada clasificatoria, tu historial, si te va mejor siguiendo a Xyra y tu botín.
 
-Xyra arranca con Windows y queda en la bandeja.
+Xyra arranca con Windows, queda en la bandeja y aparece solo al abrir el LoL.
 
 Requisitos: Windows 10 u 11 y el reconocimiento de texto de Windows para el idioma de tu cliente (suele venir con el
 idioma de Windows).

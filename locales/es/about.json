@@ -4,11 +4,8 @@
   "riot": "Xyra no está respaldado por Riot Games ni refleja sus opiniones. League of Legends es marca de Riot Games, Inc.",
   "whatsNew": "Novedades de esta versión",
   "changes": {
-    "lp": "El LP de cada clasificatoria en Inicio → Clasificatoria y en el celular, con tu día en una gráfica.",
-    "skins": "Tu skin al azar o tu favorita, puesta sola en la selección: actívala en Juego.",
-    "loot": "Botín: reclama recompensas olvidadas, abre lo que no necesita llave y forja llaves, con confirmación.",
-    "discord": "Tu partida en tu perfil de Discord: actívalo en Ajustes → General.",
-    "guide": "Una guía de uso en Ayuda y menús más ordenados, sin textos cortados ni encimados."
+    "withLeague": "Xyra se abre con el LoL: al abrir el LoL, Xyra aparece solo. Ya no abre el LoL al abrirlo.",
+    "skins": "Arreglada la skin al azar o favorita, que a veces no se ponía en la selección."
   },
   "links": "Enlaces",
   "builtWith": "Hecho con Rust, Tauri y Svelte. La capa del juego es nativa: no usa navegador y casi no gasta memoria.",
