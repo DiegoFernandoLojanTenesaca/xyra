@@ -1,10 +1,7 @@
-- Added Lobby to the PC and the phone: open a lobby for Swiftplay, Draft, Solo/Duo, Flex, ARAM, ARAM: Mayhem or the Arena queue that is open, see who is in it, invite your friends online and start or stop looking for a match. Each paired phone has a new permission for it, on by default.
-- Added your KDA, farm, gold and level to Home and to the phone while you play, next to the next skill and item.
-- Added "Following Xyra" to Stats on the PC and the phone: how often you took the recommended augment, and how you did when you took it and when you picked another card.
-- Added the summoner spells to History, and your games with each champion to Build, with the result, KDA, spells and items of each.
-- Added two phone notifications: when champion select ends and your game starts loading, and when a new patch is out, with the changes to your champions.
-- Fixed the augment choices Xyra saw in a game being lost when Xyra or League closed before the match history listed the game: they are now kept on disk until then, so your recent games show whether you took the recommended card.
-- Fixed the in-game tips holding up the card reading while the game loads: the game's API is now read in the background.
-- Fixed the phone's Match found screen staying up with its buttons when the phone lost your PC.
-- Fixed the phone's update check leaving its button disabled on networks that never answer.
-- Changed the card reading to skip the augment names whose length already rules them out, so each read of the screen takes less work.
+- Added the LP of each ranked game to Home → Ranked and to the phone's Stats: what each Solo/Duo or Flex game gave or took, how your day goes and a chart of your last games. It is your official LP; Xyra does not work out MMR.
+- Added a skin for your champion in champion select, in Game: one of yours at random, with chromas if you want, or your favorite, picked in Build. It only uses skins you own, once per champion, so a skin you pick by hand stays; the phone has a button for another one at random.
+- Added Loot under Your account: your essences, chests and keys, rewards the client kept waiting for you to pick, and actions to open what needs no key, forge keys, open chests with your keys and disenchant shards of champions you own. Disenchanting asks first, and Xyra never touches skin shards, emotes or eternals.
+- Added your game to your Discord profile, in Settings → General: "Playing Xyra" with your mode, champion, picture and KDA, or just the mode; it also shows champion select, the lobby and the queue.
+- Added a guide to Help, moment by moment of a game with buttons to each screen, and a welcome window with it the first time you open Xyra.
+- Fixed texts cut at the right edge across the app, like the result of your last games on Home, the sidebar running past the bottom of the window, the phone permissions covering the phone's name in Settings → Phone, the creators' role and team in About, and tabs and headers breaking on narrow windows.
+- Changed the version numbers to semantic versioning: this is the first stable version.
