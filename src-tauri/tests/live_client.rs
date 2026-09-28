@@ -95,8 +95,8 @@ fn talks_to_the_running_client() {
     let build = opgg::fetch_build(&http, AHRI, BuildMode::Aram, None, &catalog).expect("OP.GG build");
     assert_eq!(build.runes.primary.len() + build.runes.secondary.len() + build.runes.shards.len(), 9);
 
-    let latest = updates::check(&web::client()).expect("GitHub latest release");
-    println!("update available: {:?}", latest.map(|release| release.version));
+    let latest = updates::check(&web::client(), "es").expect("GitHub latest release");
+    println!("update available: {:?}", latest.map(|release| (release.version, release.highlights)));
 
     if env::var("XYRA_SMOKE_WRITE").is_ok() {
         match client_import::import_runes(&lcu, &build, "Smoke") {

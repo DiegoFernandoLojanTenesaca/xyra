@@ -4,6 +4,7 @@ use crate::{
 };
 use ring::digest::{Context, SHA256};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::{
     fs::{self, File},
     io::{Read, Write},
@@ -13,6 +14,8 @@ use std::{
 use ts_rs::TS;
 
 const LATEST_RELEASE: &str = "https://api.github.com/repos/DiegoFernandoLojanTenesaca/xyra/releases/latest";
+/// The repository's files at any tag, where each version keeps its highlights in `locales/<language>/about.json`.
+const REPOSITORY_FILES: &str = "https://raw.githubusercontent.com/DiegoFernandoLojanTenesaca/xyra";
 const GITHUB_JSON: &str = "application/vnd.github+json";
 const INSTALLER_EXTENSION: &str = ".exe";
 const SHA256_PREFIX: &str = "sha256:";
@@ -26,6 +29,8 @@ const CURRENT_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub struct Release {
     pub version: String,
     pub notes_url: String,
+    /// What the version brings, in the app's language; empty when they could not be read.
+    pub highlights: Vec<String>,
     #[serde(skip)]
     installer_url: String,
     #[serde(skip)]
@@ -62,17 +67,29 @@ fn newer_release(answer: ReleaseAnswer, current: &str) -> Option<Release> {
     is_newer(&answer.tag_name, current).then(|| Release {
         version: answer.tag_name.trim_start_matches('v').to_string(),
         notes_url: answer.html_url,
+        highlights: Vec::new(),
         installer_url: installer.browser_download_url,
         size: installer.size,
         sha256: installer.digest.and_then(|digest| digest.strip_prefix(SHA256_PREFIX).map(str::to_lowercase)),
     })
 }
 
-/// The latest GitHub release when it is newer than this app and ships an installer.
-pub fn check(http: &Client) -> Result<Option<Release>> {
+/// The latest GitHub release when it is newer than this app and ships an installer, with its highlights in `language`.
+pub fn check(http: &Client, language: &str) -> Result<Option<Release>> {
     let text = http.get(LATEST_RELEASE).header(reqwest::header::ACCEPT, GITHUB_JSON).send()?.error_for_status()?.text()?;
     let answer: ReleaseAnswer = serde_json::from_str(&text).map_err(|e| AppError::Network(e.to_string()))?;
-    Ok(newer_release(answer, CURRENT_VERSION))
+    let tag = answer.tag_name.clone();
+    Ok(newer_release(answer, CURRENT_VERSION).map(|release| Release { highlights: read_highlights(http, &tag, language).unwrap_or_default(), ..release }))
+}
+
+fn read_highlights(http: &Client, tag: &str, language: &str) -> Result<Vec<String>> {
+    let about: Value = http.get(format!("{REPOSITORY_FILES}/{tag}/locales/{language}/about.json")).send()?.error_for_status()?.json()?;
+    Ok(highlights(&about))
+}
+
+/// The texts of About's "What's new", in the order they are written.
+fn highlights(about: &Value) -> Vec<String> {
+    about["changes"].as_object().map_or_else(Vec::new, |changes| changes.values().filter_map(Value::as_str).map(String::from).collect())
 }
 
 fn hex(bytes: &[u8]) -> String {
@@ -137,5 +154,12 @@ mod tests {
         );
         assert!(newer_release(answer("0.3.0", "xyra-0.3.0.zip"), "0.2.0").is_none());
         assert!(newer_release(answer("0.2.0", "xyra-0.2.0.exe"), "0.2.0").is_none());
+    }
+
+    #[test]
+    fn keeps_the_highlights_in_their_order() {
+        let about = json!({ "changes": { "options": "Your options", "cards": "Labels", "flicker": "No flicker" } });
+        assert_eq!(highlights(&about), ["Your options", "Labels", "No flicker"]);
+        assert!(highlights(&json!({ "license": "MIT" })).is_empty());
     }
 }

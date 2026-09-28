@@ -4,11 +4,8 @@
   "riot": "Xyra isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games. League of Legends is a trademark of Riot Games, Inc.",
   "whatsNew": "What's new in this version",
   "changes": {
-    "options": "In ARAM and ARAM: Mayhem champion select, your options with the best first and a button to take any; every other champion below.",
-    "rift": "In Summoner's Rift champion select, every champion of your position.",
-    "cards": "Augment labels show even when OP.GG is slow to answer.",
-    "flicker": "Home, Build and Augments no longer flicker during a game.",
-    "client": "A steadier connection to the client as you sign in, and the phone link starts again if it could not."
+    "update": "When a new version is out, a window tells you what it brings and you install it with one button or leave it for later.",
+    "both": "The PC and the phone remind you to update the other one, since they work best on the same version."
   },
   "links": "Links",
   "builtWith": "Made with Rust, Tauri and Svelte. The in-game overlay is native: no browser, almost no memory.",
@@ -26,5 +23,10 @@
   "roles": {
     "creator": "Creator",
     "coCreator": "Co-creator"
-  }
+  },
+  "dialogTitle": "Xyra v{{version}} is here",
+  "dialogVersions": "You have v{{current}}. The new one brings:",
+  "dialogPhone": "If you use the phone app, update it too: the PC and the phone work best on the same version. The app offers it when you open it.",
+  "later": "Not now",
+  "updateNow": "Update now"
 }

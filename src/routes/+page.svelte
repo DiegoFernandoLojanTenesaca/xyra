@@ -39,6 +39,7 @@
   import Settings from '$lib/screens/Settings.svelte';
   import Stats from '$lib/screens/Stats.svelte';
   import Logo from '$lib/ui/Logo.svelte';
+  import UpdateDialog from '$lib/ui/UpdateDialog.svelte';
 
   applyTokens();
 
@@ -172,6 +173,7 @@
       {#key app.page}
         <div class="page"><Screen /></div>
       {/key}
+      <UpdateDialog />
     {/if}
   </main>
 </div>

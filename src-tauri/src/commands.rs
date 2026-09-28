@@ -226,7 +226,7 @@ pub fn delete_data(app: AppHandle, shared: State<App>) -> Result<()> {
 pub async fn check_update(shared: State<'_, App>) -> Result<Option<Release>> {
     let shared = Arc::clone(&shared);
     blocking(move || {
-        let release = updates::check(&shared.web)?;
+        let release = updates::check(&shared.web, shared.language())?;
         *shared.update.lock().unwrap() = release.clone();
         Ok(release)
     })
@@ -242,7 +242,7 @@ pub async fn install_update(app: AppHandle, shared: State<'_, App>) -> Result<()
         move || {
             let release = match shared.update.lock().unwrap().clone() {
                 Some(release) => release,
-                None => updates::check(&shared.web)?.ok_or(AppError::NoData)?,
+                None => updates::check(&shared.web, shared.language())?.ok_or(AppError::NoData)?,
             };
             updates::download(&shared.web, &release, &shared.storage.updates_dir(), |done| emit(&app, &shared, AppEvent::UpdateProgress, done))
         }

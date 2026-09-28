@@ -106,7 +106,14 @@
     "install": "Update",
     "downloading": "Downloading… {{value}}",
     "failed": "The update could not be downloaded. Try again.",
-    "hint": "Android will ask for permission to install it; your pairing is kept."
+    "hint": "Android will ask for permission to install it; your pairing is kept.",
+    "title": "New version: v{{version}}",
+    "versions": "You have v{{current}}. The new one brings:",
+    "pcOlder": "Your PC has Xyra v{{pc}}: update it too from Xyra on the PC, since both work best on the same version.",
+    "pcReady": "Your PC already has Xyra v{{pc}}.",
+    "pcUnknown": "Update Xyra on your PC too: both work best on the same version.",
+    "later": "Not now",
+    "pcBehind": "Your PC has Xyra v{{pc}} and your app v{{app}}: update Xyra on the PC."
   },
   "help": {
     "title": "I can't find your PC",

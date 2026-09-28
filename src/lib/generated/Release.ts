@@ -3,4 +3,8 @@
 /**
  * A published version newer than the running one, with the installer to get it.
  */
-export type Release = { version: string, notes_url: string, };
+export type Release = { version: string, notes_url: string, 
+/**
+ * What the version brings, in the app's language; empty when they could not be read.
+ */
+highlights: Array<string>, };

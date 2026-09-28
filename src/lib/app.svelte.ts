@@ -22,6 +22,8 @@ export type MetaMode = (typeof META_MODES)[number];
 
 const CHAMPION_PAGES: readonly Page[] = ['build', 'augments'];
 const HOME_MODE_KEY = 'xyra-home-mode';
+/** The version the player chose not to install for now. */
+const SKIPPED_UPDATE_KEY = 'xyra-update-later';
 /** The Home tab of each game mode; the Rift has two, normal and ranked. */
 const HOME_TABS: Partial<Record<GameMode, HomeMode>> = { aram: 'aram', mayhem: 'mayhem', arena: 'arena', summonersRift: 'normal' };
 /** The game mode of each Home tab; normal and ranked are both the Rift. */
@@ -61,6 +63,7 @@ class App {
   profileError = $state('');
   newGames = $state(0);
   update = $state<Release | null>(null);
+  skippedUpdate = $state(localStorage.getItem(SKIPPED_UPDATE_KEY));
   updateProgress = $state<number | null>(null);
   updateError = $state('');
   checkingUpdate = $state(false);
@@ -211,6 +214,13 @@ class App {
       this.updateError = this.errorText(error);
     }
     this.checkingUpdate = false;
+  };
+
+  /** Stops offering this version in a window; the sidebar and About still offer it. */
+  skipUpdate = () => {
+    if (!this.update) return;
+    localStorage.setItem(SKIPPED_UPDATE_KEY, this.update.version);
+    this.skippedUpdate = this.update.version;
   };
 
   installUpdate = async () => {

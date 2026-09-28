@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { ChartColumn, Download, Hammer, Radio, RefreshCw, Settings as SettingsIcon, TrendingUp } from '@lucide/svelte';
+  import { ChartColumn, Download, Hammer, Monitor, Radio, RefreshCw, Settings as SettingsIcon, TrendingUp } from '@lucide/svelte';
   import { onMount, type Component } from 'svelte';
   import Logo from '$shared/ui/Logo.svelte';
-  import { android, type WatchTexts } from './lib/android.svelte';
+  import { android, isNewer, type WatchTexts } from './lib/android.svelte';
   import { link } from './lib/link.svelte';
   import { mobile, TABS, type Tab } from './lib/mobile.svelte';
   import Build from './lib/screens/Build.svelte';
@@ -13,6 +13,7 @@
   import Stats from './lib/screens/Stats.svelte';
   import MatchFound from './lib/MatchFound.svelte';
   import Troubleshoot from './lib/Troubleshoot.svelte';
+  import UpdateDialog from './lib/UpdateDialog.svelte';
 
   const SCREENS: Record<Tab, Component> = { live: Live, build: Build, meta: Meta, stats: Stats, settings: Settings };
   const ICONS: Record<Tab, Component<{ size?: number }>> = { live: Radio, build: Hammer, meta: TrendingUp, stats: ChartColumn, settings: SettingsIcon };
@@ -35,6 +36,8 @@
 
   const t = $derived(mobile.t);
   const Screen = $derived(SCREENS[mobile.tab]);
+  /** The PC's Xyra, when it is older than this app. */
+  const pcBehind = $derived(link.state && android.version && isNewer(android.version, link.state.version) ? link.state.version : null);
 
   onMount(() => {
     link.connect();
@@ -64,6 +67,8 @@
       <button class="banner" onclick={() => (mobile.tab = 'settings')}
         ><Download size={14} />{t('mobile:update.banner', { version: android.release.version })}</button
       >
+    {:else if pcBehind}
+      <p class="banner"><Monitor size={14} />{t('mobile:update.pcBehind', { pc: pcBehind, app: android.version })}</p>
     {/if}
 
     <main>
@@ -75,6 +80,7 @@
     </main>
 
     <MatchFound />
+    <UpdateDialog />
 
     <nav>
       {#each TABS as tab (tab)}
@@ -131,6 +137,7 @@
   }
   .banner {
     display: flex;
+    margin: 0;
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-3) var(--space-4);

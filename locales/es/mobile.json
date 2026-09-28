@@ -106,7 +106,14 @@
     "install": "Actualizar",
     "downloading": "Descargando… {{value}}",
     "failed": "No se pudo descargar la actualización. Inténtalo otra vez.",
-    "hint": "Android te pedirá permiso para instalarla; tu emparejamiento se conserva."
+    "hint": "Android te pedirá permiso para instalarla; tu emparejamiento se conserva.",
+    "title": "Nueva versión: v{{version}}",
+    "versions": "Tienes la v{{current}}. Esto trae la nueva:",
+    "pcOlder": "Tu PC tiene Xyra v{{pc}}: actualízala también desde Xyra en la PC, porque las dos funcionan mejor con la misma versión.",
+    "pcReady": "Tu PC ya tiene Xyra v{{pc}}.",
+    "pcUnknown": "Actualiza también Xyra en tu PC: las dos funcionan mejor con la misma versión.",
+    "later": "Ahora no",
+    "pcBehind": "Tu PC tiene Xyra v{{pc}} y tu app la v{{app}}: actualiza Xyra en la PC."
   },
   "help": {
     "title": "No encuentro tu PC",
