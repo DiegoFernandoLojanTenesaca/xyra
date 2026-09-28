@@ -1,7 +1,2 @@
-- Added the LP of each ranked game to Home → Ranked and to the phone's Stats: what each Solo/Duo or Flex game gave or took, how your day goes and a chart of your last games. It is your official LP; Xyra does not work out MMR.
-- Added a skin for your champion in champion select, in Game: one of yours at random, with chromas if you want, or your favorite, picked in Build. It only uses skins you own, once per champion, so a skin you pick by hand stays; the phone has a button for another one at random.
-- Added Loot under Your account: your essences, chests and keys, rewards the client kept waiting for you to pick, and actions to open what needs no key, forge keys, open chests with your keys and disenchant shards of champions you own. Disenchanting asks first, and Xyra never touches skin shards, emotes or eternals.
-- Added your game to your Discord profile, in Settings → General: "Playing Xyra" with your mode, champion, picture and KDA, or just the mode; it also shows champion select, the lobby and the queue.
-- Added a guide to Help, moment by moment of a game with buttons to each screen, and a welcome window with it the first time you open Xyra.
-- Fixed texts cut at the right edge across the app, like the result of your last games on Home, the sidebar running past the bottom of the window, the phone permissions covering the phone's name in Settings → Phone, the creators' role and team in About, and tabs and headers breaking on narrow windows.
-- Changed the version numbers to semantic versioning: this is the first stable version.
+- Changed "Open League with Xyra" to the other way around, "Open Xyra with League": opening League brings Xyra up by itself, once each time the client opens and never over a game. Xyra no longer opens League.
+- Fixed the random or favorite skin going on one step late in champion select, so it sometimes never went on.
