@@ -9,9 +9,10 @@
 </p>
 
 <p align="center"><b>Companion de League of Legends para todos los modos.</b> Al elegir campeón te pone runas, hechizos e
-ítems de OP.GG, te dice a quién tomar de la banca o contra quién, te marca los buffs y nerfs del parche y, en ARAM: Caos y
-Arena, la mejor carta de aumento en el momento en que sale. Con app para Android que te avisa cuando encuentras partida.
-Liviano, en español e inglés, y sin tocar el juego.</p>
+ítems de OP.GG y tu skin, te dice a quién tomar de la banca o contra quién, te marca los buffs y nerfs del parche y, en
+ARAM: Caos y Arena, la mejor carta de aumento en el momento en que sale. Además lleva el LP de cada clasificatoria, ordena
+tu botín, arma la sala con tus amigos y muestra en Discord lo que juegas. Con app para Android que te avisa cuando
+encuentras partida. Liviano, en español e inglés, y sin tocar el juego.</p>
 
 <p align="center">
   <a href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases/latest"><b>Descargar para Windows</b></a> ·
@@ -70,8 +71,9 @@ nuevas.
 ## Xyra en tu celular
 
 Empareja la app para Android con el QR de Ajustes → Celular y usa Xyra desde el sofá: te avisa cuando encuentras partida
-(aunque la app esté cerrada), aceptas desde el aviso, sigues la selección, importas la build, tomas de la banca y ves el
-meta, tus datos y los consejos en partida. Todo por tu Wi-Fi, sin pasar por internet.
+(aunque la app esté cerrada), aceptas desde el aviso, creas la sala e invitas a tus amigos, sigues la selección, importas
+la build, tomas de la banca y ves el meta, tu LP, tu KDA en vivo y los consejos en partida. Todo por tu Wi-Fi, sin pasar
+por internet.
 
 <table>
   <tr>
@@ -130,11 +132,21 @@ No lee la memoria del juego, no le inyecta nada, no simula teclas ni clics y no 
 dibuja encima, y usa las APIs oficiales del cliente para lo que harías tú con un clic. Todos los detalles en
 [SECURITY.md](SECURITY.md).
 
-## Instalación
+## Cómo se usa
 
-1. Descarga `xyra-x.y.z.exe` desde [Releases](../../releases/latest) e instálalo.
-2. Pon el LoL en **Sin bordes** (Opciones => Video => Modo de ventana). Xyra lo hace por ti con el juego cerrado.
-3. Juega. Xyra arranca con Windows y queda en la bandeja.
+1. **Instala:** descarga `xyra-x.y.z.exe` desde [Releases](../../releases/latest) e instálalo; no pide permisos de
+   administrador. La primera vez, Xyra te muestra una guía de uso, que siempre tienes en Ajustes → Ayuda.
+2. **Sin bordes:** pon el LoL en **Sin bordes** (Opciones => Video => Modo de ventana) para ver las etiquetas. Xyra lo
+   hace por ti con el juego cerrado.
+3. **Antes de jugar:** crea tu sala e invita a tus amigos desde Sala, o busca partida como siempre. En Meta ves los
+   mejores del parche.
+4. **En la selección:** tu build y tu skin se ponen solas si lo activas en Juego. En ARAM, tus opciones de la banca con
+   la mejor primero.
+5. **En partida:** toma la carta del marco rojo en ARAM: Caos y Arena. En Inicio y en el celular ves tu KDA y qué ítem
+   sigue.
+6. **Después:** el LP de cada clasificatoria, tu historial, si te va mejor siguiendo a Xyra y tu botín.
+
+Xyra arranca con Windows y queda en la bandeja.
 
 Requisitos: Windows 10 u 11 y el reconocimiento de texto de Windows para el idioma de tu cliente (suele venir con el
 idioma de Windows).
@@ -159,6 +171,15 @@ revisar.
 </details>
 <details><summary><b>¿De dónde salen los buffs y nerfs?</b></summary>
 De las notas oficiales del parche. Xyra compara los números de cada cambio para marcarlo como buff, nerf o ajuste.
+</details>
+<details><summary><b>¿Xyra toca mis skins o mi botín sin preguntarme?</b></summary>
+No. La skin solo se pone si eliges «Aleatoria» o «Tu favorita» en Juego, y siempre una de las tuyas. En Botín nada pasa
+hasta que tocas un botón, y lo que no se puede deshacer te pide confirmación. Nunca toca fragmentos de skin, gestos ni
+eternos.
+</details>
+<details><summary><b>¿Cómo pongo Xyra en mi Discord?</b></summary>
+En Ajustes → General → Discord activa «Mostrar en Discord lo que juegas». Discord tiene que estar abierto en tu PC y con
+«Compartir tu actividad» encendido en su Privacidad de actividad.
 </details>
 <details><summary><b>¿Cómo se actualiza?</b></summary>
 Xyra te avisa y se actualiza con un botón, sin desinstalar ni perder tus datos. La app del celular, desde sus Ajustes.
@@ -189,7 +210,8 @@ responsabilidad.
 **Xyra** is a League of Legends companion for every mode. It sets your runes, spells and items from OP.GG when you pick
 a champion, tells you who to take from the bench or who counters your lane opponent, marks the patch buffs and nerfs,
 and labels **ARAM: Mayhem** and **Arena** augment cards with how good each one is for your champion. Its Android app
-lets you know when you find a match, even with the app closed. Lightweight, Spanish and English. By
+lets you know when you find a match, even with the app closed. Version 1.0.0 is the first stable one, with the LP of
+each ranked game, your skin in champion select, your loot and your game on Discord. Lightweight, Spanish and English. By
 **@DiegoFernandoLojanTenesaca** (IndagaLab) and **@jahirxtrap** (Xynitra).
 
 - **Home by mode:** Normal, Ranked, ARAM, ARAM: Mayhem and Arena, each with its best champions, tier lists and your recent games.
