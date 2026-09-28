@@ -1,3 +1,10 @@
-- Added a window on the PC and the phone when a new version is out: it shows what the version brings, in your language, with buttons to update now or later; the sidebar and Settings keep offering it.
-- Added a reminder to update the other one too: the PC's window tells you to update the phone app, and the phone's tells you whether Xyra on your PC is up to date; the phone also warns when the PC has an older Xyra than the app.
-- Changed the website's bar to list every section and mark the one you are reading, with its own row that scrolls sideways on phones and small windows, and a button to go back up.
+- Added Lobby to the PC and the phone: open a lobby for Swiftplay, Draft, Solo/Duo, Flex, ARAM, ARAM: Mayhem or the Arena queue that is open, see who is in it, invite your friends online and start or stop looking for a match. Each paired phone has a new permission for it, on by default.
+- Added your KDA, farm, gold and level to Home and to the phone while you play, next to the next skill and item.
+- Added "Following Xyra" to Stats on the PC and the phone: how often you took the recommended augment, and how you did when you took it and when you picked another card.
+- Added the summoner spells to History, and your games with each champion to Build, with the result, KDA, spells and items of each.
+- Added two phone notifications: when champion select ends and your game starts loading, and when a new patch is out, with the changes to your champions.
+- Fixed the augment choices Xyra saw in a game being lost when Xyra or League closed before the match history listed the game: they are now kept on disk until then, so your recent games show whether you took the recommended card.
+- Fixed the in-game tips holding up the card reading while the game loads: the game's API is now read in the background.
+- Fixed the phone's Match found screen staying up with its buttons when the phone lost your PC.
+- Fixed the phone's update check leaving its button disabled on networks that never answer.
+- Changed the card reading to skip the augment names whose length already rules them out, so each read of the screen takes less work.
