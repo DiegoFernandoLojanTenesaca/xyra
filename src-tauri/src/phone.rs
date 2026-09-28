@@ -216,6 +216,7 @@ fn route(app: &AppHandle, shared: &Shared, method: &Method, path: &str, query: &
             json_response(&json!({ "version": version, "state": state }))
         }
         (Method::Get, "/api/stats") => json_response(&shared.stats_summary()),
+        (Method::Get, "/api/lp") => json_response(&shared.lp_games()),
         (Method::Get, "/api/champions") => json_response(&shared.champions()),
         (Method::Get, "/api/meta") => answer(shared.meta()),
         (Method::Get, "/api/patch") => answer(shared.patch_changes()),
@@ -230,6 +231,7 @@ fn route(app: &AppHandle, shared: &Shared, method: &Method, path: &str, query: &
         (Method::Post, "/api/decline") => answer(allowed(can.accept).and_then(|()| shared.lcu()).and_then(|lcu| matchmaking::decline_if_waiting(&lcu))),
         (Method::Post, "/api/import") => answer(allowed(can.import).and_then(|()| import(shared, query))),
         (Method::Post, "/api/bench") => answer(allowed(can.bench).and_then(|()| shared.take_bench_pick(query.number("champion")))),
+        (Method::Post, "/api/skin") => answer(allowed(can.import).and_then(|()| shared.random_skin())),
         (Method::Get, "/api/lobby") => answer(shared.lcu().and_then(|lcu| Ok(json!({ "queues": lobby::queues(&lcu)?, "friends": lobby::friends(&lcu)? })))),
         (Method::Post, "/api/lobby/create") => {
             answer(allowed(can.lobby).and_then(|()| lobby::create(&shared.lcu()?, query.number("queue").ok_or(AppError::NoData)?)))

@@ -42,5 +42,8 @@
   },
   "importAll": "Importar build",
   "yourGames": "Tus partidas con {{champion}}",
-  "yourRecord": "({{wins}} de {{games}} ganadas)"
+  "yourRecord": "({{wins}} de {{games}} ganadas)",
+  "favoriteSkin": "Tu skin favorita de {{champion}}",
+  "favoriteSkinOn": "(se pone sola en la selección)",
+  "favoriteSkinOff": "(actívala en Juego → Skin al tener campeón)"
 }

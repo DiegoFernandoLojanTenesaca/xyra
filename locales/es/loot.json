@@ -1,0 +1,45 @@
+{
+  "subtitle": "Tus cofres, llaves y esencias, y las recompensas que el cliente guarda para ti.",
+  "loading": "Leyendo tu botín…",
+  "blueEssence": "Esencia azul",
+  "orangeEssence": "Esencia naranja",
+  "chests": "Cofres",
+  "keys": "Llaves",
+  "keysDetail": "{{keys}} · {{fragments}} fragmentos",
+  "rewards": "Recompensas por reclamar",
+  "claim": "Reclamar",
+  "claimed": "Reclamaste tu recompensa.",
+  "pick_one": "Elige {{count}}",
+  "pick_other": "Elige {{count}}",
+  "actions": "Qué puedes hacer",
+  "nothing": "No hay nada que abrir ni reclamar ahora.",
+  "kinds": {
+    "openFree": {
+      "title": "Abrir {{count}} sin llave",
+      "detail": "Cápsulas, orbes y objetos misteriosos que no necesitan llave.",
+      "button": "Abrir"
+    },
+    "forgeKeys": {
+      "title": "Forjar {{count}} llaves",
+      "detail": "Con tus fragmentos de llave, de 3 en 3.",
+      "button": "Forjar"
+    },
+    "openChests": {
+      "title": "Abrir {{count}} cofres",
+      "detail": "Cofres Hextech con las llaves que tienes.",
+      "button": "Abrir"
+    },
+    "disenchantChampionShards": {
+      "title": "Desencantar {{count}} fragmentos de campeón",
+      "detail": "Solo de campeones que ya tienes. Ganas {{essence}} de esencia azul.",
+      "button": "Desencantar"
+    }
+  },
+  "confirm": "Esto no se puede deshacer. ¿Seguro?",
+  "confirmYes": "Sí, hazlo",
+  "cancel": "Cancelar",
+  "gained": "Obtuviste: {{items}}.",
+  "done": "Listo.",
+  "stopped": "Se detuvo a la mitad: {{reason}}. Lo que ya se hizo quedó hecho.",
+  "safe": "Xyra nunca toca tus fragmentos de skin, gestos ni eternos: eso lo decides tú en el cliente."
+}

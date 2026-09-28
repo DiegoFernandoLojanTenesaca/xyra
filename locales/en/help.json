@@ -1,13 +1,23 @@
 {
-  "gettingStarted": "Getting started",
-  "steps": {
-    "borderless": "Set League to Borderless: Xyra switches it for you from Home.",
-    "pick": "When you pick a champion, Xyra sets your runes, spells and items and tells you who to take from the bench or who counters your opponent.",
-    "cards": "In ARAM: Mayhem and Arena, take the card with the red frame: it is the best for your champion.",
-    "meta": "Before playing, check Meta for the best champions of the patch and the buffs and nerfs to yours."
-  },
+  "gettingStarted": "How to use Xyra",
   "faqTitle": "FAQ",
   "faq": {
+    "lobby": {
+      "question": "What is Lobby for?",
+      "answer": "To open a lobby for the mode you want, invite your friends online and look for a match without opening the client, from the PC or the phone. You always decide who to invite and when to search."
+    },
+    "skinsLoot": {
+      "question": "Does Xyra touch my skins or my loot without asking?",
+      "answer": "No. A skin is only put on when you choose \"Random\" or \"Your favorite\" in Game, and always one of yours. In Loot nothing happens until you press a button, and what cannot be undone asks first. It never touches skin shards, emotes or eternals."
+    },
+    "discord": {
+      "question": "How do I show Xyra on my Discord?",
+      "answer": "In Settings → General → Discord turn on \"Show what you play on Discord\". Discord has to be open on your PC; you can hide the champion and the KDA if you prefer."
+    },
+    "lp": {
+      "question": "Where does the LP of each game come from?",
+      "answer": "Xyra reads your LP as a ranked game starts and again once the client counts it. It is your official LP: it does not work out MMR, which Riot does not allow."
+    },
     "noLabels": {
       "question": "I cannot see the labels over the game",
       "answer": "Make sure League is in Borderless mode, Xyra is not paused and the game is focused. In exclusive fullscreen Windows does not allow drawing on top."
@@ -69,5 +79,33 @@
     "turnOn": "Here, in Settings → Phone, turn on the link and accept the Windows prompt.",
     "scan": "Scan the code with the app: it lets you know when you find a match, even with the app closed."
   },
-  "phoneSetup": "Set up the phone"
+  "phoneSetup": "Set up the phone",
+  "guide": {
+    "before": {
+      "title": "Before you play",
+      "text": "Open your lobby and invite your friends from Lobby, or queue up as always. Meta shows the best of the patch and the buffs and nerfs of your champions."
+    },
+    "select": {
+      "title": "In champion select",
+      "text": "Xyra imports your runes, spells and items and puts a skin on your champion if you turn it on in Game. In ARAM it shows your bench options, best first; in Summoner's Rift, the counter to your lane opponent."
+    },
+    "game": {
+      "title": "In game",
+      "text": "In ARAM: Mayhem and Arena take the card with the red frame: it is the best for your champion. Set League to Borderless to see the labels. Home and the phone show your KDA and your next item."
+    },
+    "after": {
+      "title": "After the game",
+      "text": "Home → Ranked shows the LP of each game; Stats, your champions and whether you do better following Xyra. Loot claims rewards and opens what needs no key."
+    },
+    "phone": {
+      "title": "On your phone",
+      "text": "Pair the app with a QR: it tells you when you find a match and when it starts loading, you accept it, open the lobby and see your build and KDA from the couch."
+    }
+  },
+  "welcome": {
+    "title": "Welcome to Xyra 1.0",
+    "text": "This is how it works, in five moments. Tap a button to go straight there.",
+    "guide": "See the full guide",
+    "start": "Start"
+  }
 }

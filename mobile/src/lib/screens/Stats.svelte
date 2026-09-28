@@ -1,7 +1,8 @@
 <script lang="ts">
   import { ChartColumn } from '@lucide/svelte';
   import { resource } from '$shared/services/resource.svelte';
-  import type { Challenges, MasteryProgress, MatchSummary, StatsSummary } from '$shared/types';
+  import type { Challenges, LpGame, MasteryProgress, MatchSummary, StatsSummary } from '$shared/types';
+  import LpChart from '$shared/ui/LpChart.svelte';
   import EmptyState from '$shared/ui/EmptyState.svelte';
   import SegmentedControl from '$shared/ui/SegmentedControl.svelte';
   import Skeleton from '$shared/ui/Skeleton.svelte';
@@ -23,6 +24,13 @@
     (failure) => failure,
   );
   const summary = $derived(stats.value);
+  const lp = resource(
+    () => (link.status === 'online' ? (link.state?.account ?? true) : null),
+    () => link.get<LpGame[]>('/api/lp'),
+    (failure) => failure,
+  );
+  const LP_LISTED = 5;
+  const signedLp = (value: number) => t('home:lp.points', { value: `${value > 0 ? '+' : ''}${format.number(value)}` });
   const rate = (wins: number, games: number) => format.percent(games ? (100 * wins) / games : 0);
   let view = $state<View>('augments');
   const online = (wanted: View) => (link.status === 'online' && view === wanted ? (link.state?.account ?? true) : null);
@@ -139,6 +147,20 @@
     <div class="panel cut"><small class="muted">{t('stats:winRate')}</small><b class="accent">{rate(summary.wins, summary.games)}</b></div>
   </div>
 
+  {#if lp.value?.length}
+    <section class="block panel cut">
+      <h2 class="section-title">{t('home:lp.title')}</h2>
+      <LpChart games={lp.value.slice(0, 20)} />
+      {#each lp.value.slice(0, LP_LISTED) as game (game.ended_at)}
+        <div class="row">
+          {#if game.champion?.icon}<img src={game.champion.icon} alt="" />{/if}
+          <span class="grow">{game.champion?.name ?? ''}<small class="muted"> · {t(`home:lp.queues.${game.queue}`)}</small></span>
+          <b class:accent={game.delta < 0} class:good={game.delta > 0}>{signedLp(game.delta)}</b>
+        </div>
+      {/each}
+    </section>
+  {/if}
+
   {@const follow = summary.following}
   {#if follow.followed + follow.ignored}
     <section class="block panel cut">
@@ -182,6 +204,9 @@
 {/if}
 
 <style>
+  .good {
+    color: var(--color-success);
+  }
   .views {
     margin-bottom: var(--space-4);
   }

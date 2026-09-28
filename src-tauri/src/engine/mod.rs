@@ -24,7 +24,7 @@ use std::{
         mpsc::{self, Receiver, RecvTimeoutError, Sender},
     },
     thread,
-    time::{Duration, Instant},
+    time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 use tauri::{AppHandle, Emitter, Manager};
 use xyra_core::{
@@ -32,12 +32,13 @@ use xyra_core::{
     challenges::{self, Challenges},
     champ_select::{self, ChampSelectTracker},
     client_import,
-    config::Config,
+    config::{Config, SkinChoice},
     errors::{AppError, Result},
     game_settings::{self, GameOption, SettingValue},
     gameflow::{self, GameflowPhase},
     league::{self, Installation, Lcu, LcuEvent},
     lobby::{self, LobbyAnswer},
+    lp_log::{self, LpChange, LpGame},
     matchmaking,
     model::{
         AppEvent, Build, BuildMode, ChampionInfo, CurrentGame, EngineState, GameMode, GameTips, ImportTarget, LiveStats, Matchup, Meta, MetaChampion,
@@ -45,7 +46,8 @@ use xyra_core::{
     },
     opgg::{self, AugmentStat},
     patch_notes,
-    profile::{self, MasteryProgress},
+    profile::{self, MasteryProgress, RankedQueue, Standing},
+    skins,
     stats::{self, MatchHistory, MatchSummary, StatsSummary, StoredGame},
     storage::Storage,
     updates::Release,
@@ -61,6 +63,9 @@ const SUBSCRIPTIONS: [&str; 6] =
 const RECONNECT_DELAY: Duration = Duration::from_secs(2);
 const MAX_RECONNECTS: u32 = 5;
 const BORDERLESS_FIX_COOLDOWN: Duration = Duration::from_secs(10);
+/// After a ranked game the client takes a while to count it; it is asked this often, this many times.
+const LP_RETRY: Duration = Duration::from_secs(10);
+const LP_ATTEMPTS: u32 = 18;
 
 pub enum EngineEvent {
     LockfileChanged,
@@ -95,6 +100,8 @@ pub enum EngineEvent {
         account: String,
         history: Result<MatchHistory>,
     },
+    /// A ranked game the client counted, with the standing before and after it.
+    LpChanged(Box<LpChange>),
     ConfigChanged,
     ShowDemo,
     TestVoice,
@@ -105,6 +112,8 @@ pub struct Shared {
     pub config: Mutex<Config>,
     pub state: Mutex<EngineState>,
     pub games: Mutex<Vec<StoredGame>>,
+    /// The LP each ranked game gave or took.
+    pub lp_log: Mutex<Vec<LpChange>>,
     catalog: RwLock<Arc<Catalog>>,
     /// ARAM: Mayhem champion tiers from OP.GG: id -> (tier, rank).
     champion_tiers: RwLock<HashMap<u32, (u8, u32)>>,
@@ -144,6 +153,10 @@ impl Shared {
             storage.log_error("stats", &e);
             Vec::new()
         });
+        let lp_log = storage.load_lp_log().unwrap_or_else(|e| {
+            storage.log_error("ranked log", &e);
+            Vec::new()
+        });
         let phones = storage.load_phones().unwrap_or_else(|e| {
             storage.log_error("paired phones", &e);
             Vec::new()
@@ -175,6 +188,7 @@ impl Shared {
             config: Mutex::new(config),
             state: Mutex::new(state),
             games: Mutex::new(games),
+            lp_log: Mutex::new(lp_log),
             catalog: RwLock::new(Arc::new(catalog.unwrap_or_default())),
             champion_tiers: RwLock::new(HashMap::new()),
             available: RwLock::new(None),
@@ -329,6 +343,13 @@ impl Shared {
         ranked.into_iter().take(count).map(|(id, _)| *id).collect()
     }
 
+    /// Puts another of the player's skins, at random, on the champion of the current champion select.
+    pub fn random_skin(&self) -> Result<()> {
+        let champion = self.state.lock().unwrap().champ_select.as_ref().and_then(|select| select.champion.as_ref().map(|c| c.id));
+        let champion = champion.ok_or(AppError::NotInChampSelect)?;
+        skins::dress(&self.lcu()?, champion, SkinChoice::Random, None, self.config().skin_chromas).map(drop)
+    }
+
     /// Swaps the player's champion for one of the ARAM bench: the one asked for, or the one Xyra recommends.
     pub fn take_bench_pick(&self, champion: Option<u32>) -> Result<()> {
         let select = self.state.lock().unwrap().champ_select.clone().ok_or(AppError::NotInChampSelect)?;
@@ -370,6 +391,11 @@ impl Shared {
             ImportTarget::Items => client_import::import_items(lcu, build, &name, self.language()),
             ImportTarget::Spells => client_import::import_spells(lcu, build),
         }
+    }
+
+    /// The signed-in account's ranked games with the LP each gave or took, newest first.
+    pub fn lp_games(&self) -> Vec<LpGame> {
+        lp_log::games(&self.lp_log.lock().unwrap(), self.account().as_deref(), &self.catalog())
     }
 
     pub fn stats_summary(&self) -> StatsSummary {
@@ -416,6 +442,8 @@ struct GameTracking {
     position: Option<Position>,
     /// The match history's id of the game.
     id: Option<u64>,
+    /// The ranked queue of the game and where the player stood as it started.
+    ranked: Option<(RankedQueue, Standing)>,
 }
 
 /// Reacts to the League client, the game files and the UI; owns everything that runs on the engine thread.
@@ -553,6 +581,15 @@ impl Engine {
             }
             EngineEvent::GameBuild(build) => self.tips.set_build(*build),
             EngineEvent::GameRead { champion, read } => self.tips.set_read(champion, read),
+            EngineEvent::LpChanged(change) => {
+                let mut log = self.shared.lp_log.lock().unwrap();
+                lp_log::record(&mut log, *change);
+                if let Err(e) = self.shared.storage.save_lp_log(&log) {
+                    self.shared.log_error("save ranked log", e);
+                }
+                drop(log);
+                self.emit(AppEvent::Data);
+            }
             EngineEvent::History { account, history } => {
                 if self.history.store(&account, history, &self.shared) {
                     self.refresh_champions();
@@ -730,11 +767,15 @@ impl Engine {
             }
             (Some(flow), None) if phase.is_in_game() => {
                 let (champion, position) = (flow.champion.or(self.champ_select.last_champion()), self.champ_select.position());
-                self.game = Some(GameTracking { mode: flow.mode, champion, position, id: flow.game_id });
+                let ranked = flow
+                    .queue_id
+                    .and_then(RankedQueue::of_queue)
+                    .and_then(|queue| profile::read_standing(self.lcu()?, queue).ok().flatten().map(|standing| (queue, standing)));
+                self.game = Some(GameTracking { mode: flow.mode, champion, position, id: flow.game_id, ranked });
                 self.on_game_started();
             }
             (_, Some(_)) => {
-                let ended = self.game.take().and_then(|game| game.id);
+                let ended = self.game.take();
                 self.on_game_ended(ended);
             }
             _ => {}
@@ -785,12 +826,35 @@ impl Engine {
         }
     }
 
-    fn on_game_ended(&mut self, game: Option<u64>) {
+    fn on_game_ended(&mut self, game: Option<GameTracking>) {
         self.cards.stop();
-        if self.history.expect_game(game, self.mode, self.cards.offers()) {
+        if self.history.expect_game(game.as_ref().and_then(|game| game.id), self.mode, self.cards.offers()) {
             self.history.save_offers(&self.shared);
         }
+        if let Some(game) = game {
+            self.follow_lp(game);
+        }
         self.check_borderless();
+    }
+
+    /// Waits for the client to count the ranked game that ended, then logs the LP it gave or took.
+    fn follow_lp(&self, game: GameTracking) {
+        let (Some((queue, before)), Some(lcu), Some(account)) = (game.ranked, self.lcu().cloned(), self.account.clone()) else { return };
+        let shared = Arc::clone(&self.shared);
+        thread::spawn(move || {
+            for _ in 0..LP_ATTEMPTS {
+                thread::sleep(LP_RETRY);
+                match profile::read_standing(&lcu, queue) {
+                    Ok(Some(after)) if after.games() > before.games() => {
+                        let ended_at = SystemTime::now().duration_since(UNIX_EPOCH).map_or(0, |elapsed| elapsed.as_secs());
+                        let change = LpChange { account, game_id: game.id, ended_at, queue, champion: game.champion, before, after };
+                        return shared.send(EngineEvent::LpChanged(Box::new(change)));
+                    }
+                    Err(AppError::ClientClosed) => return,
+                    _ => {}
+                }
+            }
+        });
     }
 
     fn on_champ_select(&mut self, session: Option<Value>) {
@@ -809,6 +873,7 @@ impl Engine {
             }
             Err(_) => None,
         });
+        self.dress_champion();
         let auto_import = self.shared.config().auto_import_build && self.mode.has_builds();
         for (enemy, position) in self.champ_select.update(parsed, pickable, self.mode, auto_import) {
             let shared = Arc::clone(&self.shared);
@@ -839,6 +904,22 @@ impl Engine {
                 self.player_names.insert(puuid.to_string(), name);
             }
         }
+    }
+
+    /// Puts the skin the player asked for on their champion, once per champion; it runs apart, so a failure never
+    /// touches the build import or the rest of champion select.
+    fn dress_champion(&mut self) {
+        let config = self.shared.config();
+        if config.skin_choice == SkinChoice::Off {
+            return;
+        }
+        let (Some(lcu), Some(champion)) = (self.lcu().cloned(), self.champ_select.take_undressed()) else { return };
+        let (shared, favorite) = (Arc::clone(&self.shared), config.favorite_skins.get(&champion).copied());
+        thread::spawn(move || {
+            if let Err(e) = skins::dress(&lcu, champion, config.skin_choice, favorite, config.skin_chromas) {
+                shared.log_error("champion skin", e);
+            }
+        });
     }
 
     fn import_games(&mut self) {

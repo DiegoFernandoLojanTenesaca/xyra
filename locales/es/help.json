@@ -1,13 +1,23 @@
 {
-  "gettingStarted": "Cómo empezar",
-  "steps": {
-    "borderless": "Pon el LoL en modo Sin bordes: Xyra lo cambia por ti desde Inicio.",
-    "pick": "Al elegir campeón, Xyra te pone runas, hechizos e ítems y te dice a quién tomar de la banca o contra quién.",
-    "cards": "En ARAM: Caos y Arena, toma la carta del marco rojo: es la mejor para tu campeón.",
-    "meta": "Antes de jugar, mira en Meta los mejores del parche y los buffs y nerfs de tus campeones."
-  },
+  "gettingStarted": "Cómo se usa Xyra",
   "faqTitle": "Preguntas frecuentes",
   "faq": {
+    "lobby": {
+      "question": "¿Para qué sirve la Sala?",
+      "answer": "Para crear la sala del modo que quieras, invitar a tus amigos conectados y buscar partida sin abrir el cliente, desde la PC o el celular. Invitar y buscar siempre los decides tú."
+    },
+    "skinsLoot": {
+      "question": "¿Xyra toca mis skins o mi botín sin preguntarme?",
+      "answer": "No. La skin solo se pone si eliges «Aleatoria» o «Tu favorita» en Juego, y siempre entre las tuyas. En Botín nada pasa hasta que tocas un botón, y lo que no se puede deshacer te pide confirmación. Nunca toca fragmentos de skin, gestos ni eternos."
+    },
+    "discord": {
+      "question": "¿Cómo pongo Xyra en mi Discord?",
+      "answer": "En Ajustes → General → Discord activa «Mostrar en Discord lo que juegas». Discord tiene que estar abierto en tu PC; puedes ocultar el campeón y el KDA si prefieres."
+    },
+    "lp": {
+      "question": "¿De dónde sale el LP de cada partida?",
+      "answer": "Xyra mira tu LP al empezar una clasificatoria y otra vez cuando el cliente cuenta la partida. Es tu LP oficial: no calcula MMR, que Riot no permite."
+    },
     "noLabels": {
       "question": "No veo las etiquetas encima del juego",
       "answer": "Revisa que el LoL esté en Sin bordes, que Xyra no esté en pausa y que el juego esté al frente. En pantalla completa exclusiva Windows no deja dibujar nada encima."
@@ -69,5 +79,33 @@
     "turnOn": "Aquí, en Ajustes → Celular, enciende el enlace y acepta el aviso de Windows.",
     "scan": "Escanea el código con la app: te avisa cuando encuentres partida, aunque la tengas cerrada."
   },
-  "phoneSetup": "Configurar el celular"
+  "phoneSetup": "Configurar el celular",
+  "guide": {
+    "before": {
+      "title": "Antes de jugar",
+      "text": "Crea tu sala e invita a tus amigos desde Sala, o busca partida como siempre. En Meta ves los mejores del parche y los buffs y nerfs de tus campeones."
+    },
+    "select": {
+      "title": "En la selección",
+      "text": "Xyra importa tus runas, hechizos e ítems y te pone una skin si lo activas en Juego. En ARAM te muestra tus opciones de la banca con la mejor primero; en la Grieta, el counter de tu rival."
+    },
+    "game": {
+      "title": "En partida",
+      "text": "En ARAM: Caos y Arena toma la carta del marco rojo: es la mejor para tu campeón. Pon el LoL en Sin bordes para ver las etiquetas. En Inicio y en el celular ves tu KDA y qué ítem sigue."
+    },
+    "after": {
+      "title": "Después de la partida",
+      "text": "En Inicio → Clasificatoria ves el LP de cada partida; en Estadísticas, tus campeones y si te va mejor siguiendo a Xyra. En Botín reclamas recompensas y abres lo que no necesita llave."
+    },
+    "phone": {
+      "title": "En el celular",
+      "text": "Empareja la app con un QR: te avisa cuando encuentras partida y cuando empieza a cargar, la aceptas, creas la sala y ves tu build y tu KDA desde el sofá."
+    }
+  },
+  "welcome": {
+    "title": "Bienvenido a Xyra 1.0",
+    "text": "Así se usa, en cinco momentos. Toca un botón para ir directo.",
+    "guide": "Ver la guía completa",
+    "start": "Empezar"
+  }
 }

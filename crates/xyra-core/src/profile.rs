@@ -18,11 +18,17 @@ const RANKED_STATS: &str = "/lol-ranked/v1/current-ranked-stats";
 const MASTERIES: &str = "/lol-champion-mastery/v1/local-player/champion-mastery";
 pub const OWNED_CHAMPIONS: &str = "/lol-champions/v1/owned-champions-minimal";
 const SOLO_QUEUE: &str = "RANKED_SOLO_5x5";
+const FLEX_QUEUE: &str = "RANKED_FLEX_SR";
+const SOLO_QUEUE_ID: u32 = 420;
+const FLEX_QUEUE_ID: u32 = 440;
+/// Each division of the tiers below Master holds 100 LP, and each of those tiers four divisions.
+const DIVISION_LP: i64 = 100;
+const DIVISIONS: [&str; 4] = ["IV", "III", "II", "I"];
 const NO_DIVISION: &str = "NA";
 const TOP_MASTERIES: usize = 5;
 const RANKED_CRESTS: &str = "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests";
 
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, TS)]
 #[ts(export)]
 #[serde(rename_all = "camelCase")]
 pub enum LeagueTier {
@@ -42,6 +48,82 @@ impl LeagueTier {
     fn from_client(tier: &str) -> Option<LeagueTier> {
         LeagueTier::deserialize(Value::String(tier.to_lowercase())).ok()
     }
+}
+
+/// A ranked queue whose LP Xyra follows.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub enum RankedQueue {
+    Solo,
+    Flex,
+}
+
+impl RankedQueue {
+    /// The ranked queue a matchmaking queue belongs to, if any.
+    pub fn of_queue(id: u32) -> Option<RankedQueue> {
+        match id {
+            SOLO_QUEUE_ID => Some(RankedQueue::Solo),
+            FLEX_QUEUE_ID => Some(RankedQueue::Flex),
+            _ => None,
+        }
+    }
+
+    fn client_name(self) -> &'static str {
+        match self {
+            RankedQueue::Solo => SOLO_QUEUE,
+            RankedQueue::Flex => FLEX_QUEUE,
+        }
+    }
+}
+
+/// Where the player stands in a ranked queue.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct Standing {
+    pub tier: LeagueTier,
+    /// Roman numeral; empty from Master up.
+    pub division: String,
+    #[ts(type = "number")]
+    pub lp: i64,
+    pub wins: u32,
+    pub losses: u32,
+}
+
+impl Standing {
+    pub fn games(&self) -> u32 {
+        self.wins + self.losses
+    }
+
+    /// LP counted from the bottom of Iron, so a new division or tier still gives the right difference; Master and
+    /// the tiers above share one LP count.
+    fn ladder_lp(&self) -> i64 {
+        let tier = (self.tier as i64).min(LeagueTier::Master as i64);
+        let division = DIVISIONS.iter().position(|division| *division == self.division).unwrap_or(0) as i64;
+        let divisions = if self.tier < LeagueTier::Master { division } else { 0 };
+        tier * DIVISIONS.len() as i64 * DIVISION_LP + divisions * DIVISION_LP + self.lp
+    }
+
+    /// The LP gained, or lost when negative, since `before`.
+    pub fn lp_since(&self, before: &Standing) -> i64 {
+        self.ladder_lp() - before.ladder_lp()
+    }
+}
+
+/// The player's standing in a ranked queue; None while unranked in it.
+pub fn read_standing(lcu: &Lcu, queue: RankedQueue) -> Result<Option<Standing>> {
+    Ok(standing(&lcu.get_as(RANKED_STATS)?, queue))
+}
+
+fn standing(stats: &RankedStats, queue: RankedQueue) -> Option<Standing> {
+    let entry = stats.queue_map.get(queue.client_name())?;
+    Some(Standing {
+        tier: LeagueTier::from_client(&entry.tier)?,
+        division: if entry.division == NO_DIVISION { String::new() } else { entry.division.clone() },
+        lp: entry.league_points,
+        wins: entry.wins,
+        losses: entry.losses,
+    })
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
@@ -112,15 +194,19 @@ impl RegionLocale {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct RankedStats {
-    queue_map: HashMap<String, RankedQueue>,
+    queue_map: HashMap<String, QueueEntry>,
 }
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct RankedQueue {
+struct QueueEntry {
     tier: String,
     division: String,
     league_points: i64,
+    #[serde(default)]
+    wins: u32,
+    #[serde(default)]
+    losses: u32,
 }
 
 #[derive(Deserialize)]
@@ -280,6 +366,23 @@ mod tests {
         assert_eq!(master.division, "");
         assert!(rank(&ranked(json!({ "tier": "NONE", "division": "NA", "leaguePoints": 0 }))).is_none());
         assert!(matches!(parse::<RankedStats>(RANKED_STATS, &json!({ "queueMap": { SOLO_QUEUE: { "tier": "GOLD" } } })), Err(AppError::ClientFormat(_))));
+    }
+
+    #[test]
+    fn counts_lp_across_divisions_and_tiers() {
+        let at = |tier, division: &str, lp| Standing { tier, division: division.into(), lp, wins: 0, losses: 0 };
+        assert_eq!(at(LeagueTier::Gold, "II", 40).lp_since(&at(LeagueTier::Gold, "II", 21)), 19);
+        assert_eq!(at(LeagueTier::Gold, "I", 5).lp_since(&at(LeagueTier::Gold, "II", 85)), 20);
+        assert_eq!(at(LeagueTier::Silver, "I", 75).lp_since(&at(LeagueTier::Gold, "IV", 0)), -25);
+        assert_eq!(at(LeagueTier::Master, "", 12).lp_since(&at(LeagueTier::Diamond, "I", 90)), 22);
+        assert_eq!(at(LeagueTier::Grandmaster, "", 450).lp_since(&at(LeagueTier::Master, "", 430)), 20);
+        let stats: RankedStats =
+            parse(RANKED_STATS, &json!({ "queueMap": { FLEX_QUEUE: { "tier": "EMERALD", "division": "III", "leaguePoints": 55, "wins": 9, "losses": 7 } } }))
+                .unwrap();
+        let flex = standing(&stats, RankedQueue::Flex).unwrap();
+        assert_eq!((flex.tier, flex.lp, flex.games()), (LeagueTier::Emerald, 55, 16));
+        assert!(standing(&stats, RankedQueue::Solo).is_none());
+        assert_eq!((RankedQueue::of_queue(420), RankedQueue::of_queue(450)), (Some(RankedQueue::Solo), None));
     }
 
     #[test]

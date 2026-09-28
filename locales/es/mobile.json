@@ -47,7 +47,9 @@
     "acceptBig": "¡Aceptar!",
     "decline": "Rechazar",
     "accepted": "Aceptada: espera a los demás…",
-    "declined": "Rechazaste la partida"
+    "declined": "Rechazaste la partida",
+    "randomSkin": "Otra skin al azar",
+    "skinChanged": "Skin cambiada."
   },
   "build": {
     "pick": "Busca un campeón para ver su build."

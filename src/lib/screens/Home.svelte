@@ -33,6 +33,7 @@
   import Logo from '../ui/Logo.svelte';
   import SegmentedControl from '../ui/SegmentedControl.svelte';
   import LiveStrip from '../ui/LiveStrip.svelte';
+  import LpChart from '../ui/LpChart.svelte';
   import Skeleton from '../ui/Skeleton.svelte';
   import StatTile from '../ui/StatTile.svelte';
   import TierBadge from '../ui/TierBadge.svelte';
@@ -48,6 +49,10 @@
   const YOUR_CHAMPIONS = 5;
   const PATCH_CHANGES_SHOWN = 6;
   const RIFT_DEFAULT_POSITION = 'mid';
+  /** The LP chart follows this many games and the list shows these many. */
+  const LP_CHART_GAMES = 20;
+  const LP_LISTED = 6;
+  const signedLp = (value: number) => t('home:lp.points', { value: `${value > 0 ? '+' : ''}${format.number(value)}` });
   const VERDICT_ICONS: Record<ChangeVerdict, Component<{ size?: number }>> = { buff: ArrowUp, nerf: ArrowDown, adjusted: ArrowUpDown };
 
   const t = $derived(app.t);
@@ -364,6 +369,38 @@
           <span><small class="muted">{t('home:yourRank')}</small><b>{t('settings:unranked')}</b></span>
         {/if}
       </div>
+      <div class="panel cut box lp">
+        <h3 class="section-title">{t('home:lp.title')}</h3>
+        {#if app.lp.length}
+          {@const today = app.lp.filter((game) => new Date(game.ended_at * 1000).toDateString() === new Date().toDateString())}
+          {@const todayWins = today.filter((game) => game.win).length}
+          {@const todayLp = today.reduce((sum, game) => sum + game.delta, 0)}
+          <p class="lp-today">
+            <b class:up={todayLp > 0} class:down={todayLp < 0}>{signedLp(todayLp)}</b>
+            <span class="muted">{t('home:lp.today', { wins: todayWins, losses: today.length - todayWins })}</span>
+          </p>
+          <LpChart games={app.lp.slice(0, LP_CHART_GAMES)} />
+          <div class="list">
+            {#each app.lp.slice(0, LP_LISTED) as game (game.ended_at)}
+              <div class="row">
+                {#if game.champion?.icon}<img src={game.champion.icon} alt="" />{/if}
+                <span
+                  >{game.champion?.name ?? t(`home:lp.queues.${game.queue}`)}<small class="muted"
+                    >{t(`home:lp.queues.${game.queue}`)} · {t('settings:rankValue', {
+                      tier: t(`common:leagues.${game.after.tier}`),
+                      division: game.after.division,
+                      lp: format.number(game.after.lp),
+                    })}</small
+                  ></span
+                >
+                <b class:up={game.delta > 0} class:down={game.delta < 0}>{signedLp(game.delta)}</b>
+              </div>
+            {/each}
+          </div>
+        {:else}
+          <p class="muted">{t('home:lp.empty')}</p>
+        {/if}
+      </div>
     {/if}
 
     {#if rift}
@@ -619,6 +656,25 @@
   }
   .modes {
     margin-bottom: var(--space-5);
+  }
+  .lp {
+    display: grid;
+    gap: var(--space-3);
+  }
+  .lp-today {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    margin: 0;
+  }
+  .lp-today b {
+    font-size: var(--text-2xl);
+  }
+  .up {
+    color: var(--color-success);
+  }
+  .down {
+    color: var(--color-accentBright);
   }
   .options {
     display: grid;
@@ -926,11 +982,18 @@
   .champion span {
     display: flex;
     flex-direction: column;
+    min-width: 0;
     line-height: 1.2;
   }
   .game small,
   .champion small {
+    overflow: hidden;
     font-size: var(--text-xs);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .game b {
+    flex: none;
   }
   .order-hint {
     display: block;

@@ -153,10 +153,16 @@
     width: var(--size-thumbMd);
     height: var(--size-thumbMd);
   }
-  .signatures span {
+  .signatures button > span {
     display: flex;
     flex-direction: column;
+    min-width: 0;
     line-height: 1.2;
+  }
+  .signatures b {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .signatures span small {
     font-size: var(--text-xs);

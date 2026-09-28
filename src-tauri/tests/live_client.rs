@@ -49,6 +49,15 @@ fn reads_every_opgg_answer() {
     assert_eq!(opgg::fetch_counter_picks(&http, AHRI, Position::Support, &catalog).expect("off-position counters"), None);
 }
 
+/// Only reads: the loot summary and the pending rewards, without crafting or claiming anything.
+#[test]
+#[ignore]
+fn reads_the_loot() {
+    let lcu = Lcu::connect(&riot_install::find()).expect("League client running");
+    let summary = xyra_core::loot::summary(&lcu).expect("loot summary");
+    println!("{summary:#?}");
+}
+
 #[test]
 #[ignore]
 fn talks_to_the_running_client() {

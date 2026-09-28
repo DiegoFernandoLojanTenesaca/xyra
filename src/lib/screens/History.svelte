@@ -157,6 +157,14 @@
     width: var(--size-thumbSm);
     height: var(--size-thumbSm);
   }
+  @media (max-width: 1100px) {
+    .game {
+      grid-template-columns: var(--size-thumbLg) minmax(0, 1.4fr) auto minmax(0, 0.8fr) minmax(0, 1.2fr);
+    }
+    .items {
+      grid-column: 2 / -1;
+    }
+  }
   .note {
     font-size: var(--text-sm);
   }

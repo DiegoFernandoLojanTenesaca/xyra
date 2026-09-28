@@ -1,5 +1,6 @@
 use crate::i18n;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use ts_rs::TS;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -37,6 +38,20 @@ pub enum ChampionOrder {
 
 impl ChampionOrder {
     pub const ALL: [ChampionOrder; 4] = [ChampionOrder::Tier, ChampionOrder::Mastery, ChampionOrder::Played, ChampionOrder::Balanced];
+}
+
+/// How Xyra dresses the champion the player gets in champion select.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub enum SkinChoice {
+    /// The client's own choice stays.
+    #[default]
+    Off,
+    /// One of the player's skins at random.
+    Random,
+    /// The player's favorite of the champion, or one at random without one.
+    Favorite,
 }
 
 const DEFAULT_ACCEPT_DELAY_SECONDS: u32 = 2;
@@ -86,6 +101,18 @@ pub struct Config {
     pub phone_link: bool,
     /// Pairing code the phone sends with every request; empty until the link is first turned on.
     pub phone_token: String,
+    pub skin_choice: SkinChoice,
+    /// Random skins may also be a chroma the player owns.
+    pub skin_chromas: bool,
+    /// The favorite skin or chroma of each champion.
+    #[ts(type = "Record<number, number>")]
+    pub favorite_skins: HashMap<u32, u32>,
+    /// Shows on the player's Discord profile what they play.
+    pub discord_presence: bool,
+    /// The champion, its image and the KDA in the Discord presence.
+    pub discord_details: bool,
+    /// "Using Xyra" on Discord while the player is not in a game, a lobby or champion select.
+    pub discord_idle: bool,
 }
 
 impl Config {
@@ -129,6 +156,12 @@ impl Default for Config {
             champion_order: ChampionOrder::default(),
             phone_link: false,
             phone_token: String::new(),
+            skin_choice: SkinChoice::default(),
+            skin_chromas: false,
+            favorite_skins: HashMap::new(),
+            discord_presence: false,
+            discord_details: true,
+            discord_idle: true,
         }
     }
 }

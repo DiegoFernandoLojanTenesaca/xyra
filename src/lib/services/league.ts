@@ -4,6 +4,7 @@ import type {
   Build,
   BuildMode,
   ChampionInfo,
+  Config,
   GameMode,
   GameOption,
   GameSetting,
@@ -13,6 +14,7 @@ import type {
   MatchSummary,
   Meta,
   MetaChampion,
+  OwnedSkin,
   PatchChanges,
   Position,
   Profile,
@@ -28,6 +30,10 @@ export const getChallenges = () => invoke<Challenges>('get_challenges');
 export const getModeChampions = (mode: GameMode) => invoke<MetaChampion[]>('get_mode_champions', { mode });
 export const getPatchChanges = () => invoke<PatchChanges>('get_patch_changes');
 export const takeBenchPick = (champion: number | null = null) => invoke<void>('take_bench_pick', { champion });
+export const getOwnedSkins = (champion: number) => invoke<OwnedSkin[]>('get_owned_skins', { champion });
+/** Sets, or clears with null, the favorite skin of a champion. */
+export const setFavoriteSkin = (champion: number, skin: number | null) => invoke<Config>('set_favorite_skin', { champion, skin });
+export const randomSkin = () => invoke<void>('random_skin');
 export const getBuild = (champion: number, mode: BuildMode, position: Position | null) => invoke<Build>('get_build', { champion, mode, position });
 export const importBuild = (champion: number, target: ImportTarget, mode: BuildMode, position: Position | null) =>
   invoke<void>('import_build', { champion, target, mode, position });

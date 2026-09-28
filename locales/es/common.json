@@ -64,7 +64,8 @@
     "mastery": "Maestría",
     "challenges": "Desafíos",
     "account": "Tu cuenta",
-    "lobby": "Sala"
+    "lobby": "Sala",
+    "loot": "Botín"
   },
   "searchChampion": "Buscar campeón…",
   "games_one": "{{count, number}} partida",

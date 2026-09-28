@@ -116,5 +116,15 @@
   "current": "Your champion",
   "take": "Take",
   "allChampions": "Every champion",
-  "allForPosition": "Everyone for {{position}}"
+  "allForPosition": "Everyone for {{position}}",
+  "lp": {
+    "title": "Your LP",
+    "today": "today · {{wins}} W / {{losses}} L",
+    "points": "{{value}} LP",
+    "empty": "Play a ranked game with Xyra open and you will see here the LP each game gave or took.",
+    "queues": {
+      "solo": "Solo/Duo",
+      "flex": "Flex"
+    }
+  }
 }

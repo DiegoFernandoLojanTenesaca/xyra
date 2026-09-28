@@ -120,6 +120,8 @@ pub struct ChampSelectTracker {
     requested: HashSet<(u32, Position)>,
     build_import: Option<(u32, Instant)>,
     build_imported_for: Option<u32>,
+    /// The champion whose skin Xyra already chose in this champion select.
+    dressed: Option<u32>,
 }
 
 impl ChampSelectTracker {
@@ -134,6 +136,14 @@ impl ChampSelectTracker {
 
     pub fn position(&self) -> Option<Position> {
         self.session.as_ref().and_then(|s| s.position)
+    }
+
+    /// The player's champion when Xyra has not chosen its skin yet, marking it as chosen: once per champion, so a skin
+    /// the player picks by hand afterwards stays.
+    pub fn take_undressed(&mut self) -> Option<u32> {
+        let champion = self.session.as_ref()?.champion.filter(|&champion| self.dressed != Some(champion))?;
+        self.dressed = Some(champion);
+        Some(champion)
     }
 
     pub fn clear(&mut self) {

@@ -4,11 +4,11 @@
   import { LINKS, openExternal } from '../../project';
   import { openFolder } from '../../services/data';
   import Button from '../../ui/Button.svelte';
+  import Guide from '../../ui/Guide.svelte';
 
   type Answer = { question: string; answer: string };
 
   const t = $derived(app.t);
-  const steps = $derived(Object.values(t('help:steps', { returnObjects: true }) as Record<string, string>));
   const phoneSteps = $derived(Object.values(t('help:phoneSteps', { returnObjects: true }) as Record<string, string>));
   const faq = $derived(Object.values(t('help:faq', { returnObjects: true }) as Record<string, Answer>));
 </script>
@@ -24,7 +24,8 @@
 
 <div class="pair">
   <section class="panel cut box">
-    {@render guide(t('help:gettingStarted'), steps)}
+    <h3 class="section-title">{t('help:gettingStarted')}</h3>
+    <Guide />
   </section>
 
   <section class="panel cut box">

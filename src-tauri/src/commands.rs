@@ -12,12 +12,15 @@ use xyra_core::{
     errors::{AppError, Result},
     game_settings::{self, GameOption, GameSetting, SettingValue},
     lobby::{self, Friend, LobbyQueue},
+    loot::{self, LootActionKind, LootOutcome, LootSummary},
+    lp_log::LpGame,
     model::{
         AppEvent, AugmentRow, Build, BuildMode, ChampionInfo, Choices, EngineState, GameMode, ImportTarget, Meta, MetaChampion, PatchChanges, PhoneDeviceView,
         PhoneLink, PhonePermissions, Position,
     },
     opgg,
     profile::{self, MasteryProgress, Profile},
+    skins::{self, OwnedSkin},
     stats::{self, MatchSummary, StatsSummary},
     storage::{DataFolder, DataUsage},
     updates::{self, Release},
@@ -86,6 +89,57 @@ pub fn get_champions(shared: State<App>) -> Vec<ChampionInfo> {
 pub async fn get_augments(shared: State<'_, App>, champion: u32, mode: GameMode) -> Result<Vec<AugmentRow>> {
     let shared = Arc::clone(&shared);
     blocking(move || Ok(opgg::augment_rows(opgg::fetch_augments(&shared.web, champion, mode)?, &shared.catalog()))).await
+}
+
+/// The signed-in account's ranked games with the LP each gave or took, newest first.
+#[tauri::command]
+pub fn get_lp_games(shared: State<App>) -> Vec<LpGame> {
+    shared.lp_games()
+}
+
+/// The skins of a champion the player owns, to pick a favorite.
+#[tauri::command]
+pub async fn get_owned_skins(shared: State<'_, App>, champion: u32) -> Result<Vec<OwnedSkin>> {
+    let shared = Arc::clone(&shared);
+    blocking(move || skins::owned(&shared.lcu()?, champion)).await
+}
+
+/// Sets, or clears with None, the favorite skin of a champion.
+#[tauri::command]
+pub fn set_favorite_skin(app: AppHandle, shared: State<App>, champion: u32, skin: Option<u32>) -> Result<Config> {
+    let mut config = shared.config();
+    match skin {
+        Some(skin) => config.favorite_skins.insert(champion, skin),
+        None => config.favorite_skins.remove(&champion),
+    };
+    apply_config(&app, &shared, config)
+}
+
+/// Puts another of the player's skins, at random, on their champion in champion select.
+#[tauri::command]
+pub async fn random_skin(shared: State<'_, App>) -> Result<()> {
+    let shared = Arc::clone(&shared);
+    blocking(move || shared.random_skin()).await
+}
+
+/// The player's essences, chests and keys, the actions they allow and the rewards waiting to be picked.
+#[tauri::command]
+pub async fn get_loot(shared: State<'_, App>) -> Result<LootSummary> {
+    let shared = Arc::clone(&shared);
+    blocking(move || loot::summary(&shared.lcu()?)).await
+}
+
+/// Runs one of the loot actions the summary offered, on the loot as it is now.
+#[tauri::command]
+pub async fn run_loot_action(shared: State<'_, App>, kind: LootActionKind) -> Result<LootOutcome> {
+    let shared = Arc::clone(&shared);
+    blocking(move || loot::run(&shared.lcu()?, kind)).await
+}
+
+#[tauri::command]
+pub async fn claim_reward(shared: State<'_, App>, grant_id: String, group_id: String, choices: Vec<String>) -> Result<()> {
+    let shared = Arc::clone(&shared);
+    blocking(move || loot::claim(&shared.lcu()?, &grant_id, &group_id, &choices)).await
 }
 
 /// The queues the player can open a lobby for.

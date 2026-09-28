@@ -55,5 +55,16 @@
   "matchSound": {
     "title": "Ring when a match is found",
     "description": "Plays League's match found sound from Xyra too. The client already rings: turn it on if you keep it muted."
+  },
+  "skin": {
+    "title": "Skin for your champion",
+    "description": "In champion select, Xyra puts one of your skins on your champion. It only uses the ones you own, and keeps the one you pick by hand.",
+    "off": "None",
+    "random": "Random",
+    "favorite": "Your favorite"
+  },
+  "skinChromas": {
+    "title": "Include chromas",
+    "description": "A random pick may also be a chroma you own."
   }
 }

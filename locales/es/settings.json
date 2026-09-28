@@ -105,5 +105,20 @@
       "hint": "Todos pueden ver tu partida, builds y estadísticas; los permisos deciden qué más pueden hacer. Al desconectar uno, tendrá que escanear el código otra vez."
     },
     "linkOn": "Enlace encendido"
+  },
+  "discord": {
+    "title": "Discord",
+    "presence": {
+      "title": "Mostrar en Discord lo que juegas",
+      "description": "Tu perfil de Discord dice «Jugando a Xyra» con tu modo y campeón. Discord tiene que estar abierto en esta PC."
+    },
+    "details": {
+      "title": "Campeón y KDA",
+      "description": "Incluye tu campeón, su imagen y tu KDA en la partida."
+    },
+    "idle": {
+      "title": "«Usando Xyra» cuando no juegas",
+      "description": "Si lo apagas, Discord solo muestra algo mientras estás en una sala, en la selección o en partida."
+    }
   }
 }

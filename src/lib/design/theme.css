@@ -2,6 +2,13 @@
   color-scheme: dark;
 }
 
+/* Widths include padding and borders, so a full-width row with padding stays inside its box. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 html,
 body {
   margin: 0;

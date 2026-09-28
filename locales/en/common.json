@@ -64,7 +64,8 @@
     "mastery": "Mastery",
     "challenges": "Challenges",
     "account": "Your account",
-    "lobby": "Lobby"
+    "lobby": "Lobby",
+    "loot": "Loot"
   },
   "searchChampion": "Search champion…",
   "games_one": "{{count, number}} game",

@@ -168,17 +168,29 @@
   .devices {
     margin-top: var(--space-6);
   }
+  /* The phone, its name and the disconnect button on one row; its permissions on their own row below the name, so
+     they never squeeze the name however many there are. */
   .device {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
-    gap: var(--space-4);
-    padding: var(--space-3) 0;
+    gap: var(--space-3) var(--space-4);
+    padding: var(--space-4) 0;
     border-bottom: var(--border-hairline) solid var(--color-line);
+  }
+  .device > :global(svg) {
+    grid-row: 1;
+    grid-column: 1;
   }
   .about {
     display: grid;
-    flex: 1;
+    grid-row: 1;
+    grid-column: 2;
     min-width: 0;
+  }
+  .device > :global(.button) {
+    grid-row: 1;
+    grid-column: 3;
   }
   .about small.connected {
     color: var(--color-success);
@@ -186,7 +198,9 @@
   .permissions {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-3);
+    grid-row: 2;
+    grid-column: 2 / -1;
+    gap: var(--space-2) var(--space-5);
     font-size: var(--text-md);
   }
   .permissions label {

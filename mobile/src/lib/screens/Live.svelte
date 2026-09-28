@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ArrowLeftRight, Download, Hammer, Play, Star } from '@lucide/svelte';
+  import { ArrowLeftRight, Download, Hammer, Play, Shuffle, Star } from '@lucide/svelte';
   import { qualityColor } from '$shared/design/theme';
   import { resource } from '$shared/services/resource.svelte';
   import { championTierColor, championTierLabel } from '$shared/design/theme';
@@ -154,6 +154,9 @@
           <Skeleton label={t('build:loading')} rows={2} />
         {/if}
         {#if can.import}
+          <button class="action wide" disabled={busy} onclick={() => run('/api/skin', {}, 'mobile:live.skinChanged')}>
+            <Shuffle size={14} />{t('mobile:live.randomSkin')}
+          </button>
           <button class="action primary wide" disabled={busy} onclick={() => run('/api/import', { target: 'all' }, 'build:imported.all')}>
             <Download size={14} />{t('build:importAll')}
           </button>

@@ -42,5 +42,8 @@
   },
   "importAll": "Import build",
   "yourGames": "Your games with {{champion}}",
-  "yourRecord": "({{wins}} of {{games}} won)"
+  "yourRecord": "({{wins}} of {{games}} won)",
+  "favoriteSkin": "Your favorite {{champion}} skin",
+  "favoriteSkinOn": "(put on by itself in champion select)",
+  "favoriteSkinOff": "(turn it on in Game → Skin for your champion)"
 }

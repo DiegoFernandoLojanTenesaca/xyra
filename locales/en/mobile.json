@@ -47,7 +47,9 @@
     "acceptBig": "Accept!",
     "decline": "Decline",
     "accepted": "Accepted: waiting for the others…",
-    "declined": "You declined the match"
+    "declined": "You declined the match",
+    "randomSkin": "Another skin at random",
+    "skinChanged": "Skin changed."
   },
   "build": {
     "pick": "Search a champion to see its build."

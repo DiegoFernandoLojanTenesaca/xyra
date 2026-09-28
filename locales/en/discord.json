@@ -1,0 +1,8 @@
+{
+  "playing": "{{mode}} · {{champion}}",
+  "stats": "{{kills}}/{{deaths}}/{{assists}} · Level {{level}}",
+  "selecting": "In champion select",
+  "searching": "Looking for a match",
+  "lobby": "In a lobby",
+  "idle": "Using Xyra"
+}

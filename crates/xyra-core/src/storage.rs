@@ -2,6 +2,7 @@ use crate::{
     catalog::Catalog,
     config::Config,
     errors::{AppError, Result},
+    lp_log::LpChange,
     model::PhoneDevice,
     profile::Profile,
     stats::{Offer, StoredGame},
@@ -22,6 +23,7 @@ const CATALOG: &str = "catalog.json";
 const PROFILE: &str = "profile.json";
 const PHONES: &str = "phones.json";
 const PENDING_OFFERS: &str = "offers.json";
+const LP_LOG: &str = "ranked.json";
 const LOG: &str = "xyra.log";
 const SCREENSHOTS: &str = "screenshots";
 const UPDATES: &str = "updates";
@@ -164,6 +166,15 @@ impl Storage {
         self.write(PENDING_OFFERS, offers)
     }
 
+    /// The LP each ranked game gave or took.
+    pub fn load_lp_log(&self) -> Result<Vec<LpChange>> {
+        Ok(self.read(LP_LOG)?.unwrap_or_default())
+    }
+
+    pub fn save_lp_log(&self, log: &[LpChange]) -> Result<()> {
+        self.write(LP_LOG, &log)
+    }
+
     pub fn load_catalog(&self) -> Result<Option<Catalog>> {
         self.read_cache(CATALOG)
     }
@@ -195,7 +206,7 @@ impl Storage {
 
     /// Deletes the games, profile, screenshots and log; settings and the game data catalog stay.
     pub fn delete_personal_data(&self) -> Result<()> {
-        for path in [STATS, PENDING_OFFERS, PROFILE, LOG].map(|name| self.file(name)).iter().filter(|path| path.exists()) {
+        for path in [STATS, PENDING_OFFERS, LP_LOG, PROFILE, LOG].map(|name| self.file(name)).iter().filter(|path| path.exists()) {
             fs::remove_file(path)?;
         }
         let screenshots = self.file(SCREENSHOTS);

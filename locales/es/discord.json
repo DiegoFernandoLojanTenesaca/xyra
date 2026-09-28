@@ -1,0 +1,8 @@
+{
+  "playing": "{{mode}} · {{champion}}",
+  "stats": "{{kills}}/{{deaths}}/{{assists}} · Nivel {{level}}",
+  "selecting": "En la selección de campeón",
+  "searching": "Buscando partida",
+  "lobby": "En una sala",
+  "idle": "Usando Xyra"
+}

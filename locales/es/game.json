@@ -55,5 +55,16 @@
   "matchSound": {
     "title": "Sonar al encontrar partida",
     "description": "Toca el sonido de partida encontrada del LoL también desde Xyra. El cliente ya suena solo: enciéndelo si lo tienes en silencio."
+  },
+  "skin": {
+    "title": "Skin al tener campeón",
+    "description": "En la selección, Xyra le pone a tu campeón una de tus skins. Solo usa las que tienes, y si la cambias a mano la respeta.",
+    "off": "Ninguna",
+    "random": "Aleatoria",
+    "favorite": "Tu favorita"
+  },
+  "skinChromas": {
+    "title": "Incluir cromas",
+    "description": "Al elegir al azar, también puede ponerte un croma que tengas."
   }
 }

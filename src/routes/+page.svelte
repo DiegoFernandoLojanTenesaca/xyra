@@ -4,6 +4,7 @@
     ChartColumn,
     CircleQuestionMark,
     Crown,
+    Gem,
     Download,
     ExternalLink,
     Gamepad2,
@@ -36,12 +37,14 @@
   import Home from '$lib/screens/Home.svelte';
   import Labels from '$lib/screens/Labels.svelte';
   import Lobby from '$lib/screens/Lobby.svelte';
+  import Loot from '$lib/screens/Loot.svelte';
   import Mastery from '$lib/screens/Mastery.svelte';
   import Meta from '$lib/screens/Meta.svelte';
   import Settings from '$lib/screens/Settings.svelte';
   import Stats from '$lib/screens/Stats.svelte';
   import Logo from '$lib/ui/Logo.svelte';
   import UpdateDialog from '$lib/ui/UpdateDialog.svelte';
+  import Welcome from '$lib/ui/Welcome.svelte';
 
   applyTokens();
 
@@ -61,11 +64,13 @@
     { page: 'history', icon: HistoryIcon },
     { page: 'mastery', icon: Medal },
     { page: 'challenges', icon: Trophy },
+    { page: 'loot', icon: Gem },
   ] as const satisfies { page: Page; icon: unknown }[];
 
   const SCREENS: Record<Page, Component> = {
     home: Home,
     lobby: Lobby,
+    loot: Loot,
     build: Build,
     augments: Augments,
     champions: Champions,
@@ -178,6 +183,7 @@
         <div class="page"><Screen /></div>
       {/key}
       <UpdateDialog />
+      <Welcome />
     {/if}
   </main>
 </div>
@@ -308,8 +314,7 @@
   nav {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
-    padding: var(--space-5) 0 var(--space-4);
+    padding: var(--space-3) 0;
     overflow-y: auto;
     background: var(--color-chrome);
     border-right: var(--border-hairline) solid var(--color-line);
@@ -353,7 +358,7 @@
     color: var(--color-accentBright);
   }
   .group {
-    padding: var(--space-4) var(--space-6) var(--space-1);
+    padding: var(--space-3) var(--space-6) var(--space-1);
     color: var(--color-textFaint);
     font-size: var(--text-xs);
     font-weight: 700;
@@ -397,11 +402,25 @@
     display: flex;
     align-items: center;
     gap: var(--space-1);
+    overflow: hidden;
     padding-top: var(--space-1);
+    white-space: nowrap;
     font-size: var(--text-xs);
     letter-spacing: var(--tracking-tight);
     text-transform: none;
     color: var(--color-textFaint);
+  }
+  @media (max-height: 700px) {
+    nav button {
+      padding-block: var(--space-1);
+    }
+    .group {
+      padding-top: var(--space-2);
+    }
+  }
+  .footer .signature .facts {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .footer .signature:hover {
     color: var(--color-accentBright);

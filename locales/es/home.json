@@ -116,5 +116,15 @@
   "current": "Tu campeón",
   "take": "Tomar",
   "allChampions": "Todos los campeones",
-  "allForPosition": "Todos para {{position}}"
+  "allForPosition": "Todos para {{position}}",
+  "lp": {
+    "title": "Tu LP",
+    "today": "hoy · {{wins}} V / {{losses}} D",
+    "points": "{{value}} LP",
+    "empty": "Juega una clasificatoria con Xyra abierto y aquí verás cuánto LP te dio o te quitó cada partida.",
+    "queues": {
+      "solo": "Solo/Dúo",
+      "flex": "Flexible"
+    }
+  }
 }

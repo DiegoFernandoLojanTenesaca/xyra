@@ -105,5 +105,20 @@
       "hint": "Every phone can see your game, builds and stats; permissions decide what else it can do. A disconnected phone has to scan the code again."
     },
     "linkOn": "Link on"
+  },
+  "discord": {
+    "title": "Discord",
+    "presence": {
+      "title": "Show what you play on Discord",
+      "description": "Your Discord profile says \"Playing Xyra\" with your mode and champion. Discord has to be open on this PC."
+    },
+    "details": {
+      "title": "Champion and KDA",
+      "description": "Include your champion, its picture and your KDA in the game."
+    },
+    "idle": {
+      "title": "\"Using Xyra\" when you are not playing",
+      "description": "Turned off, Discord only shows something while you are in a lobby, champion select or a game."
+    }
   }
 }

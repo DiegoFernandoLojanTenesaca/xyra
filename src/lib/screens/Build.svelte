@@ -1,7 +1,7 @@
 <script lang="ts">
   import { ChevronRight, Download, Hammer } from '@lucide/svelte';
   import { app } from '../app.svelte';
-  import { getBuild, getRecentMatches } from '../services/league';
+  import { getBuild, getOwnedSkins, getRecentMatches, setFavoriteSkin } from '../services/league';
   import { resource } from '../services/resource.svelte';
   import type { Asset, ImportTarget, Matchup, Position } from '../types';
   import Button from '../ui/Button.svelte';
@@ -41,6 +41,16 @@
     () => getRecentMatches(),
     (failure) => failure,
   );
+  const skins = resource(
+    () => (app.state.account && app.selectedChampion !== null ? [app.state.account, app.selectedChampion] : null),
+    ([, champion]) => getOwnedSkins(champion as number),
+    (failure) => failure,
+  );
+  const favorite = $derived(app.selectedChampion === null ? undefined : app.config.favorite_skins[app.selectedChampion]);
+  async function chooseFavorite(skin: number) {
+    if (app.selectedChampion === null) return;
+    app.config = await setFavoriteSkin(app.selectedChampion, favorite === skin ? null : skin);
+  }
   const yourGames = $derived((history.value ?? []).filter((game) => game.champion.id === app.selectedChampion));
   const current = $derived(build.value);
   const missingNames = $derived(!!current && !current.runes.primary_style.icon);
@@ -225,6 +235,33 @@
     </section>
   {/if}
 
+  {#if skins.value && skins.value.length > 1}
+    <section class="panel cut box">
+      <h3 class="section-title">
+        {t('build:favoriteSkin', { champion: champion?.name ?? '' })}
+        <small>{app.config.skin_choice === 'favorite' ? t('build:favoriteSkinOn') : t('build:favoriteSkinOff')}</small>
+      </h3>
+      <div class="skins">
+        {#each skins.value as skin (skin.id)}
+          <button class="skin" class:chosen={favorite === skin.id} title={skin.name} onclick={() => chooseFavorite(skin.id)}>
+            {#if skin.icon}<img src={skin.icon} alt="" />{/if}
+            <small>{skin.name}</small>
+          </button>
+          {#each skin.chromas as chroma (chroma.id)}
+            <button
+              class="chroma"
+              class:chosen={favorite === chroma.id}
+              title={chroma.name}
+              aria-label={chroma.name}
+              style="--swatch:{chroma.color || 'var(--color-lineStrong)'}"
+              onclick={() => chooseFavorite(chroma.id)}
+            ></button>
+          {/each}
+        {/each}
+      </div>
+    </section>
+  {/if}
+
   {#if yourGames.length}
     <section class="panel cut box">
       <h3 class="section-title">
@@ -254,6 +291,46 @@
 {/if}
 
 <style>
+  .skins {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .skin {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-1);
+    width: var(--size-portrait);
+    padding: var(--space-2);
+    border: var(--border-hairline) solid var(--color-line);
+    background: var(--color-panelRaised);
+  }
+  .skin img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+  }
+  .skin small {
+    overflow: hidden;
+    width: 100%;
+    font-size: var(--text-xs);
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .chroma {
+    width: var(--size-iconSm);
+    height: var(--size-iconSm);
+    border: var(--border-thick) solid var(--color-line);
+    border-radius: 50%;
+    background: var(--swatch);
+  }
+  .skin.chosen,
+  .chroma.chosen {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 var(--border-hairline) var(--color-accent);
+  }
   .your-games {
     display: grid;
     gap: var(--space-2);

@@ -42,19 +42,45 @@
     />
   </section>
 
-  <section class="panel cut box">
-    <h3 class="section-title">{t('settings:diagnostics')}</h3>
-    <ToggleRow
-      title={t('settings:recordScreenshots.title')}
-      description={t('settings:recordScreenshots.description')}
-      checked={config.record_screenshots}
-      onchange={() => app.saveConfig({ record_screenshots: !config.record_screenshots })}
-    />
-    <div class="buttons">
-      <Button icon={Folder} onclick={() => openFolder('screenshots')}>{t('settings:openScreenshots')}</Button>
-      <Button icon={Folder} onclick={() => openFolder('log')}>{t('settings:openLog')}</Button>
-    </div>
-  </section>
+  <div class="column">
+    <section class="panel cut box">
+      <h3 class="section-title">{t('settings:discord.title')}</h3>
+      <ToggleRow
+        title={t('settings:discord.presence.title')}
+        description={t('settings:discord.presence.description')}
+        checked={config.discord_presence}
+        onchange={() => app.saveConfig({ discord_presence: !config.discord_presence })}
+      />
+      {#if config.discord_presence}
+        <ToggleRow
+          title={t('settings:discord.details.title')}
+          description={t('settings:discord.details.description')}
+          checked={config.discord_details}
+          onchange={() => app.saveConfig({ discord_details: !config.discord_details })}
+        />
+        <ToggleRow
+          title={t('settings:discord.idle.title')}
+          description={t('settings:discord.idle.description')}
+          checked={config.discord_idle}
+          onchange={() => app.saveConfig({ discord_idle: !config.discord_idle })}
+        />
+      {/if}
+    </section>
+
+    <section class="panel cut box">
+      <h3 class="section-title">{t('settings:diagnostics')}</h3>
+      <ToggleRow
+        title={t('settings:recordScreenshots.title')}
+        description={t('settings:recordScreenshots.description')}
+        checked={config.record_screenshots}
+        onchange={() => app.saveConfig({ record_screenshots: !config.record_screenshots })}
+      />
+      <div class="buttons">
+        <Button icon={Folder} onclick={() => openFolder('screenshots')}>{t('settings:openScreenshots')}</Button>
+        <Button icon={Folder} onclick={() => openFolder('log')}>{t('settings:openLog')}</Button>
+      </div>
+    </section>
+  </div>
 </div>
 
 <style>
@@ -66,6 +92,10 @@
   }
   .box {
     padding: var(--space-4);
+  }
+  .column {
+    display: grid;
+    gap: var(--space-6);
   }
   .language {
     display: grid;

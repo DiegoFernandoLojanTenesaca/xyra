@@ -1,0 +1,45 @@
+{
+  "subtitle": "Your chests, keys and essences, and the rewards the client keeps for you.",
+  "loading": "Reading your loot…",
+  "blueEssence": "Blue essence",
+  "orangeEssence": "Orange essence",
+  "chests": "Chests",
+  "keys": "Keys",
+  "keysDetail": "{{keys}} · {{fragments}} fragments",
+  "rewards": "Rewards to claim",
+  "claim": "Claim",
+  "claimed": "You claimed your reward.",
+  "pick_one": "Pick {{count}}",
+  "pick_other": "Pick {{count}}",
+  "actions": "What you can do",
+  "nothing": "Nothing to open or claim right now.",
+  "kinds": {
+    "openFree": {
+      "title": "Open {{count}} without a key",
+      "detail": "Capsules, orbs and mystery items that need no key.",
+      "button": "Open"
+    },
+    "forgeKeys": {
+      "title": "Forge {{count}} keys",
+      "detail": "From your key fragments, three at a time.",
+      "button": "Forge"
+    },
+    "openChests": {
+      "title": "Open {{count}} chests",
+      "detail": "Hextech chests with the keys you have.",
+      "button": "Open"
+    },
+    "disenchantChampionShards": {
+      "title": "Disenchant {{count}} champion shards",
+      "detail": "Only of champions you already own. You get {{essence}} blue essence.",
+      "button": "Disenchant"
+    }
+  },
+  "confirm": "This cannot be undone. Sure?",
+  "confirmYes": "Yes, do it",
+  "cancel": "Cancel",
+  "gained": "You got: {{items}}.",
+  "done": "Done.",
+  "stopped": "It stopped halfway: {{reason}}. What was done stays done.",
+  "safe": "Xyra never touches your skin shards, emotes or eternals: you decide those in the client."
+}

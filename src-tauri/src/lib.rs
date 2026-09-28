@@ -1,4 +1,5 @@
 mod commands;
+mod discord;
 mod engine;
 mod overlay;
 mod phone;
@@ -115,6 +116,7 @@ pub fn run() {
                 open(app.handle(), &shared);
             }
             phone::follow_config(app.handle());
+            discord::start(app.handle().clone());
             let handle = app.handle().clone();
             thread::spawn(move || engine::run(handle, shared, events));
             Ok(())
@@ -137,6 +139,13 @@ pub fn run() {
             commands::get_masteries,
             commands::get_challenges,
             commands::take_bench_pick,
+            commands::get_lp_games,
+            commands::get_owned_skins,
+            commands::set_favorite_skin,
+            commands::random_skin,
+            commands::get_loot,
+            commands::run_loot_action,
+            commands::claim_reward,
             commands::get_lobby_queues,
             commands::get_friends,
             commands::create_lobby,

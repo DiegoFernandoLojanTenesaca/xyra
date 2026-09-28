@@ -1,10 +1,10 @@
 import { onEvent, getChoices, getConfig, getState, setConfig } from './services/engine';
-import { getStats } from './services/data';
+import { getLpGames, getStats } from './services/data';
 import { toAppError } from './services/errors';
 import { getChampions, getProfile, importBuild, importWholeBuild } from './services/league';
 import { checkUpdate, installUpdate } from './services/updates';
 import { BASE_LANGUAGE, formatter, translator } from './i18n';
-import type { BuildMode, ChampionInfo, Choices, Config, EngineState, GameMode, ImportTarget, Position, Profile, Release, StatsSummary } from './types';
+import type { BuildMode, ChampionInfo, Choices, Config, EngineState, GameMode, ImportTarget, LpGame, Position, Profile, Release, StatsSummary } from './types';
 
 export const PAGES = [
   'home',
@@ -17,6 +17,7 @@ export const PAGES = [
   'history',
   'mastery',
   'challenges',
+  'loot',
   'labels',
   'game',
   'settings',
@@ -63,6 +64,8 @@ class App {
   choices = $state<Choices>(null!);
   ready = $derived(!!this.state && !!this.config && !!this.choices);
   stats = $state<StatsSummary | null>(null);
+  /** Ranked games with the LP each gave or took, newest first. */
+  lp = $state<LpGame[]>([]);
   champions = $state<ChampionInfo[]>([]);
   profile = $state<Profile | null>(null);
   page = $state<Page>('home');
@@ -118,6 +121,7 @@ class App {
     if (previous !== undefined && stats.games > previous && this.page !== 'stats') this.newGames += stats.games - previous;
     this.stats = stats;
     this.champions = await getChampions();
+    this.lp = await getLpGames();
   };
 
   loadProfile = async () => {

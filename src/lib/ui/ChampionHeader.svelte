@@ -27,6 +27,7 @@
 <style>
   section {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: var(--space-4);
     margin-bottom: var(--space-6);
@@ -38,8 +39,14 @@
     box-shadow: 0 0 0 var(--border-thick) var(--color-accent);
   }
   .text {
-    flex: 1;
+    flex: 1 1 var(--size-aside);
     min-width: 0;
+  }
+  .text :global(.facts) {
+    flex-wrap: wrap;
+  }
+  .text :global(.facts > *) {
+    white-space: nowrap;
   }
   h2 {
     margin: 0 0 var(--space-2);
@@ -55,6 +62,7 @@
   }
   .actions {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--space-3);
   }
 </style>

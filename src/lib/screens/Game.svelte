@@ -3,14 +3,16 @@
   import { app } from '../app.svelte';
   import { getGameSettings, setGameSetting } from '../services/league';
   import { resource } from '../services/resource.svelte';
-  import type { Config, GameSetting, SettingValue } from '../types';
+  import type { Config, GameSetting, SettingValue, SkinChoice } from '../types';
   import EmptyState from '../ui/EmptyState.svelte';
   import PageHeader from '../ui/PageHeader.svelte';
+  import SegmentedControl from '../ui/SegmentedControl.svelte';
   import ToggleRow from '../ui/ToggleRow.svelte';
 
   const MINIMAP_RANGE = { min: 1, max: 3, step: 0.1 };
   const MINIMAP_DIGITS = 1;
   const ACCEPT_DELAY_RANGE = { min: 0, max: 10, step: 1 };
+  const SKIN_CHOICES: SkinChoice[] = ['off', 'random', 'favorite'];
   const AUTOMATIONS = ['keepBorderless', 'autoImportBuild', 'closeWindowInGame', 'autoAccept', 'matchSound'] as const;
   const AUTOMATION_KEYS: Record<(typeof AUTOMATIONS)[number], keyof Config> = {
     keepBorderless: 'keep_borderless',
@@ -90,11 +92,38 @@
         <b class="value">{app.format.seconds(config.accept_delay_seconds)}</b>
       </label>
     {/if}
+    <div class="skin">
+      <span><b>{t('game:skin.title')}</b><small class="muted">{t('game:skin.description')}</small></span>
+      <SegmentedControl
+        options={SKIN_CHOICES.map((id) => [id, t(`game:skin.${id}`)] as [SkinChoice, string])}
+        bind:value={() => config.skin_choice, (choice) => app.saveConfig({ skin_choice: choice })}
+      />
+    </div>
+    {#if config.skin_choice !== 'off'}
+      <ToggleRow
+        title={t('game:skinChromas.title')}
+        description={t('game:skinChromas.description')}
+        checked={config.skin_chromas}
+        onchange={() => app.saveConfig({ skin_chromas: !config.skin_chromas })}
+      />
+    {/if}
     <p class="safe"><ShieldCheck size={16} />{t('game:safe')}</p>
   </section>
 </div>
 
 <style>
+  .skin {
+    display: grid;
+    gap: var(--space-3);
+    padding: var(--space-3) 0;
+  }
+  .skin span {
+    display: grid;
+    gap: var(--space-1);
+  }
+  .skin small {
+    font-size: var(--text-sm);
+  }
   .pair {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
