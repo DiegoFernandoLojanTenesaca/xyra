@@ -52,20 +52,27 @@ with augments, because nothing announces the cards; it stops as soon as the game
 
 ## Releases
 
+Versions follow Semantic Versioning, `MAJOR.MINOR.PATCH`: PATCH (0.9.1) only fixes bugs; MINOR (0.10.0) adds features
+and may carry fixes; MAJOR marks what users must know: 1.0.0 is the first version considered stable and complete, and
+later majors are for changes that break what players rely on, like pairing phones again or losing settings. Until
+1.0.0, a MINOR also covers those.
+
 `master` is the only long-lived branch and nothing runs on push. A release is a tag:
 
 1. Bump `version` in the root `Cargo.toml` (the app, the installer and the About screen read it from there).
 2. Replace `CHANGELOG.md` with the changes since the last release: plain past-tense bullets, no headers. Put the same
-   news in the README's "Novedades", the site's version timeline (`docs/index.html`, `#novedades`) and About's
-   `about:changes`, and retake the screenshots that changed (`docs/screenshots`, and the phone app's in `docs/app`).
+   news in the README's "Novedades", the site's version timeline (`docs/index.html`, `#novedades`, which keeps only the
+   last three versions) and About's `about:changes`, and retake the screenshots that changed (`docs/screenshots`, and
+   the phone app's in `docs/app`).
    `about:changes` is also what the update window of older apps shows: the PC (`updates::check`) and the phone
    (`mobile/src/lib/UpdateDialog.svelte`) read `locales/<language>/about.json` at the new tag, so write it before tagging.
 3. Bump `version` in `mobile/src-tauri/tauri.conf.json` and `mobile/src-tauri/Cargo.toml` to the same number.
 4. Commit, push, then `git tag 0.4.0 && git push origin 0.4.0`.
 5. Build the Android app and add it to the release: `gh release upload <version> xyra-android-<version>.apk`.
-6. Publish the site on Cloudflare Pages (project `xyra`, https://xyra-14q.pages.dev), which does not follow the repo:
-   `npx wrangler pages deploy docs --project-name xyra --branch master`, run outside the repo with an absolute path to
-   `docs`. GitHub Pages also serves `docs/` from `master` on its own.
+6. Publish the site on Cloudflare Pages (project `xyra-app`, https://xyra-app.pages.dev), which does not follow the
+   repo: `npx wrangler pages deploy docs --project-name xyra-app --branch master`, run outside the repo with an absolute
+   path to `docs`. The first address, https://xyra-14q.pages.dev (project `xyra`), only redirects there. GitHub Pages
+   also serves `docs/` from `master` on its own.
 
 `.github/workflows/release.yml` checks that the tag matches the version, runs every check below, builds the installer
 and publishes it as `xyra-<version>.exe` with `CHANGELOG.md` as the release notes.

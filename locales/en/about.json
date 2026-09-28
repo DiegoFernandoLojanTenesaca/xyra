@@ -4,8 +4,11 @@
   "riot": "Xyra isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games. League of Legends is a trademark of Riot Games, Inc.",
   "whatsNew": "What's new in this version",
   "changes": {
-    "update": "When a new version is out, a window tells you what it brings and you install it with one button or leave it for later.",
-    "both": "The PC and the phone remind you to update the other one, since they work best on the same version."
+    "lobby": "Lobby: open a lobby, invite your friends online and look for a match from the PC or the phone.",
+    "live": "Your KDA, farm, gold and level live while you play, on the phone too.",
+    "following": "Following Xyra: how you do when you take the recommended card and when you do not.",
+    "notify": "The phone tells you when your game starts loading and when a patch changes your champions.",
+    "history": "Your games with each champion in Build, and the spells you used in History."
   },
   "links": "Links",
   "builtWith": "Made with Rust, Tauri and Svelte. The in-game overlay is native: no browser, almost no memory.",

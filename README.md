@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases/latest"><img alt="Descargar" src="https://img.shields.io/github/v/release/DiegoFernandoLojanTenesaca/xyra?style=for-the-badge&label=descargar&color=e5132b"></a>
-  <a href="https://xyra-14q.pages.dev/"><img alt="Sitio web" src="https://img.shields.io/badge/web-xyra-131315?style=for-the-badge"></a>
+  <a href="https://xyra-app.pages.dev/"><img alt="Sitio web" src="https://img.shields.io/badge/web-xyra-131315?style=for-the-badge"></a>
   <img alt="Windows 10 y 11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-131315?style=for-the-badge">
   <img alt="Android 7 o superior" src="https://img.shields.io/badge/Android-7%2B-131315?style=for-the-badge">
   <a href="LICENSE"><img alt="Licencia MIT" src="https://img.shields.io/github/license/DiegoFernandoLojanTenesaca/xyra?style=for-the-badge&color=1f1f22"></a>
@@ -16,7 +16,7 @@ Liviano, en español e inglés, y sin tocar el juego.</p>
 <p align="center">
   <a href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases/latest"><b>Descargar para Windows</b></a> ·
   <a href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases/latest"><b>Descargar la app para Android</b></a> ·
-  <a href="https://xyra-14q.pages.dev/"><b>Sitio web</b></a>
+  <a href="https://xyra-app.pages.dev/"><b>Sitio web</b></a>
 </p>
 
 <p align="center"><img src="docs/labels-preview.jpg" alt="Etiquetas de Xyra sobre las cartas de aumento en una partida de ARAM: Caos" width="92%"></p>
@@ -25,16 +25,18 @@ Liviano, en español e inglés, y sin tocar el juego.</p>
 
 ## Novedades
 
-**0.8.0**
+**0.9.0**
 
-- Cuando sale una versión nueva, la PC y el celular te muestran qué trae y la instalas con un botón o la dejas para
-  después.
-- Cada uno te recuerda actualizar también el otro, porque la PC y el celular van mejor con la misma versión.
-- La web marca la sección en la que estás y en el celular tiene su barra de secciones y un botón para volver arriba.
+- **Sala:** crea una sala, invita a tus amigos conectados y busca partida desde la PC o el celular.
+- Tu KDA, farm, oro y nivel en vivo mientras juegas, también en el celular.
+- **Siguiendo a Xyra:** cómo te va cuando tomas la carta recomendada y cuando no.
+- El celular te avisa cuando tu partida empieza a cargar y cuando sale un parche con cambios a tus campeones.
+- Tus partidas con cada campeón en Build y los hechizos que usaste en el Historial.
 
-**0.7.0:** tus opciones de la banca en la selección y etiquetas de cartas más firmes. **0.6.0:** aviso de partida en el
-celular con el sonido del LoL, Inicio por modos y buffs y nerfs del parche. **0.5.0:** celulares emparejados con
-permisos. Todas las notas en [Releases](../../releases).
+**0.8.0:** aviso de nueva versión en la PC y el celular. **0.7.0:** tus opciones de la banca en la selección.
+**0.6.0:** aviso de partida en el celular con el sonido del LoL. Todas las notas en [Releases](../../releases). Las
+versiones siguen el [versionado semántico](https://semver.org/lang/es/): el tercer número sube con arreglos, el segundo
+con funciones nuevas y la 1.0.0 será la primera versión estable.
 
 ## Así se ve
 
@@ -60,8 +62,8 @@ permisos. Todas las notas en [Releases](../../releases).
     <td><img src="docs/screenshots/game.jpg" alt="Juego"><br><b>Juego:</b> opciones oficiales del LoL y automatizaciones</td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/stats.jpg" alt="Estadísticas"><br><b>Estadísticas:</b> tu winrate y tus mejores aumentos</td>
-    <td></td>
+    <td><img src="docs/screenshots/stats.jpg" alt="Estadísticas"><br><b>Estadísticas:</b> tu winrate, tus mejores aumentos y si sigues a Xyra</td>
+    <td><img src="docs/screenshots/lobby.jpg" alt="Sala"><br><b>Sala:</b> crea la sala, invita a tus amigos y busca partida</td>
   </tr>
 </table>
 
@@ -105,8 +107,10 @@ se actualiza sola desde sus Ajustes.
   la build.
 - **Xyra para Android:** aviso de partida con la app cerrada, aceptar, selección, build, meta y ajustes desde el
   celular; cada celular con su propia llave y sus permisos, y se desconecta desde la PC.
-- **Tu cuenta:** historial de tus últimas partidas de todos los modos (KDA, oro, daño e ítems), la maestría de cada
-  campeón con lo que falta para subir y tus desafíos, con los que tienes a punto de subir.
+- **Sala:** crea una sala para cualquier modo, invita a tus amigos conectados y busca partida sin tocar el cliente,
+  también desde el celular.
+- **Tu cuenta:** historial de tus últimas partidas de todos los modos (KDA, oro, daño, hechizos e ítems), la
+  maestría de cada campeón con lo que falta para subir y tus desafíos, con los que tienes a punto de subir.
 - **Tus datos:** winrate por campeón, mejores aumentos, nivel, rango y maestrías, separados por cuenta; exportación a CSV.
 - **Liviano y al día:** vive en la bandeja del sistema, solo trabaja durante tus partidas y se actualiza con un botón.
 
@@ -190,6 +194,8 @@ lets you know when you find a match, even with the app closed. Lightweight, Span
 - **Champion select:** in ARAM, your options from the bench, best first, with a button to take any of them and every
   other champion below; in Summoner's Rift, every champion of your position and counters.
 - **Meta and patch:** Summoner's Rift, ARAM and Arena tier lists, and the patch buffs and nerfs from the official notes.
+- **Lobby:** open a lobby for any mode, invite your friends online and look for a match without touching the client,
+  from the phone too.
 - **Your account:** match history of every mode, champion mastery progress and challenges about to level up.
 - **Phone app:** match notification with the app closed, accept, builds, meta and settings over your own network.
 - **Safe:** screen reading, a native click-through overlay and the client's official APIs only; no memory access, no
