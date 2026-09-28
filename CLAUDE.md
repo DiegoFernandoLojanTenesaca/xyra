@@ -58,6 +58,8 @@ with augments, because nothing announces the cards; it stops as soon as the game
 2. Replace `CHANGELOG.md` with the changes since the last release: plain past-tense bullets, no headers. Put the same
    news in the README's "Novedades", the site's version timeline (`docs/index.html`, `#novedades`) and About's
    `about:changes`, and retake the screenshots that changed (`docs/screenshots`, and the phone app's in `docs/app`).
+   `about:changes` is also what the update window of older apps shows: the PC (`updates::check`) and the phone
+   (`mobile/src/lib/UpdateDialog.svelte`) read `locales/<language>/about.json` at the new tag, so write it before tagging.
 3. Bump `version` in `mobile/src-tauri/tauri.conf.json` and `mobile/src-tauri/Cargo.toml` to the same number.
 4. Commit, push, then `git tag 0.4.0 && git push origin 0.4.0`.
 5. Build the Android app and add it to the release: `gh release upload <version> xyra-android-<version>.apk`.

@@ -175,20 +175,69 @@
         height: 2rem;
       }
       nav {
+        position: relative;
         display: flex;
-        gap: 1.5rem;
+        gap: 1.3rem;
         margin-left: auto;
       }
       nav a {
+        position: relative;
+        flex: none;
         color: var(--text-muted);
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         font-weight: 700;
-        letter-spacing: 0.14em;
+        letter-spacing: 0.12em;
         text-decoration: none;
         text-transform: uppercase;
+        transition: color 0.2s;
       }
-      nav a:hover {
+      nav a:hover,
+      nav a[aria-current='true'] {
         color: var(--text);
+      }
+      nav a::after {
+        content: '';
+        position: absolute;
+        inset: auto 0 -0.4rem;
+        height: 2px;
+        background: var(--accent);
+        transform: scaleX(0);
+        transition: transform 0.25s;
+      }
+      nav a[aria-current='true']::after {
+        transform: none;
+      }
+      .to-top {
+        position: fixed;
+        right: 1.25rem;
+        bottom: 1.25rem;
+        z-index: 9;
+        display: grid;
+        place-items: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        border: 1px solid var(--line-strong);
+        background: rgb(6 6 6 / 0.85);
+        backdrop-filter: blur(10px);
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(0.5rem);
+        transition:
+          opacity 0.2s,
+          transform 0.2s,
+          border-color 0.2s;
+      }
+      .to-top.shown {
+        opacity: 1;
+        pointer-events: auto;
+        transform: none;
+      }
+      .to-top:hover {
+        border-color: var(--accent);
+      }
+      .to-top svg {
+        width: 1.2rem;
+        height: 1.2rem;
       }
       header .button {
         padding: 0.55rem 1rem;
@@ -562,6 +611,35 @@
         font-size: 0.8rem;
       }
 
+      @media (max-width: 1060px) {
+        :root {
+          scroll-padding-top: 7rem;
+        }
+        header .wrap {
+          flex-wrap: wrap;
+          row-gap: 0;
+          height: auto;
+          padding-top: 0.8rem;
+        }
+        header .button {
+          margin-left: auto;
+        }
+        nav {
+          order: 3;
+          width: 100%;
+          margin: 0;
+          padding: 0.7rem 0 0.85rem;
+          overflow-x: auto;
+          scrollbar-width: none;
+          mask-image: linear-gradient(90deg, transparent, #000 1.2rem, #000 calc(100% - 1.2rem), transparent);
+        }
+        nav::-webkit-scrollbar {
+          display: none;
+        }
+        nav a::after {
+          bottom: 0.45rem;
+        }
+      }
       @media (max-width: 960px) {
         .flow,
         .gallery {
@@ -575,12 +653,6 @@
         }
       }
       @media (max-width: 720px) {
-        nav {
-          display: none;
-        }
-        header .button {
-          margin-left: auto;
-        }
         .hero,
         .rules,
         .news,
@@ -908,10 +980,12 @@
           ><svg aria-hidden="true"><use href="#logo" /></svg>XYRA</a
         >
         <nav aria-label="Secciones">
-          <a href="#funciones">Funciones</a>
           <a href="#estilos">Estilos</a>
+          <a href="#funciones">Funciones</a>
           <a href="#celular">App</a>
+          <a href="#capturas">Capturas</a>
           <a href="#seguridad">Seguridad</a>
+          <a href="#instalar">Instalar</a>
           <a href="#novedades">Novedades</a>
           <a href="#preguntas">Preguntas</a>
         </nav>
@@ -1347,6 +1421,14 @@
               <h3>Versiones</h3>
               <ol class="timeline">
                 <li>
+                  <b>0.8.0</b>
+                  <ul>
+                    <li>Aviso de nueva versión en la PC y en el celular, con lo que trae y un botón para actualizar o dejarlo para después.</li>
+                    <li>La PC y el celular te recuerdan actualizar el otro, porque van mejor con la misma versión.</li>
+                    <li>Web más fácil de recorrer: marca la sección en la que estás y en el celular tiene su barra de secciones.</li>
+                  </ul>
+                </li>
+                <li>
                   <b>0.7.0</b>
                   <ul>
                     <li>En la selección, tus opciones de la banca con la mejor primero y todos los demás campeones debajo, en la PC y en el celular.</li>
@@ -1495,7 +1577,8 @@
           <details>
             <summary>¿Cómo se actualiza?</summary>
             <p>
-              Cuando sale una versión nueva, aparece un botón en la app. Descarga, comprueba el instalador y actualiza sin perder tus ajustes ni tus partidas.
+              Cuando sale una versión nueva, Xyra te muestra qué trae y la instalas con un botón o la dejas para después. La app del celular hace lo mismo y te
+              recuerda actualizar también la otra, porque la PC y el celular van mejor con la misma versión. Nunca pierdes tus ajustes ni tus partidas.
             </p>
           </details>
         </div>
@@ -1537,6 +1620,11 @@
       </div>
     </footer>
 
+    <a class="to-top" href="#" aria-label="Volver arriba"
+      ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m18 15-6-6-6 6" /></svg
+    ></a>
+
     <dialog id="viewer" aria-label="Captura ampliada">
       <img alt="" />
     </dialog>
@@ -1569,6 +1657,25 @@
         revealed.observe(element);
       });
       document.querySelectorAll('section').forEach((section) => revealed.observe(section));
+
+      // Marks the section being read in the bar, and keeps its link in view when the bar scrolls sideways.
+      const nav = document.querySelector('header nav');
+      const sectionLinks = new Map([...nav.querySelectorAll('a')].map((link) => [link.hash.slice(1), link]));
+      const mark = (id) => {
+        sectionLinks.forEach((link, section) => link.setAttribute('aria-current', String(section === id)));
+        const link = sectionLinks.get(id);
+        if (link) nav.scrollTo({ left: link.offsetLeft - (nav.clientWidth - link.clientWidth) / 2, behavior: 'smooth' });
+      };
+      const reading = new IntersectionObserver((entries) => entries.forEach((entry) => entry.isIntersecting && mark(entry.target.id)), {
+        rootMargin: '-45% 0px -50% 0px',
+      });
+      sectionLinks.forEach((_, id) => reading.observe(document.getElementById(id)));
+
+      const toTop = document.querySelector('.to-top');
+      new IntersectionObserver(([hero]) => {
+        toTop.classList.toggle('shown', !hero.isIntersecting);
+        if (hero.isIntersecting) mark(null);
+      }).observe(document.querySelector('.hero'));
 
       const viewer = document.getElementById('viewer');
       document.querySelectorAll('figure button').forEach((button) =>

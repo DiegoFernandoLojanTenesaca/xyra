@@ -25,18 +25,16 @@ Liviano, en español e inglés, y sin tocar el juego.</p>
 
 ## Novedades
 
-**0.7.0**
+**0.8.0**
 
-- En la selección de ARAM y ARAM: Caos ves tus opciones: tu campeón y los de la banca, el mejor primero según tu orden,
-  con un botón para tomar cualquiera. Debajo, todos los demás campeones; en la Grieta, todos los de tu posición. En la PC
-  y en el celular.
-- Las etiquetas de las cartas salen aunque OP.GG tarde en responder: Xyra trae sus datos desde que empieza la partida.
-- Inicio, Build y Aumentos ya no parpadean durante la partida.
-- Xyra conecta mejor con el cliente al iniciar sesión y el enlace con el celular vuelve a arrancar si no pudo.
+- Cuando sale una versión nueva, la PC y el celular te muestran qué trae y la instalas con un botón o la dejas para
+  después.
+- Cada uno te recuerda actualizar también el otro, porque la PC y el celular van mejor con la misma versión.
+- La web marca la sección en la que estás y en el celular tiene su barra de secciones y un botón para volver arriba.
 
-**0.6.0:** aviso de partida en el celular con el sonido del LoL, Inicio por modos y buffs y nerfs del parche. **0.5.0:**
-celulares emparejados con permisos. **0.4.0:** app para Android, pantalla Meta y consejos en partida. Todas las notas en
-[Releases](../../releases).
+**0.7.0:** tus opciones de la banca en la selección y etiquetas de cartas más firmes. **0.6.0:** aviso de partida en el
+celular con el sonido del LoL, Inicio por modos y buffs y nerfs del parche. **0.5.0:** celulares emparejados con
+permisos. Todas las notas en [Releases](../../releases).
 
 ## Así se ve
 
