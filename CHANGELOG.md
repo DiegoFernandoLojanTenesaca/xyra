@@ -1,20 +1,9 @@
-- Added a match notification on your phone: it rings with League's match found sound when your PC finds a match, even with the app closed, and has buttons to accept or decline it; turn it off or try it in the phone's Settings.
-- Added a Match found screen to the phone app, in the style of League's, with Accept and Decline.
-- Added your champion's build to the phone during champion select, with one button to import runes, items and spells; Home on the PC also imports the whole build at once.
-- Added an option in Game to play the match found sound on the PC too, for a muted client.
-- Added typing the pairing code by hand in the phone's scanner, when the QR cannot be scanned.
-- Added updates to the phone app: it tells you when there is a new version and installs it with one button, keeping your pairing.
-- Added the patch buffs and nerfs to Meta, read from the official patch notes, with your 15 most mastered champions first and every change with Riot's reason; Home also lists the ones of your champions.
-- Added a button to take the recommended champion from the ARAM bench, on the PC and on the phone, with its own permission for each paired phone.
-- Added modes to Home: Normal, Ranked, ARAM, ARAM: Mayhem and Arena, each with what matters in it, like the best champions by position, your rank, the ARAM and Arena tier lists and your recent games of that mode.
-- Added ARAM and Arena tier lists to Meta.
-- Added History, Mastery and Challenges under "Your account" in the sidebar, read from the client: your last 20 games of every mode with KDA, farm, gold, damage and items; every champion's mastery with the points and marks the next level needs; and your challenge level, each category and the challenges about to level up.
-- Added History, Mastery and Challenges to the phone app's Stats tab.
-- Added Phone and Settings to the sidebar.
-- Added a checklist to the phone app when it cannot reach your PC: whether it is on Wi-Fi and on the same network, and what to do next.
-- Fixed phones not reaching the PC on routers that only connect Wi-Fi devices once the PC has talked on the network: while the link is on, Xyra introduces itself on your network.
-- Changed the phone app icon to show the whole logo on a dark background.
-- Changed the region next to your name to the one players know, like LAN instead of LA1.
-- Changed Help to show how to connect your phone and more questions; the creators are now only in About.
-- Fixed OP.GG's top tier showing an empty badge; it now shows OP.
-- Fixed the phone app's content being covered by the navigation buttons on some phones.
+- Added your options to champion select in ARAM and ARAM: Mayhem, on the PC and the phone: your champion and the bench, best first by your recommendation order, with a button to take any of them, and below them every other champion in the same order; in Summoner's Rift, every champion of your position.
+- Fixed Home, Build and Augments, on the PC and the phone, flickering and reloading their lists every few seconds during a game.
+- Fixed the augment labels sometimes not showing: Xyra now reads OP.GG's stats in the background from the start of the game, retrying when OP.GG is slow, and labels the cards the moment the stats arrive, instead of pausing the screen reading while OP.GG answered.
+- Fixed the augment choices Xyra saw getting lost when you queued again before the match history listed your last game; they now stay with their game until it shows up.
+- Added a note in Xyra's log, with a screenshot when "Save screenshots" is on, whenever Xyra recognizes a row of cards but cannot label it, to find out why.
+- Fixed Xyra not knowing which champions you own right after you sign in: it now waits for the client to announce them.
+- Fixed the match history import failing right after you sign in, while the client brings it from Riot: Xyra now reads it in the background and asks again, so it never stops to wait for it.
+- Fixed the phone link staying off when its port was busy as Xyra started; opening Phone starts it again.
+- Changed Xyra's log to leave out a League client that closed without cleaning up after itself, which is not an error.
