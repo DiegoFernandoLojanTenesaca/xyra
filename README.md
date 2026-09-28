@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases/latest"><img alt="Descargar" src="https://img.shields.io/github/v/release/DiegoFernandoLojanTenesaca/xyra?style=for-the-badge&label=descargar&color=e5132b"></a>
-  <a href="https://diegofernandolojantenesaca.github.io/xyra/"><img alt="Sitio web" src="https://img.shields.io/badge/web-xyra-131315?style=for-the-badge"></a>
+  <a href="https://xyra-14q.pages.dev/"><img alt="Sitio web" src="https://img.shields.io/badge/web-xyra-131315?style=for-the-badge"></a>
   <img alt="Windows 10 y 11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-131315?style=for-the-badge">
   <img alt="Android 7 o superior" src="https://img.shields.io/badge/Android-7%2B-131315?style=for-the-badge">
   <a href="LICENSE"><img alt="Licencia MIT" src="https://img.shields.io/github/license/DiegoFernandoLojanTenesaca/xyra?style=for-the-badge&color=1f1f22"></a>
@@ -16,7 +16,7 @@ Liviano, en español e inglés, y sin tocar el juego.</p>
 <p align="center">
   <a href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases/latest"><b>Descargar para Windows</b></a> ·
   <a href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases/latest"><b>Descargar la app para Android</b></a> ·
-  <a href="https://diegofernandolojantenesaca.github.io/xyra/"><b>Sitio web</b></a>
+  <a href="https://xyra-14q.pages.dev/"><b>Sitio web</b></a>
 </p>
 
 <p align="center"><img src="docs/labels-preview.jpg" alt="Etiquetas de Xyra sobre las cartas de aumento en una partida de ARAM: Caos" width="92%"></p>

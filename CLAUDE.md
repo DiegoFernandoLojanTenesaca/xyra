@@ -61,6 +61,9 @@ with augments, because nothing announces the cards; it stops as soon as the game
 3. Bump `version` in `mobile/src-tauri/tauri.conf.json` and `mobile/src-tauri/Cargo.toml` to the same number.
 4. Commit, push, then `git tag 0.4.0 && git push origin 0.4.0`.
 5. Build the Android app and add it to the release: `gh release upload <version> xyra-android-<version>.apk`.
+6. Publish the site on Cloudflare Pages (project `xyra`, https://xyra-14q.pages.dev), which does not follow the repo:
+   `npx wrangler pages deploy docs --project-name xyra --branch master`, run outside the repo with an absolute path to
+   `docs`. GitHub Pages also serves `docs/` from `master` on its own.
 
 `.github/workflows/release.yml` checks that the tag matches the version, runs every check below, builds the installer
 and publishes it as `xyra-<version>.exe` with `CHANGELOG.md` as the release notes.
