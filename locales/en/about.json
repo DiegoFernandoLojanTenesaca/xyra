@@ -4,14 +4,11 @@
   "riot": "Xyra isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games. League of Legends is a trademark of Riot Games, Inc.",
   "whatsNew": "What's new in this version",
   "changes": {
-    "match": "Match found screen on the phone, with League's sound, to accept or decline.",
-    "select": "Your champion's build on the phone in champion select, with one button to import it all.",
-    "modes": "Home by mode: Normal, Ranked, ARAM, ARAM: Mayhem and Arena, each with what matters in it.",
-    "notify": "Your phone lets you know when you find a match, even with the app closed, and you can accept it from the notification.",
-    "phoneUpdate": "The phone app updates itself from its Settings, like Xyra on the PC.",
-    "patch": "Patch buffs and nerfs for your champions, in Meta and on your phone.",
-    "bench": "A button to take the recommended champion from the bench, on the PC and on your phone.",
-    "account": "Your account in the sidebar: history of every mode, mastery and challenges about to level up."
+    "options": "In ARAM and ARAM: Mayhem champion select, your options with the best first and a button to take any; every other champion below.",
+    "rift": "In Summoner's Rift champion select, every champion of your position.",
+    "cards": "Augment labels show even when OP.GG is slow to answer.",
+    "flicker": "Home, Build and Augments no longer flicker during a game.",
+    "client": "A steadier connection to the client as you sign in, and the phone link starts again if it could not."
   },
   "links": "Links",
   "builtWith": "Made with Rust, Tauri and Svelte. The in-game overlay is native: no browser, almost no memory.",

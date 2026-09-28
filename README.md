@@ -25,19 +25,18 @@ Liviano, en español e inglés, y sin tocar el juego.</p>
 
 ## Novedades
 
-**0.6.0**
+**0.7.0**
 
-- Tu celular suena como el LoL cuando encuentras partida, aunque tengas la app cerrada: la aceptas o rechazas desde el aviso o
-  desde una pantalla al estilo del LoL.
-- En la selección, el celular te muestra la build de tu campeón y la importa toda con un botón.
-- Buffs y nerfs del parche en Meta, leídos de las notas oficiales, empezando por tus campeones.
-- Inicio por modos: Normal, Clasificatoria, ARAM, ARAM: Caos y Arena, cada uno con lo suyo.
-- Un botón para tomar de la banca al campeón recomendado, en la PC y en el celular.
-- Tu cuenta en la barra lateral: historial de todos los modos, maestría por campeón y desafíos a punto de subir.
-- La app del celular se actualiza sola; tier lists de ARAM y Arena; Celular y Ajustes en la barra lateral.
+- En la selección de ARAM y ARAM: Caos ves tus opciones: tu campeón y los de la banca, el mejor primero según tu orden,
+  con un botón para tomar cualquiera. Debajo, todos los demás campeones; en la Grieta, todos los de tu posición. En la PC
+  y en el celular.
+- Las etiquetas de las cartas salen aunque OP.GG tarde en responder: Xyra trae sus datos desde que empieza la partida.
+- Inicio, Build y Aumentos ya no parpadean durante la partida.
+- Xyra conecta mejor con el cliente al iniciar sesión y el enlace con el celular vuelve a arrancar si no pudo.
 
-**0.5.0:** celulares emparejados con permisos y desconexión desde la PC. **0.4.0:** app para Android, pantalla Meta y
-consejos en partida. Todas las notas en [Releases](../../releases).
+**0.6.0:** aviso de partida en el celular con el sonido del LoL, Inicio por modos y buffs y nerfs del parche. **0.5.0:**
+celulares emparejados con permisos. **0.4.0:** app para Android, pantalla Meta y consejos en partida. Todas las notas en
+[Releases](../../releases).
 
 ## Así se ve
 
@@ -96,8 +95,9 @@ se actualiza sola desde sus Ajustes.
   por posición, tu rango, las tier lists de ARAM y Arena, tus campeones y tus últimas partidas de ese modo.
 - **Build:** runas, hechizos, ítems y orden de habilidades para ARAM y la Grieta (por posición), con enfrentamientos y
   botones para importarlos; si quieres, se ponen solos al elegir campeón.
-- **Selección:** "Toma a Jinx de la banca" con un botón para cambiarlo, y en la Grieta, "Contra Yasuo, toma a
-  Malzahar". Solo te recomienda campeones que tienes o están gratis, ordenados por tier, maestría o lo que más juegas.
+- **Selección:** en ARAM, tus opciones (tu campeón y la banca, la mejor primero) con un botón para tomar cualquiera y
+  todos los demás debajo; en la Grieta, todos los de tu posición y "Contra Yasuo, toma a Malzahar". Solo te recomienda
+  campeones que tienes o están gratis, ordenados por tier, maestría o lo que más juegas.
 - **Meta y parche:** los mejores de la Grieta, ARAM y Arena, y los buffs y nerfs del parche con el motivo de Riot,
   empezando por tus 15 campeones con más maestría.
 - **Etiquetas sobre las cartas:** en ARAM: Caos y Arena, en 5 estilos. La mejor queda marcada en rojo y las malas te
@@ -189,7 +189,8 @@ lets you know when you find a match, even with the app closed. Lightweight, Span
 
 - **Home by mode:** Normal, Ranked, ARAM, ARAM: Mayhem and Arena, each with its best champions, tier lists and your recent games.
 - **Build:** runes, spells, items, skills and matchups for ARAM and Summoner's Rift, imported by hand or automatically.
-- **Champion select:** a button to take the recommended champion from the bench, and counters in Summoner's Rift.
+- **Champion select:** in ARAM, your options from the bench, best first, with a button to take any of them and every
+  other champion below; in Summoner's Rift, every champion of your position and counters.
 - **Meta and patch:** Summoner's Rift, ARAM and Arena tier lists, and the patch buffs and nerfs from the official notes.
 - **Your account:** match history of every mode, champion mastery progress and challenges about to level up.
 - **Phone app:** match notification with the app closed, accept, builds, meta and settings over your own network.
