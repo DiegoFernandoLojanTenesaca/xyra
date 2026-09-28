@@ -4,11 +4,11 @@
   "riot": "Xyra no está respaldado por Riot Games ni refleja sus opiniones. League of Legends es marca de Riot Games, Inc.",
   "whatsNew": "Novedades de esta versión",
   "changes": {
-    "lobby": "Sala: crea una sala, invita a tus amigos conectados y busca partida desde la PC o el celular.",
-    "live": "Tu KDA, farm, oro y nivel en vivo mientras juegas, también en el celular.",
-    "following": "Siguiendo a Xyra: cómo te va cuando tomas la carta recomendada y cuando no.",
-    "notify": "El celular te avisa cuando tu partida empieza a cargar y cuando sale un parche con cambios a tus campeones.",
-    "history": "Tus partidas con cada campeón en Build, y los hechizos que usaste en el Historial."
+    "lp": "El LP de cada clasificatoria en Inicio → Clasificatoria y en el celular, con tu día en una gráfica.",
+    "skins": "Tu skin al azar o tu favorita, puesta sola en la selección: actívala en Juego.",
+    "loot": "Botín: reclama recompensas olvidadas, abre lo que no necesita llave y forja llaves, con confirmación.",
+    "discord": "Tu partida en tu perfil de Discord: actívalo en Ajustes → General.",
+    "guide": "Una guía de uso en Ayuda y menús más ordenados, sin textos cortados ni encimados."
   },
   "links": "Enlaces",
   "builtWith": "Hecho con Rust, Tauri y Svelte. La capa del juego es nativa: no usa navegador y casi no gasta memoria.",

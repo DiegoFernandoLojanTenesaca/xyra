@@ -25,18 +25,18 @@ Liviano, en español e inglés, y sin tocar el juego.</p>
 
 ## Novedades
 
-**0.9.0**
+**1.0.0, la primera versión estable**
 
-- **Sala:** crea una sala, invita a tus amigos conectados y busca partida desde la PC o el celular.
-- Tu KDA, farm, oro y nivel en vivo mientras juegas, también en el celular.
-- **Siguiendo a Xyra:** cómo te va cuando tomas la carta recomendada y cuando no.
-- El celular te avisa cuando tu partida empieza a cargar y cuando sale un parche con cambios a tus campeones.
-- Tus partidas con cada campeón en Build y los hechizos que usaste en el Historial.
+- **Tu LP:** cuánto te dio o te quitó cada clasificatoria, con tu día en una gráfica, en la PC y el celular.
+- **Tu skin, sola:** al tener campeón, una de tus skins al azar o tu favorita.
+- **Botín:** recompensas olvidadas, cofres y llaves, con confirmación antes de lo que no se deshace.
+- **Discord:** tu perfil muestra «Jugando a Xyra» con tu modo, campeón y KDA.
+- **Guía de uso** en Ayuda y menús más ordenados, sin textos cortados.
 
-**0.8.0:** aviso de nueva versión en la PC y el celular. **0.7.0:** tus opciones de la banca en la selección.
-**0.6.0:** aviso de partida en el celular con el sonido del LoL. Todas las notas en [Releases](../../releases). Las
-versiones siguen el [versionado semántico](https://semver.org/lang/es/): el tercer número sube con arreglos, el segundo
-con funciones nuevas y la 1.0.0 será la primera versión estable.
+**0.9.0:** Sala con tus amigos, KDA en vivo y «Siguiendo a Xyra». **0.8.0:** aviso de nueva versión en la PC y el
+celular. Todas las notas en [Releases](../../releases). Las versiones siguen el
+[versionado semántico](https://semver.org/lang/es/): el tercer número sube con arreglos y el segundo con funciones
+nuevas.
 
 ## Así se ve
 
@@ -47,7 +47,7 @@ con funciones nuevas y la 1.0.0 será la primera versión estable.
   </tr>
   <tr>
     <td><img src="docs/screenshots/build.jpg" alt="Build"><br><b>Build:</b> runas, hechizos, ítems y habilidades, listos para importar</td>
-    <td><img src="docs/screenshots/labels.jpg" alt="Etiquetas"><br><b>Etiquetas:</b> 5 estilos para las marcas sobre las cartas</td>
+    <td><img src="docs/screenshots/loot.jpg" alt="Botín"><br><b>Botín:</b> recompensas, cofres y llaves, con confirmación</td>
   </tr>
   <tr>
     <td><img src="docs/screenshots/augments.jpg" alt="Aumentos"><br><b>Aumentos:</b> tier list por campeón, ARAM: Caos y Arena</td>
@@ -109,6 +109,9 @@ se actualiza sola desde sus Ajustes.
   celular; cada celular con su propia llave y sus permisos, y se desconecta desde la PC.
 - **Sala:** crea una sala para cualquier modo, invita a tus amigos conectados y busca partida sin tocar el cliente,
   también desde el celular.
+- **Tu LP, tu skin y tu botín:** el LP de cada clasificatoria, tu skin al azar o favorita al tener campeón, y
+  recompensas, cofres y llaves en orden.
+- **Discord:** tu perfil muestra lo que juegas, si lo activas.
 - **Tu cuenta:** historial de tus últimas partidas de todos los modos (KDA, oro, daño, hechizos e ítems), la
   maestría de cada campeón con lo que falta para subir y tus desafíos, con los que tienes a punto de subir.
 - **Tus datos:** winrate por campeón, mejores aumentos, nivel, rango y maestrías, separados por cuenta; exportación a CSV.
@@ -196,6 +199,9 @@ lets you know when you find a match, even with the app closed. Lightweight, Span
 - **Meta and patch:** Summoner's Rift, ARAM and Arena tier lists, and the patch buffs and nerfs from the official notes.
 - **Lobby:** open a lobby for any mode, invite your friends online and look for a match without touching the client,
   from the phone too.
+- **Your LP, skin and loot:** the LP of each ranked game, a random or favorite skin in champion select, and rewards,
+  chests and keys in order.
+- **Discord:** your profile shows what you play, if you turn it on.
 - **Your account:** match history of every mode, champion mastery progress and challenges about to level up.
 - **Phone app:** match notification with the app closed, accept, builds, meta and settings over your own network.
 - **Safe:** screen reading, a native click-through overlay and the client's official APIs only; no memory access, no

@@ -283,27 +283,60 @@
         padding: 0.5rem;
         box-shadow: 0 30px 80px -20px rgb(229 19 43 / 0.35);
       }
-      .stack {
+      .carousel {
         display: grid;
       }
-      .stack > img {
+      .slide {
+        position: relative;
         grid-area: 1 / 1;
+        margin: 0;
+        opacity: 0;
+        transition: opacity 0.8s ease;
       }
-      .reveal {
-        animation: reveal 5s ease-in-out infinite;
+      .slide.active {
+        opacity: 1;
       }
-      @keyframes reveal {
-        0%,
-        20% {
-          opacity: 0;
-        }
-        35%,
-        85% {
-          opacity: 1;
-        }
-        100% {
-          opacity: 0;
-        }
+      .slide figcaption {
+        position: absolute;
+        top: 0.8rem;
+        left: 0.8rem;
+        padding: 0.3rem 0.7rem;
+        background: rgb(6 6 6 / 0.8);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      .dots {
+        position: absolute;
+        bottom: 1.1rem;
+        left: 50%;
+        z-index: 1;
+        display: flex;
+        gap: 0.5rem;
+        transform: translateX(-50%);
+      }
+      .dots button {
+        width: 1.8rem;
+        height: 0.3rem;
+        padding: 0;
+        border: none;
+        background: rgb(255 255 255 / 0.35);
+        cursor: pointer;
+      }
+      .dots button[aria-pressed='true'] {
+        background: var(--accent-bright);
+      }
+      .facts a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .facts a::before {
+        content: '◆ ';
+        color: var(--accent);
+      }
+      .facts a:hover {
+        color: var(--text);
       }
       .tag {
         position: absolute;
@@ -829,11 +862,11 @@
           arrive 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.4s both,
           float 6s ease-in-out 1.4s infinite;
       }
-      .hero .stack {
+      .hero .carousel {
         position: relative;
         overflow: hidden;
       }
-      .hero .stack::after {
+      .hero .carousel::after {
         content: '';
         position: absolute;
         inset: 0 auto 0 -30%;
@@ -985,7 +1018,7 @@
           <a href="#celular">App</a>
           <a href="#capturas">Capturas</a>
           <a href="#seguridad">Seguridad</a>
-          <a href="#instalar">Instalar</a>
+          <a href="#guia">Guía</a>
           <a href="#novedades">Novedades</a>
           <a href="#preguntas">Preguntas</a>
         </nav>
@@ -1009,16 +1042,26 @@
             <a class="button cut download-apk" href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases/latest"
               ><svg aria-hidden="true"><use href="#download" /></svg>App Android</a
             >
-            <a class="button cut" href="https://github.com/DiegoFernandoLojanTenesaca/xyra"
-              ><svg aria-hidden="true"><use href="#github" /></svg>Código fuente</a
-            >
           </div>
-          <p class="facts"><span>Gratis</span><span>Sin anuncios</span><span>Código abierto</span><span>Windows y Android</span></p>
+          <p class="facts"><span>Gratis</span><span>Sin anuncios</span><a href="https://github.com/DiegoFernandoLojanTenesaca/xyra">Código abierto</a></p>
         </div>
-        <div class="shot cut">
-          <div class="stack">
-            <img src="styles/none.jpg" width="1100" height="672" alt="Tres cartas de aumento de ARAM: Caos sin ayuda" />
-            <img class="reveal" src="styles/plate.jpg" width="1100" height="672" alt="Las mismas cartas con las etiquetas de Xyra: la mejor marcada en rojo" />
+        <div class="shot cut carousel" aria-roledescription="carrusel" aria-label="Xyra en imágenes">
+          <figure class="slide active">
+            <img src="hero/pc.jpg" width="1200" height="772" alt="Xyra en la PC: Inicio con los mejores del parche" />
+            <figcaption>En tu PC</figcaption>
+          </figure>
+          <figure class="slide">
+            <img src="hero/phone.jpg" width="1200" height="772" alt="La app de Xyra en el celular: partida encontrada y tu build" loading="lazy" />
+            <figcaption>En tu celular</figcaption>
+          </figure>
+          <figure class="slide">
+            <img src="hero/cards.jpg" width="1200" height="772" alt="Etiquetas de Xyra sobre las cartas de aumento: la mejor marcada en rojo" loading="lazy" />
+            <figcaption>En partida</figcaption>
+          </figure>
+          <div class="dots">
+            <button type="button" aria-label="En tu PC" aria-pressed="true"></button>
+            <button type="button" aria-label="En tu celular" aria-pressed="false"></button>
+            <button type="button" aria-label="En partida" aria-pressed="false"></button>
           </div>
         </div>
       </div>
@@ -1134,6 +1177,28 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z" /></svg>
               <h3>Liviano y al día</h3>
               <p>Hecho en Rust, sin navegador mientras juegas. Un solo ícono abre Xyra y el LoL, y se actualiza con un botón.</p>
+            </article>
+            <article class="card cut">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8m0 0h-5m5 0v5" /></svg>
+              <h3>Tu LP, partida a partida</h3>
+              <p>En clasificatoria, cuánto LP te dio o te quitó cada partida y cómo va tu día. Es tu LP oficial: nada de calcular MMR.</p>
+            </article>
+            <article class="card cut">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.3 6.8 19.1l1-5.8-4.3-4.1 5.9-.9z" />
+              </svg>
+              <h3>Tu skin, sola</h3>
+              <p>Al tener campeón, Xyra le pone una de tus skins al azar o tu favorita, con cromas si quieres. Solo usa las que tienes.</p>
+            </article>
+            <article class="card cut">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 3h12l4 6-10 12L2 9z" /></svg>
+              <h3>Botín en orden</h3>
+              <p>Reclama recompensas olvidadas, abre lo que no necesita llave y forja llaves. Lo que no se puede deshacer te pide confirmación.</p>
+            </article>
+            <article class="card cut">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h16v12H8l-4 4z" /></svg>
+              <h3>En tu Discord</h3>
+              <p>Tu perfil dice «Jugando a Xyra» con tu modo, campeón y KDA. Lo apagas o lo dejas más discreto cuando quieras.</p>
             </article>
           </div>
         </div>
@@ -1306,9 +1371,9 @@
             </figure>
             <figure>
               <button type="button">
-                <img class="shot cut" src="screenshots/labels.jpg" width="1200" height="772" alt="Estilos de etiqueta de Xyra" loading="lazy" />
+                <img class="shot cut" src="screenshots/loot.jpg" width="1200" height="772" alt="Botín en Xyra: esencias, recompensas y cofres" loading="lazy" />
               </button>
-              <figcaption><b>Etiquetas:</b> estilo, tamaño, altura y aviso por voz.</figcaption>
+              <figcaption><b>Botín:</b> recompensas olvidadas, cofres y llaves, con confirmación.</figcaption>
             </figure>
             <figure>
               <button type="button">
@@ -1389,24 +1454,37 @@
         </div>
       </section>
 
-      <section id="instalar">
+      <section id="guia">
         <div class="wrap">
           <div class="intro">
-            <p class="eyebrow">Instalar</p>
-            <h2>Listo en un minuto</h2>
+            <p class="eyebrow">Cómo se usa</p>
+            <h2>De la descarga a tu próxima partida</h2>
+            <p class="lead">Xyra hace casi todo solo; esto es lo que verás en cada momento.</p>
           </div>
           <div class="steps">
             <div class="card cut">
-              <h3>Descarga</h3>
-              <p>Baja el instalador de la última versión e instálalo. No pide permisos de administrador.</p>
+              <h3>Instala</h3>
+              <p>Baja el instalador y ábrelo; no pide permisos de administrador. La primera vez, Xyra te muestra esta misma guía.</p>
             </div>
             <div class="card cut">
               <h3>Sin bordes</h3>
-              <p>Pon el LoL en modo de ventana Sin bordes. Xyra lo hace por ti con el juego cerrado.</p>
+              <p>Pon el LoL en ventana Sin bordes para ver las etiquetas. Xyra lo hace por ti con el juego cerrado.</p>
             </div>
             <div class="card cut">
-              <h3>A jugar</h3>
-              <p>Entra a ARAM: Caos o Arena. Cuando salgan las cartas, Xyra ya las habrá marcado.</p>
+              <h3>Antes de jugar</h3>
+              <p>Crea tu sala e invita a tus amigos desde Sala, o busca partida como siempre. En Meta ves los mejores del parche.</p>
+            </div>
+            <div class="card cut">
+              <h3>En la selección</h3>
+              <p>Tu build y tu skin se ponen solas si lo activas en Juego. En ARAM, tus opciones de la banca con la mejor primero.</p>
+            </div>
+            <div class="card cut">
+              <h3>En partida</h3>
+              <p>Toma la carta del marco rojo en ARAM: Caos y Arena. En Inicio y en el celular ves tu KDA y qué ítem sigue.</p>
+            </div>
+            <div class="card cut">
+              <h3>Después</h3>
+              <p>El LP de cada clasificatoria, tu historial, si te va mejor siguiendo a Xyra y tu botín, listos para revisar.</p>
             </div>
           </div>
           <p class="note">
@@ -1427,6 +1505,15 @@
               <h3>Versiones</h3>
               <ol class="timeline">
                 <li>
+                  <b>1.0.0</b>
+                  <ul>
+                    <li>El LP de cada clasificatoria, con tu día en una gráfica.</li>
+                    <li>Tu skin al azar o tu favorita, sola en la selección.</li>
+                    <li>Botín: recompensas olvidadas, cofres y llaves, con confirmación.</li>
+                    <li>Tu partida en Discord, y una guía de uso dentro de la app.</li>
+                  </ul>
+                </li>
+                <li>
                   <b>0.9.0</b>
                   <ul>
                     <li>Sala: crea una sala, invita a tus amigos y busca partida desde la PC o el celular.</li>
@@ -1443,15 +1530,6 @@
                     <li>Web más fácil de recorrer: marca la sección en la que estás y en el celular tiene su barra de secciones.</li>
                   </ul>
                 </li>
-                <li>
-                  <b>0.7.0</b>
-                  <ul>
-                    <li>En la selección, tus opciones de la banca con la mejor primero y todos los demás campeones debajo, en la PC y en el celular.</li>
-                    <li>Las etiquetas de las cartas salen aunque OP.GG tarde en responder.</li>
-                    <li>Inicio, Build y Aumentos ya no parpadean durante la partida.</li>
-                    <li>Mejor conexión con el cliente al iniciar sesión.</li>
-                  </ul>
-                </li>
               </ol>
               <p class="muted">
                 Aquí van las tres últimas; todas las versiones y sus notas completas están en
@@ -1461,7 +1539,7 @@
             <div class="card cut soon">
               <h3>Lo que viene</h3>
               <ul>
-                <li>La versión 1.0.0, cuando todo esté probado en partidas reales.</li>
+                <li>Lo que más pidan en GitHub, siempre dentro de lo que Riot permite.</li>
                 <li>Más idiomas.</li>
               </ul>
             </div>
@@ -1557,6 +1635,17 @@
           <details>
             <summary>¿Por qué Windows pide permiso de administrador al activar el celular?</summary>
             <p>Para marcar tu red de casa como privada y abrir solo el puerto de Xyra en redes privadas. Sin eso, Windows no deja entrar al celular.</p>
+          </details>
+          <details>
+            <summary>¿Xyra toca mis skins o mi botín sin preguntarme?</summary>
+            <p>
+              No. La skin solo se pone si eliges «Aleatoria» o «Tu favorita» en Juego, y siempre una de las tuyas. En Botín nada pasa hasta que tocas un botón,
+              y lo que no se puede deshacer te pide confirmación. Nunca toca fragmentos de skin, gestos ni eternos.
+            </p>
+          </details>
+          <details>
+            <summary>¿Cómo pongo Xyra en mi Discord?</summary>
+            <p>En Ajustes → General → Discord activa «Mostrar en Discord lo que juegas». Discord tiene que estar abierto en tu PC.</p>
           </details>
           <details>
             <summary>¿Cómo se actualiza?</summary>
@@ -1660,6 +1749,23 @@
         toTop.classList.toggle('shown', !hero.isIntersecting);
         if (hero.isIntersecting) mark(null);
       }).observe(document.querySelector('.hero'));
+
+      // The hero carousel moves on by itself, stops while the pointer is on it and never moves for reduced motion.
+      const slides = [...document.querySelectorAll('.carousel .slide')];
+      const dots = [...document.querySelectorAll('.carousel .dots button')];
+      const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let current = 0;
+      let hovered = false;
+      const showSlide = (index) => {
+        current = index;
+        slides.forEach((slide, i) => slide.classList.toggle('active', i === index));
+        dots.forEach((dot, i) => dot.setAttribute('aria-pressed', String(i === index)));
+      };
+      dots.forEach((dot, i) => dot.addEventListener('click', () => showSlide(i)));
+      const carousel = document.querySelector('.carousel');
+      carousel.addEventListener('mouseenter', () => (hovered = true));
+      carousel.addEventListener('mouseleave', () => (hovered = false));
+      setInterval(() => !still && !hovered && showSlide((current + 1) % slides.length), 4500);
 
       const viewer = document.getElementById('viewer');
       document.querySelectorAll('figure button').forEach((button) =>

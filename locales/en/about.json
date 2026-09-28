@@ -4,11 +4,11 @@
   "riot": "Xyra isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games. League of Legends is a trademark of Riot Games, Inc.",
   "whatsNew": "What's new in this version",
   "changes": {
-    "lobby": "Lobby: open a lobby, invite your friends online and look for a match from the PC or the phone.",
-    "live": "Your KDA, farm, gold and level live while you play, on the phone too.",
-    "following": "Following Xyra: how you do when you take the recommended card and when you do not.",
-    "notify": "The phone tells you when your game starts loading and when a patch changes your champions.",
-    "history": "Your games with each champion in Build, and the spells you used in History."
+    "lp": "The LP of each ranked game in Home → Ranked and on the phone, with your day in a chart.",
+    "skins": "Your skin at random or your favorite, put on by itself in champion select: turn it on in Game.",
+    "loot": "Loot: claim forgotten rewards, open what needs no key and forge keys, asking first when needed.",
+    "discord": "Your game on your Discord profile: turn it on in Settings → General.",
+    "guide": "A guide in Help and tidier menus, with no cut or overlapping text."
   },
   "links": "Links",
   "builtWith": "Made with Rust, Tauri and Svelte. The in-game overlay is native: no browser, almost no memory.",
