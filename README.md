@@ -80,7 +80,7 @@ meta, tus datos y los consejos en partida. Todo por tu Wi-Fi, sin pasar por inte
   <tr>
     <td><img src="docs/app/select.jpg" alt="Selección"><br><b>Tu build en la selección</b></td>
     <td><img src="docs/app/stats.jpg" alt="Datos"><br><b>Tus datos</b></td>
-    <td><img src="docs/app/settings.jpg" alt="Ajustes"><br><b>Avisos y ajustes</b></td>
+    <td><img src="docs/app/update.jpg" alt="Nueva versión"><br><b>Siempre al día</b></td>
   </tr>
 </table>
 
