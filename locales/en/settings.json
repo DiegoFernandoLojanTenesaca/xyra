@@ -35,7 +35,7 @@
   "diagnostics": "Diagnostics",
   "recordScreenshots": {
     "title": "Save screenshots when cards are detected",
-    "description": "To report bugs or calibrate other resolutions."
+    "description": "To report bugs or calibrate other resolutions. In a game it also keeps the card area with what Xyra read, to find out why a round went unlabeled."
   },
   "openScreenshots": "Open screenshots",
   "openLog": "Open log",

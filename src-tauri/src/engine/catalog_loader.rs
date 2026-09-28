@@ -25,7 +25,7 @@ impl CatalogLoader {
                 *shared.catalog.write().unwrap() = Arc::new(catalog);
                 true
             }
-            Err(AppError::EmptyCatalog | AppError::Client(_)) => false,
+            Err(AppError::EmptyCatalog | AppError::Client(_) | AppError::ClientClosed) => false,
             Err(e) => {
                 shared.log_error("catalog", e);
                 false

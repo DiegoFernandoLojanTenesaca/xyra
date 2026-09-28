@@ -229,7 +229,7 @@ fn route(app: &AppHandle, shared: &Shared, method: &Method, path: &str, query: &
         (Method::Post, "/api/accept") => answer(allowed(can.accept).and_then(|()| shared.lcu()).and_then(|lcu| matchmaking::accept_if_waiting(&lcu))),
         (Method::Post, "/api/decline") => answer(allowed(can.accept).and_then(|()| shared.lcu()).and_then(|lcu| matchmaking::decline_if_waiting(&lcu))),
         (Method::Post, "/api/import") => answer(allowed(can.import).and_then(|()| import(shared, query))),
-        (Method::Post, "/api/bench") => answer(allowed(can.bench).and_then(|()| shared.take_bench_pick())),
+        (Method::Post, "/api/bench") => answer(allowed(can.bench).and_then(|()| shared.take_bench_pick(query.number("champion")))),
         _ => text(404, "not found"),
     }
 }

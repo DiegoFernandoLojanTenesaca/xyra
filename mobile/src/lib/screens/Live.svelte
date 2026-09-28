@@ -2,7 +2,8 @@
   import { ArrowLeftRight, Download, Hammer, Play, Star } from '@lucide/svelte';
   import { qualityColor } from '$shared/design/theme';
   import { resource } from '$shared/services/resource.svelte';
-  import type { AugmentRow, Asset, Build, StatsSummary } from '$shared/types';
+  import { championTierColor, championTierLabel } from '$shared/design/theme';
+  import type { AugmentRow, Asset, Build, ChampionInfo, Meta, StatsSummary } from '$shared/types';
   import Skeleton from '$shared/ui/Skeleton.svelte';
   import TierBadge from '$shared/ui/TierBadge.svelte';
   import { link } from '../link.svelte';
@@ -13,6 +14,7 @@
   const RECENT_GAMES = 5;
   const IMPORT_TARGETS = ['runes', 'items', 'spells'] as const;
   const AUGMENT_MODES = ['mayhem', 'arena'];
+  const RIFT_DEFAULT_POSITION = 'mid';
 
   const t = $derived(mobile.t);
   const format = $derived(mobile.format);
@@ -37,6 +39,35 @@
     (key) => link.call<Build>('GET', '/api/build', key),
     (failure) => failure,
   );
+  const champions = resource(
+    () => (select && link.status === 'online' ? true : null),
+    () => link.get<ChampionInfo[]>('/api/champions'),
+    (failure) => failure,
+  );
+  const meta = resource(
+    () => (select?.mode === 'summonersRift' && link.status === 'online' ? true : null),
+    () => link.call<Meta>('GET', '/api/meta'),
+    (failure) => failure,
+  );
+  /** Where each champion stands with the player's criterion: the PC sends them sorted by it. */
+  const preference = $derived(new Map((champions.value ?? []).map((champion, i) => [champion.id, i])));
+  const byPreference = (a: ChampionInfo, b: ChampionInfo) => (preference.get(a.id) ?? Infinity) - (preference.get(b.id) ?? Infinity);
+  /** In ARAM, the champion the player has and those on the bench, best first. */
+  const options = $derived(
+    select && select.mode !== 'summonersRift' ? [select.champion, ...select.bench].filter((c): c is ChampionInfo => !!c).sort(byPreference) : [],
+  );
+  /** Every other champion the player can play; in the Rift, those of the position. */
+  const everyone = $derived.by(() => {
+    if (!select) return [];
+    const all = champions.value ?? [];
+    if (select.mode !== 'summonersRift') {
+      const taken = new Set(options.map((c) => c.id));
+      return all.filter((c) => c.recommendable && !taken.has(c.id));
+    }
+    const info = new Map(all.map((c) => [c.id, c]));
+    const slot = meta.value?.positions.find((p) => p.position === (select.position ?? RIFT_DEFAULT_POSITION));
+    return (slot?.champions ?? []).map((entry) => info.get(entry.champion.id)).filter((c): c is ChampionInfo => !!c && !c.locked);
+  });
   const augments = resource(
     () => (game?.champion && AUGMENT_MODES.includes(game.mode) ? { champion: game.champion.id, mode: game.mode } : null),
     (key) => link.call<AugmentRow[]>('GET', '/api/augments', key),
@@ -131,15 +162,41 @@
         </button>
       </section>
     {/if}
-    {#if select.bench_pick}
+    {#if options.length > 1}
       <section class="block panel cut">
-        <h2 class="section-title">{t('mobile:live.bench')}</h2>
-        {@render row(select.bench_pick, select.bench_pick.rank ? `#${select.bench_pick.rank}` : '')}
-        {#if can.bench}
-          <button class="action primary wide" disabled={busy} onclick={() => run('/api/bench')}><ArrowLeftRight size={14} />{t('mobile:live.takeBench')}</button
-          >
-        {/if}
+        <h2 class="section-title">{t('home:yourOptions')}</h2>
+        {#each options as option, i (option.id)}
+          <div class="row" class:best={i === 0}>
+            {#if option.icon}<img src={option.icon} alt="" />{/if}
+            <span class="grow">{option.name}</span>
+            <TierBadge label={championTierLabel(option.tier)} color={championTierColor(option.tier)} size="var(--size-thumbSm)" />
+            {#if option.id === select.champion?.id}
+              <small class="accent">{t('home:current')}</small>
+            {:else if can.bench}
+              <button class="action small" class:primary={i === 0} disabled={busy} onclick={() => run('/api/bench', { champion: String(option.id) })}
+                ><ArrowLeftRight size={14} />{t('home:take')}</button
+              >
+            {/if}
+          </div>
+        {/each}
       </section>
+    {/if}
+    {#if everyone.length}
+      <details class="block panel cut everyone">
+        <summary class="section-title">
+          {select.mode === 'summonersRift'
+            ? t('home:allForPosition', { position: t(`build:positions.${select.position ?? RIFT_DEFAULT_POSITION}`) })
+            : t('home:allChampions')} ({everyone.length})
+        </summary>
+        {#each everyone as champion, i (champion.id)}
+          <button class="row entry" onclick={() => mobile.openBuild(champion.id, engine.build_mode, select.position)}>
+            <span class="rank muted">#{i + 1}</span>
+            {#if champion.icon}<img src={champion.icon} alt="" />{/if}
+            <span class="grow">{champion.name}</span>
+            <TierBadge label={championTierLabel(champion.tier)} color={championTierColor(champion.tier)} size="var(--size-thumbSm)" />
+          </button>
+        {/each}
+      </details>
     {/if}
     {#if select.lane_opponent && select.counter_picks.length}
       <section class="block panel cut">
@@ -243,6 +300,25 @@
   .wide {
     width: 100%;
     margin-top: var(--space-2);
+  }
+  .row .small {
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--text-xs);
+  }
+  .everyone summary {
+    cursor: pointer;
+    list-style: none;
+  }
+  .entry {
+    width: 100%;
+    border: none;
+    background: none;
+    text-align: left;
+  }
+  .rank {
+    width: var(--space-6);
+    flex: none;
+    font-size: var(--text-sm);
   }
   .preview {
     display: grid;

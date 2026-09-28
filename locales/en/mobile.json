@@ -41,11 +41,9 @@
       "spells": "Spells"
     },
     "openBuild": "See the build",
-    "bench": "Take it from the bench",
     "counters": "Counters against {{enemy}}",
     "idle": "Queue up on your PC: here you can accept the match and follow champion select and your game.",
     "notAllowed": "Your PC does not let this phone accept matches. Change it in Settings → Phone.",
-    "takeBench": "Take from the bench",
     "acceptBig": "Accept!",
     "decline": "Decline",
     "accepted": "Accepted: waiting for the others…",

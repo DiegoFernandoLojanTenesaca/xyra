@@ -27,7 +27,7 @@ export const getMasteries = () => invoke<MasteryProgress[]>('get_masteries');
 export const getChallenges = () => invoke<Challenges>('get_challenges');
 export const getModeChampions = (mode: GameMode) => invoke<MetaChampion[]>('get_mode_champions', { mode });
 export const getPatchChanges = () => invoke<PatchChanges>('get_patch_changes');
-export const takeBenchPick = () => invoke<void>('take_bench_pick');
+export const takeBenchPick = (champion: number | null = null) => invoke<void>('take_bench_pick', { champion });
 export const getBuild = (champion: number, mode: BuildMode, position: Position | null) => invoke<Build>('get_build', { champion, mode, position });
 export const importBuild = (champion: number, target: ImportTarget, mode: BuildMode, position: Position | null) =>
   invoke<void>('import_build', { champion, target, mode, position });

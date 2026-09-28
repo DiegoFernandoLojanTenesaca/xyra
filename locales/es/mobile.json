@@ -41,11 +41,9 @@
       "spells": "Hechizos"
     },
     "openBuild": "Ver la build",
-    "bench": "Tómalo de la banca",
     "counters": "Counters contra {{enemy}}",
     "idle": "Busca partida en tu PC: aquí podrás aceptarla y seguir la selección y tu partida.",
     "notAllowed": "Tu PC no deja a este celular aceptar partidas. Cámbialo en Ajustes → Celular.",
-    "takeBench": "Tomar de la banca",
     "acceptBig": "¡Aceptar!",
     "decline": "Rechazar",
     "accepted": "Aceptada: espera a los demás…",

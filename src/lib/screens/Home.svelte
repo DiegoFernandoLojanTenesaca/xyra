@@ -46,6 +46,7 @@
   const MODE_TOP = 8;
   const YOUR_CHAMPIONS = 5;
   const PATCH_CHANGES_SHOWN = 6;
+  const RIFT_DEFAULT_POSITION = 'mid';
   const VERDICT_ICONS: Record<ChangeVerdict, Component<{ size?: number }>> = { buff: ArrowUp, nerf: ArrowDown, adjusted: ArrowUpDown };
 
   const t = $derived(app.t);
@@ -129,7 +130,26 @@
   const rift = $derived(gameMode === 'summonersRift');
   const liveGameMode = $derived(engine.game?.mode ?? select?.mode ?? null);
   const showCards = $derived(liveMode !== null || (engine.phase !== 'inGame' && (mode === 'mayhem' || mode === 'arena')));
-  const meta = resource(() => (rift ? true : null), getMeta);
+  const meta = resource(() => (rift || select?.mode === 'summonersRift' ? true : null), getMeta);
+  /** Where each champion stands with the player's criterion: app.champions comes sorted by it. */
+  const preference = $derived(new Map(app.champions.map((champion, i) => [champion.id, i])));
+  const byPreference = (a: ChampionInfo, b: ChampionInfo) => (preference.get(a.id) ?? Infinity) - (preference.get(b.id) ?? Infinity);
+  /** In ARAM, the champion the player has and those on the bench, best first. */
+  const options = $derived(
+    select && select.mode !== 'summonersRift' ? [select.champion, ...select.bench].filter((c): c is ChampionInfo => !!c).sort(byPreference) : [],
+  );
+  /** Every other champion the player can play, with the same criterion; in the Rift, those of the position. */
+  const allChampions = $derived.by(() => {
+    if (!select) return [];
+    if (select.mode !== 'summonersRift') {
+      const taken = new Set(options.map((c) => c.id));
+      return app.champions.filter((c) => c.recommendable && !taken.has(c.id));
+    }
+    const info = new Map(app.champions.map((c) => [c.id, c]));
+    const slot = meta.value?.positions.find((p) => p.position === (select.position ?? RIFT_DEFAULT_POSITION));
+    const played = (slot?.champions ?? []).map((entry) => info.get(entry.champion.id)).filter((c): c is ChampionInfo => !!c && !c.locked);
+    return order === 'tier' ? played : played.sort(byPreference);
+  });
   const modeChampions = resource(() => (mode === 'aram' || mode === 'arena' ? mode : null), getModeChampions);
   const patch = resource(() => app.language, getPatchChanges);
   const matches = resource(() => (engine.phase === 'noClient' ? null : engine.phase), getRecentMatches);
@@ -146,24 +166,15 @@
     notice = await app.importWholeBuild(champion);
   }
 
-  async function takeFromBench(champion: string) {
-    notice = await takeBenchPick().then(() => t('home:benchTaken', { champion }), app.errorText);
+  /** Swaps the player's champion for one of the bench. */
+  async function takeFromBench(champion: ChampionInfo) {
+    notice = await takeBenchPick(champion.id).then(() => t('home:benchTaken', { champion: champion.name }), app.errorText);
   }
 
   async function switchToBorderless() {
     notice = await setBorderless().then(() => t('home:borderlessDone'), app.errorText);
   }
 </script>
-
-{#snippet portrait(champion: ChampionInfo, highlighted: boolean)}
-  <button class="portrait" class:best={highlighted} onclick={() => app.openAugments(champion.id)}>
-    <ChampionPortrait {champion} size="var(--size-thumbLg)">
-      {#snippet badge()}
-        <TierBadge label={championTierLabel(champion.tier)} color={championTierColor(champion.tier)} size="var(--size-thumbSm)" />
-      {/snippet}
-    </ChampionPortrait>
-  </button>
-{/snippet}
 
 <section class="hero highlight cut" class:live={hero.live}>
   {#if hero.icon}<img class="cut" src={hero.icon} alt="" />{:else}<Logo size={76} phase={engine.phase} />{/if}
@@ -183,7 +194,7 @@
   <div class="actions">
     {#if engine.phase === 'champSelect' && mine}
       {#if benchPick}
-        <Button variant="primary" icon={ArrowLeftRight} onclick={() => takeFromBench(benchPick.name)}>{t('home:takeBench')}</Button>
+        <Button variant="primary" icon={ArrowLeftRight} onclick={() => takeFromBench(benchPick)}>{t('home:takeBench')}</Button>
       {/if}
       <Button icon={Hammer} onclick={() => app.openBuild(mine.id)}>{t('home:openBuild')}</Button>
       <Button variant={benchPick ? 'default' : 'primary'} icon={Download} onclick={() => importWholeBuild(mine.id)}>{t('build:importAll')}</Button>
@@ -200,8 +211,60 @@
   <SegmentedControl tabs options={HOME_MODES.map((id) => [id, t(`home:modes.${id}`)] as [HomeMode, string])} bind:value={() => mode, app.setHomeMode} />
 </div>
 
+{#snippet choiceDetail(champion: ChampionInfo)}
+  {#if order === 'played'}<small class="muted">{t('home:gamesPlayed', { count: champion.played })}</small>
+  {:else if order !== 'tier'}<small class="muted">{t('home:masteryPoints', { points: format.compact(champion.mastery) })}</small>{/if}
+{/snippet}
+
 <div class="grid">
   <div class="column">
+    {#if select}
+      {#if options.length}
+        <h3 class="section-title">{t('home:yourOptions')} <small>({t(`home:order.${order}`)})</small></h3>
+        <div class="options">
+          {#each options as champion, i (champion.id)}
+            {@const current = champion.id === mine?.id}
+            <div class="panel cut option appear" class:best={i === 0} style="--i:{i}">
+              <ChampionPortrait {champion} size="var(--size-portrait)">
+                {#snippet badge()}
+                  <TierBadge label={championTierLabel(champion.tier)} color={championTierColor(champion.tier)} size="var(--size-thumbSm)" />
+                {/snippet}
+              </ChampionPortrait>
+              <b>{champion.name}</b>
+              {@render choiceDetail(champion)}
+              {#if current}
+                <small class="current">{t('home:current')}</small>
+              {:else}
+                <Button variant={i === 0 ? 'primary' : 'default'} icon={ArrowLeftRight} onclick={() => takeFromBench(champion)}>{t('home:take')}</Button>
+              {/if}
+            </div>
+          {/each}
+        </div>
+      {/if}
+      <h3 class="section-title">
+        {select.mode === 'summonersRift'
+          ? t('home:allForPosition', { position: t(`build:positions.${select.position ?? RIFT_DEFAULT_POSITION}`) })
+          : t('home:allChampions')}
+        <small>({allChampions.length})</small>
+      </h3>
+      <div class="panel cut list all">
+        {#each allChampions as champion, i (champion.id)}
+          <button
+            class="row champion"
+            onclick={() =>
+              select.mode === 'summonersRift' ? app.openRiftBuild(champion.id, select.position ?? RIFT_DEFAULT_POSITION) : app.openBuild(champion.id)}
+          >
+            <b class="rank">#{i + 1}</b>
+            <img src={champion.icon} alt="" />
+            <span>{champion.name}{@render choiceDetail(champion)}</span>
+            <TierBadge label={championTierLabel(champion.tier)} color={championTierColor(champion.tier)} size="var(--size-thumbSm)" />
+          </button>
+        {:else}
+          <p class="muted box">{t('meta:loading')}</p>
+        {/each}
+      </div>
+    {/if}
+
     {#if engine.tips}
       {@const next = engine.tips.next_item}
       <h3 class="section-title">{t('home:tips')}</h3>
@@ -458,19 +521,6 @@
       </div>
     {/if}
 
-    {#if select && select.mode !== 'summonersRift'}
-      <div class="panel cut box">
-        <h3 class="section-title">{t('home:bench')}</h3>
-        <div class="bench">
-          {#if mine}{@render portrait(mine, false)}{/if}
-          {#each select.bench as champion (champion.id)}
-            {@render portrait(champion, champion.id === benchPick?.id)}
-          {/each}
-        </div>
-        {#if !select.bench.length}<p class="muted">{t('home:emptyBench')}</p>{/if}
-      </div>
-    {/if}
-
     {#if yourChanges.length}
       <div class="panel cut box">
         <h3 class="section-title">{t('home:patchYours', { patch: patch.value?.patch })}</h3>
@@ -563,6 +613,35 @@
   }
   .modes {
     margin-bottom: var(--space-5);
+  }
+  .options {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--size-meter), 1fr));
+    gap: var(--space-3);
+  }
+  .option {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-3);
+    text-align: center;
+  }
+  .option.best {
+    border-color: var(--color-accent);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 16%, transparent), transparent 70%), var(--color-panel);
+  }
+  .option small {
+    font-size: var(--text-xs);
+  }
+  .current {
+    color: var(--color-accentBright);
+    font-weight: 700;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+  .all {
+    max-height: calc(var(--size-aside) * 1.4);
+    overflow-y: auto;
   }
   .rank-card {
     display: flex;
@@ -902,28 +981,5 @@
   }
   .fact + .fact {
     border-top: var(--border-hairline) solid var(--color-line);
-  }
-  .bench {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
-  }
-  .portrait {
-    position: relative;
-    padding: 0;
-    border: none;
-    background: none;
-    opacity: 0.65;
-    transition: opacity 0.15s;
-  }
-  .portrait:first-child,
-  .portrait:hover,
-  .portrait.best {
-    opacity: 1;
-  }
-  .portrait.best :global(img) {
-    box-shadow:
-      0 0 0 var(--border-thick) var(--color-accentBright),
-      0 0 var(--space-4) var(--color-accent);
   }
 </style>

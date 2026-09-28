@@ -199,9 +199,14 @@ impl Storage {
     }
 
     pub fn screenshot_path(&self) -> Result<PathBuf> {
+        self.screenshot_named("", "png")
+    }
+
+    /// A file in the screenshots folder named after this moment, like `1790551372-cards.txt`.
+    pub fn screenshot_named(&self, suffix: &str, extension: &str) -> Result<PathBuf> {
         let dir = self.folder(DataFolder::Screenshots)?;
-        let now = SystemTime::now().duration_since(UNIX_EPOCH).map_or(0, |d| d.as_secs());
-        Ok(dir.join(format!("{now}.png")))
+        let now = SystemTime::now().duration_since(UNIX_EPOCH).map_or(0, |d| d.as_millis());
+        Ok(dir.join(format!("{now}{suffix}.{extension}")))
     }
 
     /// Appends a failure a human must look at to the log.

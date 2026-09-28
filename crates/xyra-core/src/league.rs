@@ -159,7 +159,7 @@ impl Lcu {
 
     /// Streams the changes of `endpoints` until the client closes.
     pub fn listen(&self, endpoints: &[&str], mut on_event: impl FnMut(LcuEvent)) -> Result<()> {
-        let tcp = TcpStream::connect((HOST, self.port)).map_err(AppError::client)?;
+        let tcp = TcpStream::connect((HOST, self.port)).map_err(|_| AppError::ClientClosed)?;
         let tls = ClientConnection::new(local_tls(), ServerName::from(IpAddr::V4(HOST))).map_err(AppError::client)?;
         let mut request = format!("wss://{HOST}:{}/", self.port).into_client_request().map_err(AppError::client)?;
         request.headers_mut().insert(AUTHORIZATION, self.auth.parse().map_err(AppError::client)?);

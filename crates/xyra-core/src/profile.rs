@@ -16,7 +16,7 @@ pub const CURRENT_SUMMONER: &str = "/lol-summoner/v1/current-summoner";
 const REGION: &str = "/riotclient/region-locale";
 const RANKED_STATS: &str = "/lol-ranked/v1/current-ranked-stats";
 const MASTERIES: &str = "/lol-champion-mastery/v1/local-player/champion-mastery";
-const OWNED_CHAMPIONS: &str = "/lol-champions/v1/owned-champions-minimal";
+pub const OWNED_CHAMPIONS: &str = "/lol-champions/v1/owned-champions-minimal";
 const SOLO_QUEUE: &str = "RANKED_SOLO_5x5";
 const NO_DIVISION: &str = "NA";
 const TOP_MASTERIES: usize = 5;
@@ -253,7 +253,12 @@ fn mastery_progress(mastery: ChampionMastery, catalog: &Catalog) -> MasteryProgr
 
 /// Champions the account owns or has free this week.
 pub fn read_available_champions(lcu: &Lcu) -> Result<HashSet<u32>> {
-    let champions: Vec<OwnedChampion> = lcu.get_as(OWNED_CHAMPIONS)?;
+    available_champions(&lcu.get(OWNED_CHAMPIONS)?)
+}
+
+/// The champions of an owned champions list, as the client answers or announces it.
+pub fn available_champions(list: &Value) -> Result<HashSet<u32>> {
+    let champions: Vec<OwnedChampion> = parse(OWNED_CHAMPIONS, list)?;
     Ok(champions.into_iter().filter(|c| c.ownership.owned || c.free_to_play).map(|c| c.id).collect())
 }
 
@@ -291,8 +296,6 @@ mod tests {
             { "id": 2, "ownership": { "owned": false }, "freeToPlay": true },
             { "id": 3, "ownership": { "owned": false }, "freeToPlay": false }
         ]);
-        let champions: Vec<OwnedChampion> = parse(OWNED_CHAMPIONS, &list).unwrap();
-        let available: HashSet<u32> = champions.into_iter().filter(|c| c.ownership.owned || c.free_to_play).map(|c| c.id).collect();
-        assert_eq!(available, HashSet::from([1, 2]));
+        assert_eq!(available_champions(&list), Ok(HashSet::from([1, 2])));
     }
 }

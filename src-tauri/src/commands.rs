@@ -88,7 +88,9 @@ pub async fn get_augments(shared: State<'_, App>, champion: u32, mode: GameMode)
 }
 
 #[tauri::command]
-pub fn get_phone_link(shared: State<App>) -> Result<Option<PhoneLink>> {
+pub fn get_phone_link(app: AppHandle, shared: State<App>) -> Result<Option<PhoneLink>> {
+    // Starts the link if it could not when Xyra opened, like when another program held its port.
+    phone::follow_config(&app);
     phone::link(&shared)
 }
 
@@ -149,9 +151,9 @@ pub async fn get_patch_changes(shared: State<'_, App>) -> Result<PatchChanges> {
 }
 
 #[tauri::command]
-pub async fn take_bench_pick(shared: State<'_, App>) -> Result<()> {
+pub async fn take_bench_pick(shared: State<'_, App>, champion: Option<u32>) -> Result<()> {
     let shared = Arc::clone(&shared);
-    blocking(move || shared.take_bench_pick()).await
+    blocking(move || shared.take_bench_pick(champion)).await
 }
 
 #[tauri::command]

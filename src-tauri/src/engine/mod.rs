@@ -42,9 +42,10 @@ use xyra_core::{
         AppEvent, Build, BuildMode, ChampionInfo, CurrentGame, EngineState, GameMode, ImportTarget, Matchup, Meta, MetaChampion, PatchChanges, Phase,
         PhoneDevice, Position,
     },
-    opgg, patch_notes,
+    opgg::{self, AugmentStat},
+    patch_notes,
     profile::{self, MasteryProgress},
-    stats::{self, MatchSummary, StatsSummary, StoredGame},
+    stats::{self, MatchHistory, MatchSummary, StatsSummary, StoredGame},
     storage::Storage,
     updates::Release,
     web,
@@ -54,7 +55,7 @@ pub const MAIN_WINDOW: &str = "main";
 const META_MAX_AGE: Duration = Duration::from_secs(60 * 60);
 /// How many of the most mastered champions count as the player's own in the patch changes.
 const YOUR_CHAMPIONS: usize = 15;
-const SUBSCRIPTIONS: [&str; 4] = [profile::CURRENT_SUMMONER, gameflow::SESSION, champ_select::SESSION, stats::END_OF_GAME];
+const SUBSCRIPTIONS: [&str; 5] = [profile::CURRENT_SUMMONER, profile::OWNED_CHAMPIONS, gameflow::SESSION, champ_select::SESSION, stats::END_OF_GAME];
 const RECONNECT_DELAY: Duration = Duration::from_secs(2);
 const MAX_RECONNECTS: u32 = 5;
 const BORDERLESS_FIX_COOLDOWN: Duration = Duration::from_secs(10);
@@ -62,11 +63,31 @@ const BORDERLESS_FIX_COOLDOWN: Duration = Duration::from_secs(10);
 pub enum EngineEvent {
     LockfileChanged,
     GameConfigChanged,
-    Client { generation: u64, event: LcuEvent },
-    ClientClosed { generation: u64, error: Option<AppError> },
-    CounterPicks { enemy: u32, position: Position, picks: Option<Vec<Matchup>> },
+    Client {
+        generation: u64,
+        event: LcuEvent,
+    },
+    ClientClosed {
+        generation: u64,
+        error: Option<AppError>,
+    },
+    CounterPicks {
+        enemy: u32,
+        position: Position,
+        picks: Option<Vec<Matchup>>,
+    },
     ChampionTiers(HashMap<u32, (u8, u32)>),
     GameBuild(Box<Build>),
+    /// OP.GG's augment stats for a champion and mode; None when OP.GG did not answer.
+    AugmentStats {
+        champion: u32,
+        mode: GameMode,
+        stats: Option<HashMap<u32, AugmentStat>>,
+    },
+    History {
+        account: String,
+        history: Result<MatchHistory>,
+    },
     ConfigChanged,
     ShowDemo,
     TestVoice,
@@ -299,9 +320,13 @@ impl Shared {
         ranked.into_iter().take(count).map(|(id, _)| *id).collect()
     }
 
-    /// Swaps the player's champion for the one Xyra recommends from the ARAM bench.
-    pub fn take_bench_pick(&self) -> Result<()> {
-        let pick = self.state.lock().unwrap().champ_select.as_ref().and_then(|select| select.bench_pick.as_ref().map(|pick| pick.id));
+    /// Swaps the player's champion for one of the ARAM bench: the one asked for, or the one Xyra recommends.
+    pub fn take_bench_pick(&self, champion: Option<u32>) -> Result<()> {
+        let select = self.state.lock().unwrap().champ_select.clone().ok_or(AppError::NotInChampSelect)?;
+        let pick = match champion {
+            Some(id) => select.bench.iter().find(|bench| bench.id == id).map(|bench| bench.id),
+            None => select.bench_pick.map(|pick| pick.id),
+        };
         champ_select::take_from_bench(&self.lcu()?, pick.ok_or(AppError::NotInChampSelect)?)
     }
 
@@ -380,6 +405,8 @@ struct GameTracking {
     champion: Option<u32>,
     /// Position assigned in champion select, for the Summoner's Rift build.
     position: Option<Position>,
+    /// The match history's id of the game.
+    id: Option<u64>,
 }
 
 /// Reacts to the League client, the game files and the UI; owns everything that runs on the engine thread.
@@ -508,6 +535,13 @@ impl Engine {
                 self.emit(AppEvent::Data);
             }
             EngineEvent::GameBuild(build) => self.tips.set_build(*build),
+            EngineEvent::History { account, history } => {
+                if self.history.store(&account, history, &self.shared) {
+                    self.refresh_champions();
+                    self.emit(AppEvent::Data);
+                }
+            }
+            EngineEvent::AugmentStats { champion, mode, stats } => self.cards.set_stats(champion, mode, stats, &self.shared),
             EngineEvent::ShowDemo if self.game.is_none() => self.cards.demo(&self.shared),
             EngineEvent::ShowDemo => {}
             EngineEvent::TestVoice => self.cards.test_voice(&self.shared),
@@ -574,11 +608,15 @@ impl Engine {
         let attempts = self.reconnect.map_or(0, |r| r.1) + 1;
         self.reconnect = match error {
             Some(error) if self.shared.installation.lockfile().exists() => {
-                if attempts > MAX_RECONNECTS {
-                    self.shared.log_error("League client connection", error);
-                    None
-                } else {
+                if attempts <= MAX_RECONNECTS {
                     Some((Instant::now() + RECONNECT_DELAY, attempts))
+                } else {
+                    // A client that closed without removing its lockfile refuses the connection: it is not running,
+                    // and the lockfile watcher connects again when it starts.
+                    if error != AppError::ClientClosed {
+                        self.shared.log_error("League client connection", error);
+                    }
+                    None
                 }
             }
             _ => None,
@@ -589,12 +627,20 @@ impl Engine {
         match (event.uri.as_str(), event.data) {
             (profile::CURRENT_SUMMONER, Some(summoner)) => self.on_summoner(&summoner),
             (profile::CURRENT_SUMMONER, None) => self.set_account(None),
+            (profile::OWNED_CHAMPIONS, Some(list)) => match profile::available_champions(&list) {
+                Ok(available) => {
+                    let mut known = self.shared.available.write().unwrap();
+                    if known.as_ref() != Some(&available) {
+                        *known = Some(available);
+                        drop(known);
+                        self.emit(AppEvent::Data);
+                    }
+                }
+                Err(e) => self.shared.log_error("owned champions", e),
+            },
             (gameflow::SESSION, data) => self.on_gameflow(data),
             (champ_select::SESSION, data) => self.on_champ_select(data),
-            (stats::END_OF_GAME, Some(_)) => {
-                self.history.expect_games_of(self.mode, self.cards.offers());
-                self.import_games();
-            }
+            (stats::END_OF_GAME, Some(_)) => self.import_games(),
             _ => {}
         }
     }
@@ -629,6 +675,8 @@ impl Engine {
         let Some(lcu) = self.lcu() else { return };
         match profile::read_available_champions(lcu) {
             Ok(available) => *self.shared.available.write().unwrap() = Some(available),
+            // Right after signing in the client has not received them yet; it announces them when it does.
+            Err(AppError::Client(answer)) if answer.starts_with("404") => {}
             Err(e) => self.shared.log_error("owned champions", e),
         }
         match profile::read_mastery_points(lcu) {
@@ -655,15 +703,18 @@ impl Engine {
             self.mode = flow.mode;
         }
         match (flow, &mut self.game) {
-            (Some(flow), Some(game)) if phase.is_in_game() => game.champion = flow.champion.or(game.champion),
+            (Some(flow), Some(game)) if phase.is_in_game() => {
+                game.champion = flow.champion.or(game.champion);
+                game.id = flow.game_id.or(game.id);
+            }
             (Some(flow), None) if phase.is_in_game() => {
                 let (champion, position) = (flow.champion.or(self.champ_select.last_champion()), self.champ_select.position());
-                self.game = Some(GameTracking { mode: flow.mode, champion, position });
+                self.game = Some(GameTracking { mode: flow.mode, champion, position, id: flow.game_id });
                 self.on_game_started();
             }
             (_, Some(_)) => {
-                self.game = None;
-                self.on_game_ended();
+                let ended = self.game.take().and_then(|game| game.id);
+                self.on_game_ended(ended);
             }
             _ => {}
         }
@@ -712,9 +763,9 @@ impl Engine {
         }
     }
 
-    fn on_game_ended(&mut self) {
+    fn on_game_ended(&mut self, game: Option<u64>) {
         self.cards.stop();
-        self.history.expect_games_of(self.mode, self.cards.offers());
+        self.history.expect_game(game, self.mode, self.cards.offers());
         self.check_borderless();
     }
 
@@ -749,10 +800,7 @@ impl Engine {
 
     fn import_games(&mut self) {
         let (Some(lcu), Some(account)) = (&self.client, self.account.as_deref()) else { return };
-        if self.history.import(lcu, account, &self.shared) {
-            self.refresh_champions();
-            self.emit(AppEvent::Data);
-        }
+        self.history.read(lcu, account, &self.shared);
     }
 
     fn check_borderless(&mut self) {

@@ -36,6 +36,8 @@ pub struct Gameflow {
     pub mode: GameMode,
     /// The account's champion in the current game, once the client lists it.
     pub champion: Option<u32>,
+    /// The id the match history gives the game, once it has one.
+    pub game_id: Option<u64>,
 }
 
 #[derive(Deserialize)]
@@ -48,6 +50,8 @@ struct Session {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct GameData {
+    #[serde(default)]
+    game_id: u64,
     queue: Queue,
     #[serde(default)]
     team_one: Vec<Player>,
@@ -76,7 +80,7 @@ pub fn parse(session: &Value, account: Option<&str>) -> Result<Gameflow> {
     let data = session.game_data;
     let players = data.team_one.iter().chain(&data.team_two).chain(&data.player_champion_selections);
     let champion = account.and_then(|me| players.filter(|p| p.puuid.as_deref() == Some(me)).map(|p| p.champion_id).find(|&id| id > 0));
-    Ok(Gameflow { phase: session.phase, mode: GameMode::from_client(&data.queue.game_mode), champion })
+    Ok(Gameflow { phase: session.phase, mode: GameMode::from_client(&data.queue.game_mode), champion, game_id: (data.game_id > 0).then_some(data.game_id) })
 }
 
 #[cfg(test)]
@@ -89,6 +93,7 @@ mod tests {
         json!({
             "phase": phase,
             "gameData": {
+                "gameId": 7654321,
                 "queue": { "gameMode": "KIWI" },
                 "teamOne": [{ "puuid": "other", "championId": 1 }, { "puuid": "me", "championId": 103 }],
                 "teamTwo": [],
@@ -100,7 +105,7 @@ mod tests {
     #[test]
     fn reads_phase_mode_and_own_champion() {
         let flow = parse(&session("InProgress"), Some("me")).unwrap();
-        assert_eq!(flow, Gameflow { phase: GameflowPhase::InProgress, mode: GameMode::Mayhem, champion: Some(103) });
+        assert_eq!(flow, Gameflow { phase: GameflowPhase::InProgress, mode: GameMode::Mayhem, champion: Some(103), game_id: Some(7654321) });
         assert!(flow.phase.is_in_game());
         assert_eq!(parse(&session("InProgress"), None).unwrap().champion, None);
         assert_eq!(parse(&session("Brand new"), None).unwrap().phase, GameflowPhase::Unknown);

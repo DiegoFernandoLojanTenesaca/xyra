@@ -35,7 +35,7 @@
   "diagnostics": "Diagnóstico",
   "recordScreenshots": {
     "title": "Guardar capturas al detectar cartas",
-    "description": "Para reportar fallos o calibrar otras resoluciones."
+    "description": "Para reportar fallos o calibrar otras resoluciones. En partida también guarda la zona de las cartas con lo que Xyra leyó, para encontrar por qué alguna ronda no se etiquetó."
   },
   "openScreenshots": "Abrir capturas",
   "openLog": "Abrir registro",

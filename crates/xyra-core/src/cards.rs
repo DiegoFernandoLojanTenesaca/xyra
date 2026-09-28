@@ -71,6 +71,11 @@ pub fn find_candidates(lines: &[OcrLine], names: &HashMap<String, Vec<u32>>, dx:
         .collect()
 }
 
+/// The catalog name of the first of `ids`, for logs.
+pub fn name_of(ids: &[u32], augments: &HashMap<u32, (String, String)>) -> String {
+    ids.first().and_then(|id| augments.get(id)).map_or_else(|| format!("{ids:?}"), |(name, _)| name.clone())
+}
+
 pub fn card_row(candidates: &[Candidate], screen_height: f64) -> Vec<Candidate> {
     let mut sorted = candidates.to_vec();
     sorted.sort_by(|a, b| a.x.total_cmp(&b.x));

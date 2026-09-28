@@ -1,4 +1,4 @@
-use super::Shared;
+use super::{EngineEvent, Shared};
 use crate::{
     overlay::{Labels, OverlayHandle},
     screen::{self, Ocr},
@@ -9,10 +9,11 @@ use std::{
     fs::File,
     io::BufWriter,
     sync::Arc,
+    thread,
     time::{Duration, Instant},
 };
 use xyra_core::{
-    cards::{self, Candidate, Card, CardTracker, TrackerAction},
+    cards::{self, Candidate, Card, CardTracker, OcrLine, TrackerAction},
     catalog::NamedAssets,
     errors::{AppError, Result},
     i18n,
@@ -25,6 +26,17 @@ const WATCH_CARDS: Duration = Duration::from_millis(250);
 const WATCH_GAME: Duration = Duration::from_millis(500);
 const UNFOCUSED: Duration = Duration::from_secs(1);
 const RETRY: Duration = Duration::from_secs(5);
+/// OP.GG is asked this many times, this far apart, before the stats of a game give up until the next read.
+const STATS_ATTEMPTS: u32 = 4;
+const STATS_RETRY: Duration = Duration::from_secs(2);
+/// Reads in a row that recognize a row of cards without labeling them before it is logged, to find out why.
+const UNLABELED_READS_TO_REPORT: u8 = 12;
+/// With "Save screenshots" on, the card area and what the OCR read are kept, to see why cards go unlabeled: this often
+/// while card names are on screen, this often otherwise, and at most this many times per game.
+const DIAGNOSTIC_WITH_CARDS: Duration = Duration::from_secs(2);
+const DIAGNOSTIC_WITHOUT_CARDS: Duration = Duration::from_secs(60);
+const DIAGNOSTICS_PER_GAME: u32 = 40;
+const DIAGNOSTIC_SUFFIX: &str = "-cards";
 /// Where the cards appear, as fractions of the screen: left, top, width, height.
 const CARD_ZONE: (f64, f64, f64, f64) = (0.125, 0.1, 0.75, 0.7);
 const REFERENCE_HEIGHT: f64 = 1200.0;
@@ -58,6 +70,13 @@ pub struct CardReader {
     zone: (i32, i32, i32, i32),
     tracker: CardTracker,
     stats: Option<((u32, GameMode), HashMap<u32, AugmentStat>)>,
+    /// The champion and mode whose stats are being read from OP.GG.
+    fetching: Option<(u32, GameMode)>,
+    /// Cards on screen waiting for the stats to label them.
+    waiting: Option<Vec<Candidate>>,
+    unlabeled_reads: u8,
+    diagnosed_at: Option<Instant>,
+    diagnostics: u32,
     next_read: Option<Instant>,
     cards: Vec<Card>,
     rounds: Vec<Vec<Card>>,
@@ -80,6 +99,11 @@ impl CardReader {
             zone: card_zone(width, height),
             tracker: CardTracker::default(),
             stats: None,
+            fetching: None,
+            waiting: None,
+            unlabeled_reads: 0,
+            diagnosed_at: None,
+            diagnostics: 0,
             next_read: None,
             cards: Vec::new(),
             rounds: Vec::new(),
@@ -102,6 +126,7 @@ impl CardReader {
     pub fn new_game(&mut self) {
         self.rounds.clear();
         self.round_open = false;
+        self.diagnostics = 0;
     }
 
     /// The choices of this game, to keep with it once the match history lists it.
@@ -142,39 +167,59 @@ impl CardReader {
         }
         self.tracker.reset();
         self.cards.clear();
+        self.waiting = None;
         self.round_open = false;
     }
 
-    pub fn read(&mut self, champion: u32, mode: GameMode, shared: &Shared) {
-        self.next_read = Some(Instant::now() + self.read_once(champion, mode, shared));
+    pub fn read(&mut self, champion: u32, mode: GameMode, shared: &Arc<Shared>) {
+        self.fetch_stats(champion, mode, shared);
+        self.next_read = Some(Instant::now() + self.read_screen(champion, mode, shared));
     }
 
-    /// Returns how long to wait before the next read.
-    fn read_once(&mut self, champion: u32, mode: GameMode, shared: &Shared) -> Duration {
-        let stats = match self.stats.take() {
-            Some((key, stats)) if key == (champion, mode) => stats,
-            _ => match opgg::fetch_augments(&shared.web, champion, mode) {
-                Ok(stats) => stats,
-                Err(e) => {
-                    shared.log_error("OP.GG augments", e);
-                    return RETRY;
+    /// Asks OP.GG for the champion's augment stats in the background, so reading the screen never waits on the network;
+    /// they arrive as `EngineEvent::AugmentStats`.
+    fn fetch_stats(&mut self, champion: u32, mode: GameMode, shared: &Arc<Shared>) {
+        let key = (champion, mode);
+        if self.stats.as_ref().is_some_and(|(read, _)| *read == key) || self.fetching == Some(key) {
+            return;
+        }
+        self.fetching = Some(key);
+        let shared = Arc::clone(shared);
+        thread::spawn(move || {
+            let mut result = opgg::fetch_augments(&shared.web, champion, mode);
+            for _ in 1..STATS_ATTEMPTS {
+                if result.is_ok() {
+                    break;
                 }
-            },
-        };
-        let wait = self.read_screen(champion, &stats, shared);
-        self.stats = Some(((champion, mode), stats));
-        wait
+                thread::sleep(STATS_RETRY);
+                result = opgg::fetch_augments(&shared.web, champion, mode);
+            }
+            let stats = result.map_err(|e| shared.log_error("OP.GG augments", e)).ok();
+            shared.send(EngineEvent::AugmentStats { champion, mode, stats });
+        });
     }
 
-    fn read_screen(&mut self, champion: u32, stats: &HashMap<u32, AugmentStat>, shared: &Shared) -> Duration {
+    /// Keeps the stats OP.GG answered and labels the cards that were waiting for them.
+    pub fn set_stats(&mut self, champion: u32, mode: GameMode, stats: Option<HashMap<u32, AugmentStat>>, shared: &Shared) {
+        self.fetching = None;
+        let Some(stats) = stats else { return };
+        let catalog = shared.catalog();
+        if let Some(candidates) = self.waiting.take() {
+            self.show(cards::rate_cards(&candidates, &stats, &catalog.augments), champion, shared);
+        }
+        self.stats = Some(((champion, mode), stats));
+    }
+
+    fn read_screen(&mut self, champion: u32, mode: GameMode, shared: &Shared) -> Duration {
         let Some(ocr) = &self.ocr else { return RETRY };
         if !screen::is_game_visible() {
             self.hide();
             return UNFOCUSED;
         }
         let (x, y, width, height) = self.zone;
-        let lines = match screen::capture(x, y, width, height).and_then(|pixels| ocr.read(&pixels, width, height)) {
-            Ok(lines) => lines,
+        let read = screen::capture(x, y, width, height).and_then(|pixels| Ok((ocr.read(&pixels, width, height)?, pixels)));
+        let (lines, pixels) = match read {
+            Ok(read) => read,
             Err(e) => {
                 shared.log_error("screen reading", e);
                 return RETRY;
@@ -182,12 +227,45 @@ impl CardReader {
         };
         let catalog = shared.catalog();
         let found = cards::find_candidates(&lines, &catalog.augment_names, x as f64, y as f64);
-        match self.tracker.observe(cards::card_row(&found, self.height as f64), &found) {
+        let row = cards::card_row(&found, self.height as f64);
+        if shared.config().record_screenshots
+            && let Err(e) = self.save_diagnostic(&pixels, &lines, &found, shared)
+        {
+            shared.log_error("cards diagnostic", e);
+        }
+        self.report_unlabeled(&row, shared);
+        match self.tracker.observe(row, &found) {
             TrackerAction::Idle => {}
             TrackerAction::Hide => self.hide(),
-            TrackerAction::Show(candidates) => self.show(cards::rate_cards(&candidates, stats, &catalog.augments), champion, shared),
+            TrackerAction::Show(candidates) => match self.stats.as_ref().filter(|(read, _)| *read == (champion, mode)) {
+                Some((_, stats)) => {
+                    let cards = cards::rate_cards(&candidates, stats, &catalog.augments);
+                    self.show(cards, champion, shared);
+                }
+                None => self.waiting = Some(candidates),
+            },
         }
         if self.tracker.is_active() { WATCH_CARDS } else { WATCH_GAME }
+    }
+
+    /// Logs, once per stretch, a row of cards Xyra keeps recognizing without labeling, with a screenshot when enabled.
+    fn report_unlabeled(&mut self, row: &[Candidate], shared: &Shared) {
+        if row.is_empty() || !self.cards.is_empty() || self.waiting.is_some() {
+            self.unlabeled_reads = 0;
+            return;
+        }
+        self.unlabeled_reads = self.unlabeled_reads.saturating_add(1);
+        if self.unlabeled_reads != UNLABELED_READS_TO_REPORT {
+            return;
+        }
+        let catalog = shared.catalog();
+        let names: Vec<String> = row.iter().map(|card| format!("{} @ {:.0},{:.0}", cards::name_of(&card.ids, &catalog.augments), card.x, card.y)).collect();
+        shared.log_error("cards seen but not labeled", names.join(" | "));
+        if shared.config().record_screenshots
+            && let Err(e) = self.save_screenshot(shared)
+        {
+            shared.log_error("screenshot", e);
+        }
     }
 
     fn show(&mut self, cards: Vec<Card>, champion: u32, shared: &Shared) {
@@ -210,13 +288,32 @@ impl CardReader {
         self.cards = cards;
     }
 
+    /// Keeps the card area and every line the OCR read, with the names it matched, now and then during a game.
+    fn save_diagnostic(&mut self, bgra: &[u8], lines: &[OcrLine], found: &[Candidate], shared: &Shared) -> Result<()> {
+        let every = if found.is_empty() { DIAGNOSTIC_WITHOUT_CARDS } else { DIAGNOSTIC_WITH_CARDS };
+        if self.diagnostics >= DIAGNOSTICS_PER_GAME || self.diagnosed_at.is_some_and(|at| at.elapsed() < every) {
+            return Ok(());
+        }
+        self.diagnosed_at = Some(Instant::now());
+        self.diagnostics += 1;
+        let (_, _, width, height) = self.zone;
+        let image = shared.storage.screenshot_named(DIAGNOSTIC_SUFFIX, "png")?;
+        write_png(&image, bgra, width, height)?;
+        let catalog = shared.catalog();
+        let mut text = format!("zone {:?} screen {}x{}\n", self.zone, self.width, self.height);
+        for line in lines {
+            text.push_str(&format!("line {:.0},{:.0}-{:.0},{:.0} {}\n", line.x0, line.y0, line.x1, line.y1, line.text));
+        }
+        for card in found {
+            text.push_str(&format!("found {} @ {:.0},{:.0}\n", cards::name_of(&card.ids, &catalog.augments), card.x, card.y));
+        }
+        std::fs::write(image.with_extension("txt"), text)?;
+        Ok(())
+    }
+
     fn save_screenshot(&self, shared: &Shared) -> Result<()> {
         let bgra = screen::capture(0, 0, self.width, self.height).map_err(AppError::platform)?;
-        let rgba: Vec<u8> = bgra.as_chunks::<4>().0.iter().flat_map(|p| [p[2], p[1], p[0], u8::MAX]).collect();
-        let file = File::create(shared.storage.screenshot_path()?)?;
-        let mut encoder = png::Encoder::new(BufWriter::new(file), self.width as u32, self.height as u32);
-        encoder.set_color(png::ColorType::Rgba);
-        encoder.write_header().and_then(|mut writer| writer.write_image_data(&rgba)).map_err(AppError::platform)
+        write_png(&shared.storage.screenshot_path()?, &bgra, self.width, self.height)
     }
 
     pub fn demo(&self, shared: &Shared) {
@@ -234,6 +331,13 @@ impl CardReader {
             shared.log_error("voice", e);
         }
     }
+}
+
+fn write_png(path: &std::path::Path, bgra: &[u8], width: i32, height: i32) -> Result<()> {
+    let rgba: Vec<u8> = bgra.as_chunks::<4>().0.iter().flat_map(|p| [p[2], p[1], p[0], u8::MAX]).collect();
+    let mut encoder = png::Encoder::new(BufWriter::new(File::create(path)?), width as u32, height as u32);
+    encoder.set_color(png::ColorType::Rgba);
+    encoder.write_header().and_then(|mut writer| writer.write_image_data(&rgba)).map_err(AppError::platform)
 }
 
 #[cfg(test)]

@@ -25,8 +25,6 @@
   "cardsOnScreen": "Cartas en pantalla",
   "latestCards": "Últimas cartas",
   "noCards": "Cuando te salgan cartas de aumento en ARAM: Caos o Arena aparecerán aquí.",
-  "bench": "Banca · selección",
-  "emptyBench": "Sin campeones en la banca.",
   "gameWindow": "Ventana del juego",
   "fullscreenWarning": "El LoL está en pantalla completa: las etiquetas no se ven encima del juego.",
   "borderlessReady": "Sin bordes · listo",
@@ -107,5 +105,10 @@
   "kda": "{{kills}}/{{deaths}}/{{assists}}",
   "patchYours": "Tus campeones en el parche {{patch}}",
   "byMastery": "por maestría",
-  "recentGames": "Partidas de {{mode}}"
+  "recentGames": "Partidas de {{mode}}",
+  "yourOptions": "Tus opciones",
+  "current": "Tu campeón",
+  "take": "Tomar",
+  "allChampions": "Todos los campeones",
+  "allForPosition": "Todos para {{position}}"
 }
