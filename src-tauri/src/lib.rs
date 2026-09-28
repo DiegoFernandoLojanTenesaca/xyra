@@ -57,17 +57,6 @@ pub fn show_main_window(app: &AppHandle) {
     }
 }
 
-/// Shows Xyra and, when the player asked for it, opens League through the Riot Client unless it is running.
-fn open(app: &AppHandle, shared: &Shared) {
-    show_main_window(app);
-    if shared.config().open_league
-        && shared.lcu().is_err()
-        && let Err(e) = riot_install::launch_league()
-    {
-        shared.log_error("open League", e);
-    }
-}
-
 fn flag(name: &str) -> bool {
     std::env::args().any(|a| a == name)
 }
@@ -87,7 +76,7 @@ pub fn run() {
         return;
     }
     tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, _, _| open(app, &app.state::<App>())))
+        .plugin(tauri_plugin_single_instance::init(|app, _, _| show_main_window(app)))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec![HIDDEN_FLAG])))
         .setup(|app| {
@@ -113,7 +102,7 @@ pub fn run() {
                 shared.send(EngineEvent::ShowDemo);
             }
             if !flag(HIDDEN_FLAG) && !flag(DEMO_FLAG) {
-                open(app.handle(), &shared);
+                show_main_window(app.handle());
             }
             phone::follow_config(app.handle());
             discord::start(app.handle().clone());

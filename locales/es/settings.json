@@ -24,9 +24,9 @@
     "title": "Iniciar con Windows",
     "description": "Queda en la bandeja y solo trabaja durante tus partidas."
   },
-  "openLeague": {
-    "title": "Abrir el LoL con Xyra",
-    "description": "Al abrir Xyra también se abre el LoL, así un solo ícono abre los dos."
+  "showWithLeague": {
+    "title": "Abrir Xyra con el LoL",
+    "description": "Al abrir el LoL, Xyra aparece solo. Funciona con Xyra en la bandeja, así que déjalo arrancar con Windows."
   },
   "arena": {
     "title": "Arena (beta)",

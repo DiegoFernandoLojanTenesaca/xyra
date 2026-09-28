@@ -13,9 +13,9 @@ language: string | null,
  */
 offset_y: number, scale: number, record_screenshots: boolean, autostart: boolean, 
 /**
- * Opens League when the player opens Xyra.
+ * Shows Xyra when the League client opens.
  */
-open_league: boolean, keep_borderless: boolean, 
+show_with_league: boolean, keep_borderless: boolean, 
 /**
  * Imports runes, items and summoner spells of the picked champion in champion select.
  */

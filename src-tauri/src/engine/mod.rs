@@ -470,6 +470,8 @@ struct Engine {
     lobby: Option<LobbyAnswer>,
     /// Names of the players seen in lobbies, by PUUID, since the lobby does not carry them.
     player_names: HashMap<String, String>,
+    /// The client session Xyra already showed itself for, so reconnecting to it does not bring the window back.
+    shown_for: Option<Lcu>,
     chime: Option<Chime>,
     _watcher: Option<RecommendedWatcher>,
 }
@@ -524,6 +526,7 @@ impl Engine {
             searching: false,
             lobby: None,
             player_names: HashMap::new(),
+            shown_for: None,
             chime: Chime::new().map_err(|e| shared.log_error("match sound", e)).ok(),
             _watcher: watcher,
             shared,
@@ -652,6 +655,13 @@ impl Engine {
         }
         self.on_gameflow(lcu.get(gameflow::SESSION).ok());
         self.on_lobby(lcu.get(lobby::LOBBY).ok());
+        if self.shared.config().show_with_league && self.game.is_none() && !self.shown_for.as_ref().is_some_and(|shown| shown.same_session(&lcu)) {
+            self.shown_for = Some(lcu);
+            let app = self.app.clone();
+            if let Err(e) = self.app.run_on_main_thread(move || crate::show_main_window(&app)) {
+                self.shared.log_error("main window", e);
+            }
+        }
         if self.shared.champion_tiers.read().unwrap().is_empty() {
             self.fetch_champion_tiers();
         }
@@ -873,7 +883,6 @@ impl Engine {
             }
             Err(_) => None,
         });
-        self.dress_champion();
         let auto_import = self.shared.config().auto_import_build && self.mode.has_builds();
         for (enemy, position) in self.champ_select.update(parsed, pickable, self.mode, auto_import) {
             let shared = Arc::clone(&self.shared);
@@ -885,6 +894,7 @@ impl Engine {
                 shared.send(EngineEvent::CounterPicks { enemy, position, picks });
             });
         }
+        self.dress_champion();
     }
 
     /// Follows the player's lobby, looking up the names of new members and invited friends.

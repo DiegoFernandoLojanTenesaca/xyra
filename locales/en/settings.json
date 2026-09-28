@@ -24,9 +24,9 @@
     "title": "Start with Windows",
     "description": "Sits in the tray and only works during your games."
   },
-  "openLeague": {
-    "title": "Open League with Xyra",
-    "description": "Opening Xyra opens League too, so one icon opens both."
+  "showWithLeague": {
+    "title": "Open Xyra with League",
+    "description": "Opening League brings Xyra up by itself. It works with Xyra in the tray, so let it start with Windows."
   },
   "arena": {
     "title": "Arena (beta)",

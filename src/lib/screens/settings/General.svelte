@@ -29,10 +29,10 @@
       onchange={() => app.saveConfig({ autostart: !config.autostart })}
     />
     <ToggleRow
-      title={t('settings:openLeague.title')}
-      description={t('settings:openLeague.description')}
-      checked={config.open_league}
-      onchange={() => app.saveConfig({ open_league: !config.open_league })}
+      title={t('settings:showWithLeague.title')}
+      description={t('settings:showWithLeague.description')}
+      checked={config.show_with_league}
+      onchange={() => app.saveConfig({ show_with_league: !config.show_with_league })}
     />
     <ToggleRow
       title={t('settings:arena.title')}

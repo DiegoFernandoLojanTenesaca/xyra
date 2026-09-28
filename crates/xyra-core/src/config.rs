@@ -82,8 +82,8 @@ pub struct Config {
     #[serde(alias = "grabar")]
     pub record_screenshots: bool,
     pub autostart: bool,
-    /// Opens League when the player opens Xyra.
-    pub open_league: bool,
+    /// Shows Xyra when the League client opens.
+    pub show_with_league: bool,
     #[serde(alias = "auto_bordes")]
     pub keep_borderless: bool,
     /// Imports runes, items and summoner spells of the picked champion in champion select.
@@ -146,7 +146,7 @@ impl Default for Config {
             scale: 1.0,
             record_screenshots: false,
             autostart: true,
-            open_league: false,
+            show_with_league: true,
             keep_borderless: true,
             auto_import_build: false,
             close_window_in_game: false,
