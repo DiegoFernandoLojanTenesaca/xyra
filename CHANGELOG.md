@@ -1,9 +1,3 @@
-- Added your options to champion select in ARAM and ARAM: Mayhem, on the PC and the phone: your champion and the bench, best first by your recommendation order, with a button to take any of them, and below them every other champion in the same order; in Summoner's Rift, every champion of your position.
-- Fixed Home, Build and Augments, on the PC and the phone, flickering and reloading their lists every few seconds during a game.
-- Fixed the augment labels sometimes not showing: Xyra now reads OP.GG's stats in the background from the start of the game, retrying when OP.GG is slow, and labels the cards the moment the stats arrive, instead of pausing the screen reading while OP.GG answered.
-- Fixed the augment choices Xyra saw getting lost when you queued again before the match history listed your last game; they now stay with their game until it shows up.
-- Added a note in Xyra's log, with a screenshot when "Save screenshots" is on, whenever Xyra recognizes a row of cards but cannot label it, to find out why.
-- Fixed Xyra not knowing which champions you own right after you sign in: it now waits for the client to announce them.
-- Fixed the match history import failing right after you sign in, while the client brings it from Riot: Xyra now reads it in the background and asks again, so it never stops to wait for it.
-- Fixed the phone link staying off when its port was busy as Xyra started; opening Phone starts it again.
-- Changed Xyra's log to leave out a League client that closed without cleaning up after itself, which is not an error.
+- Added a window on the PC and the phone when a new version is out: it shows what the version brings, in your language, with buttons to update now or later; the sidebar and Settings keep offering it.
+- Added a reminder to update the other one too: the PC's window tells you to update the phone app, and the phone's tells you whether Xyra on your PC is up to date; the phone also warns when the PC has an older Xyra than the app.
+- Changed the website's bar to list every section and mark the one you are reading, with its own row that scrolls sideways on phones and small windows, and a button to go back up.
