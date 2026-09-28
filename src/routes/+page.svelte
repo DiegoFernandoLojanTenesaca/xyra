@@ -19,6 +19,7 @@
     Tag,
     TrendingUp,
     Trophy,
+    Users,
     X,
   } from '@lucide/svelte';
   import { getCurrentWindow } from '@tauri-apps/api/window';
@@ -34,6 +35,7 @@
   import History from '$lib/screens/History.svelte';
   import Home from '$lib/screens/Home.svelte';
   import Labels from '$lib/screens/Labels.svelte';
+  import Lobby from '$lib/screens/Lobby.svelte';
   import Mastery from '$lib/screens/Mastery.svelte';
   import Meta from '$lib/screens/Meta.svelte';
   import Settings from '$lib/screens/Settings.svelte';
@@ -45,6 +47,7 @@
 
   const NAVIGATION = [
     { page: 'home', icon: House },
+    { page: 'lobby', icon: Users },
     { page: 'build', icon: Hammer },
     { page: 'augments', icon: Layers },
     { page: 'champions', icon: Crown },
@@ -62,6 +65,7 @@
 
   const SCREENS: Record<Page, Component> = {
     home: Home,
+    lobby: Lobby,
     build: Build,
     augments: Augments,
     champions: Champions,

@@ -19,7 +19,7 @@
   /** A phone counts as connected while its app keeps asking; it asks at least every 20 seconds. */
   const CONNECTED_SECONDS = 45;
   const REFRESH_MS = 5000;
-  const PERMISSIONS: (keyof PhonePermissions)[] = ['accept', 'import', 'bench', 'settings'];
+  const PERMISSIONS: (keyof PhonePermissions)[] = ['accept', 'import', 'bench', 'lobby', 'settings'];
 
   $effect(() => {
     const refresh = () => getPhoneDevices().then((list) => (devices = list));

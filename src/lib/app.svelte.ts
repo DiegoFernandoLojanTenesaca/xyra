@@ -6,7 +6,21 @@ import { checkUpdate, installUpdate } from './services/updates';
 import { BASE_LANGUAGE, formatter, translator } from './i18n';
 import type { BuildMode, ChampionInfo, Choices, Config, EngineState, GameMode, ImportTarget, Position, Profile, Release, StatsSummary } from './types';
 
-export const PAGES = ['home', 'build', 'augments', 'champions', 'meta', 'stats', 'history', 'mastery', 'challenges', 'labels', 'game', 'settings'] as const;
+export const PAGES = [
+  'home',
+  'lobby',
+  'build',
+  'augments',
+  'champions',
+  'meta',
+  'stats',
+  'history',
+  'mastery',
+  'challenges',
+  'labels',
+  'game',
+  'settings',
+] as const;
 export type Page = (typeof PAGES)[number];
 
 export const SETTINGS_TABS = ['general', 'phone', 'profile', 'data', 'security', 'help', 'about'] as const;

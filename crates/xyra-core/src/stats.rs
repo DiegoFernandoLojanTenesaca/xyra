@@ -109,12 +109,20 @@ pub struct MatchSummary {
     pub duration: u32,
     /// The items the game ended with, in their slots.
     pub items: Vec<Asset>,
+    /// The runes' keystone and secondary tree, and the summoner spells, as the game was played.
+    pub keystone: Option<Asset>,
+    pub secondary_style: Option<Asset>,
+    pub spells: Vec<Asset>,
 }
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Participant {
     champion_id: u32,
+    #[serde(default)]
+    spell1_id: u32,
+    #[serde(default)]
+    spell2_id: u32,
     stats: ParticipantStats,
 }
 
@@ -152,6 +160,11 @@ struct ParticipantStats {
     item5: u32,
     #[serde(default)]
     item6: u32,
+    /// The keystone rune.
+    #[serde(default)]
+    perk0: u32,
+    #[serde(default)]
+    perk_sub_style: u32,
     player_augment_1: Option<u32>,
     player_augment_2: Option<u32>,
     player_augment_3: Option<u32>,
@@ -189,7 +202,11 @@ pub fn recent_matches(history: MatchHistory, catalog: &Catalog) -> Vec<MatchSumm
                 .filter(|item| catalog.items.contains_key(item))
                 .map(|item| named(&catalog.items, item))
                 .collect();
+            let known = |assets: &NamedAssets, id: u32| assets.contains_key(&id).then(|| named(assets, id));
             Some(MatchSummary {
+                keystone: known(&catalog.runes, stats.perk0),
+                secondary_style: known(&catalog.runes, stats.perk_sub_style),
+                spells: [player.spell1_id, player.spell2_id].into_iter().filter_map(|spell| known(&catalog.spells, spell)).collect(),
                 game_id: game.game_id,
                 date: game.game_creation_date,
                 champion: catalog.champion(player.champion_id),
@@ -269,6 +286,30 @@ pub struct RecentGame {
     pub followed: Vec<Option<bool>>,
 }
 
+/// How the player's augment picks went with Xyra's recommendation, over the choices Xyra saw.
+#[derive(Debug, Default, PartialEq, Serialize, TS)]
+#[ts(export)]
+pub struct Following {
+    /// Picks of the recommended card, and how many of their games were won.
+    pub followed: u32,
+    pub followed_wins: u32,
+    /// Picks of another card when Xyra recommended one.
+    pub ignored: u32,
+    pub ignored_wins: u32,
+}
+
+fn following<'a>(games: impl IntoIterator<Item = &'a StoredGame>) -> Following {
+    let mut tally = Following::default();
+    for game in games {
+        for choice in followed(&game.augments, &game.offers).into_iter().flatten() {
+            let (picks, wins) = if choice { (&mut tally.followed, &mut tally.followed_wins) } else { (&mut tally.ignored, &mut tally.ignored_wins) };
+            *picks += 1;
+            *wins += game.win as u32;
+        }
+    }
+    tally
+}
+
 #[derive(Serialize, TS)]
 #[ts(export)]
 pub struct StatsSummary {
@@ -279,6 +320,7 @@ pub struct StatsSummary {
     pub champions: Vec<StatRow>,
     pub augments: Vec<StatRow>,
     pub recent: Vec<RecentGame>,
+    pub following: Following,
 }
 
 fn count(tally: &mut HashMap<u32, (u32, u32)>, id: u32, win: bool) {
@@ -317,6 +359,7 @@ pub fn summarize(games: &[StoredGame], account: Option<&str>, catalog: &Catalog)
         games: games.len() as u32,
         min_augment_games: MIN_AUGMENT_GAMES,
         wins: games.iter().filter(|g| g.win).count() as u32,
+        following: following(games.iter().copied()),
         champions,
         augments,
         recent: games
@@ -387,6 +430,18 @@ mod tests {
         let offers = [Offer { cards: vec![1, 2, 3], best: Some(2) }, Offer { cards: vec![4, 5, 6], best: Some(4) }];
         assert_eq!(followed(&[2, 5, 9], &offers), [Some(true), Some(false), None]);
         assert_eq!(followed(&[2, 2], &offers[..1]), [Some(true), None]);
+        let game = |augments: Vec<u32>, win| StoredGame {
+            game_id: 1,
+            account: String::new(),
+            date: String::new(),
+            champion: 1,
+            mode: GameMode::Mayhem,
+            win,
+            augments,
+            offers: offers.to_vec(),
+        };
+        let tally = following(&[game(vec![2, 5], true), game(vec![2, 4], false), game(Vec::new(), true)]);
+        assert_eq!(tally, Following { followed: 3, followed_wins: 1, ignored: 1, ignored_wins: 1 });
     }
 
     #[test]
@@ -434,14 +489,26 @@ mod tests {
     fn summarizes_games_of_every_mode() {
         let history = json!({ "games": { "games": [
             { "gameId": 2, "gameMode": "CLASSIC", "queueId": 420, "gameCreationDate": "2026-09-25T10:00:00.000Z",
-              "participants": [{ "championId": 1, "stats": { "win": true, "kills": 7, "deaths": 2, "assists": 9 } }] },
+              "participants": [{ "championId": 1, "spell1Id": 4, "spell2Id": 14,
+                "stats": { "win": true, "kills": 7, "deaths": 2, "assists": 9, "perk0": 8112, "perkSubStyle": 8200 } }] },
             { "gameId": 1, "gameMode": "ARAM", "queueId": 450, "gameCreationDate": "2026-09-24T10:00:00.000Z",
               "participants": [{ "championId": 1, "stats": { "win": false } }] }
         ]}});
-        let matches = recent_matches(parse(MATCH_HISTORY, &history).unwrap(), &Catalog::default());
+        let asset = |name: &str| (name.to_string(), String::new());
+        let catalog = Catalog {
+            runes: HashMap::from([(8112, asset("Electrocute")), (8200, asset("Sorcery"))]),
+            spells: HashMap::from([(4, asset("Flash")), (14, asset("Ignite"))]),
+            ..Catalog::default()
+        };
+        let matches = recent_matches(parse(MATCH_HISTORY, &history).unwrap(), &catalog);
         assert_eq!(
             matches.iter().map(|m| (m.game_id, m.mode, m.ranked, m.win, m.kills)).collect::<Vec<_>>(),
             [(2, GameMode::SummonersRift, true, true, 7), (1, GameMode::Aram, false, false, 0)]
         );
+        let names = |assets: &[Asset]| assets.iter().map(|a| a.name.clone()).collect::<Vec<_>>();
+        assert_eq!(matches[0].keystone.as_ref().map(|k| k.name.as_str()), Some("Electrocute"));
+        assert_eq!(matches[0].secondary_style.as_ref().map(|s| s.name.as_str()), Some("Sorcery"));
+        assert_eq!(names(&matches[0].spells), ["Flash", "Ignite"]);
+        assert!(matches[1].keystone.is_none() && matches[1].spells.is_empty());
     }
 }

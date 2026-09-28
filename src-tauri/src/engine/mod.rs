@@ -37,10 +37,11 @@ use xyra_core::{
     game_settings::{self, GameOption, SettingValue},
     gameflow::{self, GameflowPhase},
     league::{self, Installation, Lcu, LcuEvent},
+    lobby::{self, LobbyAnswer},
     matchmaking,
     model::{
-        AppEvent, Build, BuildMode, ChampionInfo, CurrentGame, EngineState, GameMode, ImportTarget, Matchup, Meta, MetaChampion, PatchChanges, Phase,
-        PhoneDevice, Position,
+        AppEvent, Build, BuildMode, ChampionInfo, CurrentGame, EngineState, GameMode, GameTips, ImportTarget, LiveStats, Matchup, Meta, MetaChampion,
+        PatchChanges, Phase, PhoneDevice, Position,
     },
     opgg::{self, AugmentStat},
     patch_notes,
@@ -55,7 +56,8 @@ pub const MAIN_WINDOW: &str = "main";
 const META_MAX_AGE: Duration = Duration::from_secs(60 * 60);
 /// How many of the most mastered champions count as the player's own in the patch changes.
 const YOUR_CHAMPIONS: usize = 15;
-const SUBSCRIPTIONS: [&str; 5] = [profile::CURRENT_SUMMONER, profile::OWNED_CHAMPIONS, gameflow::SESSION, champ_select::SESSION, stats::END_OF_GAME];
+const SUBSCRIPTIONS: [&str; 6] =
+    [profile::CURRENT_SUMMONER, profile::OWNED_CHAMPIONS, gameflow::SESSION, champ_select::SESSION, stats::END_OF_GAME, lobby::LOBBY];
 const RECONNECT_DELAY: Duration = Duration::from_secs(2);
 const MAX_RECONNECTS: u32 = 5;
 const BORDERLESS_FIX_COOLDOWN: Duration = Duration::from_secs(10);
@@ -78,6 +80,11 @@ pub enum EngineEvent {
     },
     ChampionTiers(HashMap<u32, (u8, u32)>),
     GameBuild(Box<Build>),
+    /// The numbers and tips from a read of the game's local API; None when it did not answer.
+    GameRead {
+        champion: u32,
+        read: Option<(LiveStats, Option<GameTips>)>,
+    },
     /// OP.GG's augment stats for a champion and mode; None when OP.GG did not answer.
     AugmentStats {
         champion: u32,
@@ -158,7 +165,9 @@ impl Shared {
             language: config.effective_language(&installation.locale).into(),
             ocr_language: None,
             tips: None,
+            live: None,
             ready_check: false,
+            lobby: None,
             version: env!("CARGO_PKG_VERSION").into(),
         };
         let (events, received) = mpsc::channel();
@@ -428,6 +437,11 @@ struct Engine {
     cards: CardReader,
     tips: GameTipsReader,
     in_ready_check: bool,
+    /// The lobby is looking for a match.
+    searching: bool,
+    lobby: Option<LobbyAnswer>,
+    /// Names of the players seen in lobbies, by PUUID, since the lobby does not carry them.
+    player_names: HashMap<String, String>,
     chime: Option<Chime>,
     _watcher: Option<RecommendedWatcher>,
 }
@@ -471,7 +485,7 @@ impl Engine {
             mode: GameMode::Other,
             game: None,
             catalog: CatalogLoader::default(),
-            history: HistoryImporter::default(),
+            history: HistoryImporter::restore(&shared),
             borderless: league::is_borderless(&shared.installation),
             borderless_fixed_at: None,
             champ_select: ChampSelectTracker::default(),
@@ -479,6 +493,9 @@ impl Engine {
             cards,
             tips: GameTipsReader::new(),
             in_ready_check: false,
+            searching: false,
+            lobby: None,
+            player_names: HashMap::new(),
             chime: Chime::new().map_err(|e| shared.log_error("match sound", e)).ok(),
             _watcher: watcher,
             shared,
@@ -535,6 +552,7 @@ impl Engine {
                 self.emit(AppEvent::Data);
             }
             EngineEvent::GameBuild(build) => self.tips.set_build(*build),
+            EngineEvent::GameRead { champion, read } => self.tips.set_read(champion, read),
             EngineEvent::History { account, history } => {
                 if self.history.store(&account, history, &self.shared) {
                     self.refresh_champions();
@@ -596,6 +614,7 @@ impl Engine {
             self.on_summoner(&summoner);
         }
         self.on_gameflow(lcu.get(gameflow::SESSION).ok());
+        self.on_lobby(lcu.get(lobby::LOBBY).ok());
         if self.shared.champion_tiers.read().unwrap().is_empty() {
             self.fetch_champion_tiers();
         }
@@ -604,6 +623,7 @@ impl Engine {
 
     fn on_client_closed(&mut self, error: Option<AppError>) {
         self.client = None;
+        self.lobby = None;
         self.champ_select.clear();
         let attempts = self.reconnect.map_or(0, |r| r.1) + 1;
         self.reconnect = match error {
@@ -641,6 +661,7 @@ impl Engine {
             (gameflow::SESSION, data) => self.on_gameflow(data),
             (champ_select::SESSION, data) => self.on_champ_select(data),
             (stats::END_OF_GAME, Some(_)) => self.import_games(),
+            (lobby::LOBBY, data) => self.on_lobby(data),
             _ => {}
         }
     }
@@ -720,6 +741,7 @@ impl Engine {
         }
         let found = phase == GameflowPhase::ReadyCheck && !self.in_ready_check;
         self.in_ready_check = phase == GameflowPhase::ReadyCheck;
+        self.searching = phase == GameflowPhase::Matchmaking;
         self.ready_check.follow(self.in_ready_check, &self.shared.config());
         if found
             && self.shared.config().match_sound
@@ -765,7 +787,9 @@ impl Engine {
 
     fn on_game_ended(&mut self, game: Option<u64>) {
         self.cards.stop();
-        self.history.expect_game(game, self.mode, self.cards.offers());
+        if self.history.expect_game(game, self.mode, self.cards.offers()) {
+            self.history.save_offers(&self.shared);
+        }
         self.check_borderless();
     }
 
@@ -795,6 +819,25 @@ impl Engine {
                 });
                 shared.send(EngineEvent::CounterPicks { enemy, position, picks });
             });
+        }
+    }
+
+    /// Follows the player's lobby, looking up the names of new members and invited friends.
+    fn on_lobby(&mut self, data: Option<Value>) {
+        self.lobby = match data.map(|value| lobby::parse_lobby(&value)).transpose() {
+            Ok(answer) => answer,
+            Err(e) => {
+                self.shared.log_error("lobby", e);
+                None
+            }
+        };
+        let (Some(answer), Some(lcu)) = (&self.lobby, &self.client) else { return };
+        for puuid in answer.players() {
+            if !self.player_names.contains_key(puuid)
+                && let Ok(name) = lobby::player_name(lcu, puuid)
+            {
+                self.player_names.insert(puuid.to_string(), name);
+            }
         }
     }
 
@@ -834,7 +877,8 @@ impl Engine {
         }
         let target = self.tips_target();
         self.tips.follow(target, &self.shared);
-        let (tips, in_ready_check) = (self.tips.tips().cloned(), self.in_ready_check);
+        let (tips, live, in_ready_check) = (self.tips.tips().cloned(), self.tips.live().cloned(), self.in_ready_check);
+        let lobby = self.lobby.as_ref().map(|answer| lobby::view(answer, self.searching, |puuid| self.player_names.get(puuid).cloned().unwrap_or_default()));
         let paused = self.shared.config().paused;
         let champ_select = self.champ_select.view(self.mode, self.shared.config().champion_order, |id| self.shared.champion_info(id));
         let game = self.game.as_ref().map(|g| CurrentGame { mode: g.mode, champion: g.champion.map(|id| self.shared.champion_info(id)) });
@@ -857,7 +901,9 @@ impl Engine {
             state.rounds = rounds;
             state.borderless = borderless;
             state.tips = tips;
+            state.live = live;
             state.ready_check = in_ready_check;
+            state.lobby = lobby;
         });
     }
 }

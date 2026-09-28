@@ -86,13 +86,21 @@
     "champSelectText": "Vuelve a tu PC para elegir campeón.",
     "testDone": "Así te avisará Xyra cuando encuentres partida.",
     "decline": "Rechazar",
-    "declined": "Partida rechazada"
+    "declined": "Partida rechazada",
+    "gameChannel": "Inicio de partida",
+    "loading": "Tu partida está cargando",
+    "loadingText": "Juegas con {{champion}}. Vuelve a tu PC, ¡suerte!",
+    "loadingAny": "Vuelve a tu PC, ¡suerte!",
+    "patchChannel": "Parches",
+    "patch": "Salió el parche {{patch}}",
+    "patchText": "Cambian tus campeones: {{changes}}",
+    "patchNone": "Ninguno de tus campeones cambia. Mira el meta en Xyra."
   },
   "phone": {
     "title": "Este celular",
     "watch": {
       "title": "Avisarme de la partida",
-      "description": "Suena cuando encuentras partida, aunque la app esté cerrada. Mientras espera verás una notificación fija."
+      "description": "Suena cuando encuentras partida, aunque la app esté cerrada, y te avisa cuando la partida empieza a cargar y cuando sale un parche. Mientras espera verás una notificación fija."
     },
     "version": "Xyra para Android {{version}}",
     "test": "Probar aviso"

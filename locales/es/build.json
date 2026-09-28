@@ -40,5 +40,7 @@
     "adc": "Tirador",
     "support": "Soporte"
   },
-  "importAll": "Importar build"
+  "importAll": "Importar build",
+  "yourGames": "Tus partidas con {{champion}}",
+  "yourRecord": "({{wins}} de {{games}} ganadas)"
 }

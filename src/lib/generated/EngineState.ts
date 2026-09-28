@@ -4,6 +4,8 @@ import type { Card } from "./Card";
 import type { ChampSelect } from "./ChampSelect";
 import type { CurrentGame } from "./CurrentGame";
 import type { GameTips } from "./GameTips";
+import type { LiveStats } from "./LiveStats";
+import type { Lobby } from "./Lobby";
 import type { Phase } from "./Phase";
 
 export type EngineState = { phase: Phase, 
@@ -32,6 +34,14 @@ language: string, ocr_language: string | null, version: string,
  */
 tips: GameTips | null, 
 /**
+ * KDA, farm, gold and level while a game with builds is running.
+ */
+live: LiveStats | null, 
+/**
  * A found match waits for the player's answer.
  */
-ready_check: boolean, };
+ready_check: boolean, 
+/**
+ * The player's lobby, while they are in one.
+ */
+lobby: Lobby | null, };

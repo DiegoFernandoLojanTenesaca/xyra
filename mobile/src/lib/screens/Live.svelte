@@ -3,7 +3,8 @@
   import { qualityColor } from '$shared/design/theme';
   import { resource } from '$shared/services/resource.svelte';
   import { championTierColor, championTierLabel } from '$shared/design/theme';
-  import type { AugmentRow, Asset, Build, ChampionInfo, Meta, StatsSummary } from '$shared/types';
+  import type { AugmentRow, Asset, Build, ChampionInfo, Friend, LobbyQueue, Meta, StatsSummary } from '$shared/types';
+  import LiveStrip from '$shared/ui/LiveStrip.svelte';
   import Skeleton from '$shared/ui/Skeleton.svelte';
   import TierBadge from '$shared/ui/TierBadge.svelte';
   import { link } from '../link.svelte';
@@ -22,7 +23,14 @@
   const select = $derived(engine?.champ_select ?? null);
   const game = $derived(engine?.phase === 'inGame' ? engine.game : null);
   const cards = $derived([...(engine?.cards ?? [])].sort((a, b) => a.x - b.x));
-  const can = $derived(link.pc?.permissions ?? { accept: false, import: false, bench: false, settings: false });
+  const can = $derived(link.pc?.permissions ?? { accept: false, import: false, bench: false, settings: false, lobby: false });
+  /** The queues to open a lobby for and the friends online, while the player is in the client. */
+  const lobbyOptions = resource(
+    () => (engine?.phase === 'client' && link.status === 'online' ? engine.account : null),
+    () => link.call<{ queues: LobbyQueue[]; friends: Friend[] }>('GET', '/api/lobby'),
+    (failure) => failure,
+  );
+  const queueName = (id: number) => lobbyOptions.value?.queues.find((queue) => queue.id === id)?.name ?? `#${id}`;
   let notice = $state('');
   let busy = $state(false);
 
@@ -207,6 +215,9 @@
       </section>
     {/if}
   {:else if game}
+    {#if engine.live}
+      <div class="block"><LiveStrip live={engine.live} {t} number={format.number} /></div>
+    {/if}
     {#if engine.tips}
       {@const next = engine.tips.next_item}
       <section class="block panel cut">
@@ -256,6 +267,67 @@
       </section>
     {/if}
   {:else}
+    {#if engine.phase === 'client'}
+      <section class="block panel cut">
+        {#if engine.lobby}
+          {@const lobby = engine.lobby}
+          <h2 class="section-title">{t('lobby:yourLobby', { queue: queueName(lobby.queue_id) })}</h2>
+          {#each lobby.members as member, i (i)}
+            <div class="row">
+              <img src={member.icon} alt="" />
+              <span class="grow">{member.name || '—'}</span>
+              {#if member.leader}<small class="accent">{t('lobby:leader')}</small>{/if}
+            </div>
+          {/each}
+          {#if lobby.invited.length}<small class="muted">{t('lobby:invited', { names: lobby.invited.join(', ') })}</small>{/if}
+          {#if can.lobby}
+            {#if lobby.searching}
+              <p class="accent searching">{t('lobby:searching')}</p>
+              <button class="action wide" disabled={busy} onclick={() => run('/api/lobby/cancel')}>{t('lobby:cancel')}</button>
+            {:else if lobby.leader}
+              <button class="action primary wide" disabled={busy || !lobby.can_search} onclick={() => run('/api/lobby/search')}>{t('lobby:search')}</button>
+            {/if}
+            <button class="action wide" disabled={busy || lobby.searching} onclick={() => run('/api/lobby/leave')}>{t('lobby:leave')}</button>
+          {/if}
+        {:else}
+          <h2 class="section-title">{t('lobby:chooseMode')}</h2>
+          {#if !can.lobby}
+            <p class="muted">{t('mobile:live.notAllowed')}</p>
+          {:else if lobbyOptions.value}
+            <div class="queues">
+              {#each lobbyOptions.value.queues as queue (queue.id)}
+                <button class="action" disabled={busy} onclick={() => run('/api/lobby/create', { queue: String(queue.id) }, 'lobby:created')}
+                  >{queue.name}</button
+                >
+              {/each}
+            </div>
+          {:else if !lobbyOptions.error}
+            <Skeleton label={t('lobby:loading')} rows={2} />
+          {/if}
+        {/if}
+      </section>
+      {#if can.lobby && lobbyOptions.value?.friends.length}
+        <details class="block panel cut friends" open={!!engine.lobby}>
+          <summary class="section-title">{t('lobby:friends')} ({lobbyOptions.value.friends.length})</summary>
+          {#each lobbyOptions.value.friends as friend (friend.puuid)}
+            <div class="row">
+              <img src={friend.icon} alt="" />
+              <span class="grow stack">{friend.name}<small class="muted">{t(`lobby:status.${friend.status}`)}</small></span>
+              {#if engine.lobby?.players.includes(friend.puuid)}
+                <small class="muted">{t('lobby:alreadyIn')}</small>
+              {:else}
+                <button
+                  class="action small"
+                  disabled={busy || !engine.lobby || !friend.can_join}
+                  onclick={() => run('/api/lobby/invite', { puuid: friend.puuid, summoner: String(friend.summoner_id) }, 'lobby:inviteDone')}
+                  >{t('lobby:invite')}</button
+                >
+              {/if}
+            </div>
+          {/each}
+        </details>
+      {/if}
+    {/if}
     <section class="block panel cut">
       <p class="muted idle-text">{t('mobile:live.idle')}</p>
       {#if stats.value?.games}
@@ -281,6 +353,22 @@
 {/if}
 
 <style>
+  .queues {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+  .searching {
+    margin: var(--space-2) 0;
+    font-weight: 700;
+  }
+  .friends summary {
+    cursor: pointer;
+    list-style: none;
+  }
+  .stack {
+    display: grid;
+  }
   .phase {
     display: flex;
     align-items: center;

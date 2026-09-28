@@ -183,11 +183,13 @@ pub struct PhonePermissions {
     /// Take the recommended champion from the ARAM bench.
     pub bench: bool,
     pub settings: bool,
+    /// Open a lobby, invite friends and look for a match.
+    pub lobby: bool,
 }
 
 impl Default for PhonePermissions {
     fn default() -> PhonePermissions {
-        PhonePermissions { accept: true, import: true, bench: true, settings: true }
+        PhonePermissions { accept: true, import: true, bench: true, settings: true, lobby: true }
     }
 }
 
@@ -256,6 +258,19 @@ pub struct GameTips {
     /// "Q", "W", "E" or "R" while a skill point is free.
     pub skill: Option<String>,
     pub next_item: Option<ItemTip>,
+}
+
+/// The player's numbers in the running game, from the game's API on this PC.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, TS)]
+#[ts(export)]
+pub struct LiveStats {
+    pub kills: u32,
+    pub deaths: u32,
+    pub assists: u32,
+    /// Minions and monsters killed.
+    pub farm: u32,
+    pub gold: u32,
+    pub level: u32,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, TS)]
@@ -401,8 +416,12 @@ pub struct EngineState {
     pub version: String,
     /// Next skill and item while a game with builds is running.
     pub tips: Option<GameTips>,
+    /// KDA, farm, gold and level while a game with builds is running.
+    pub live: Option<LiveStats>,
     /// A found match waits for the player's answer.
     pub ready_check: bool,
+    /// The player's lobby, while they are in one.
+    pub lobby: Option<crate::lobby::Lobby>,
 }
 
 /// Events the engine pushes to the UI.

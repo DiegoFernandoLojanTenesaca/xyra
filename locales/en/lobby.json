@@ -1,0 +1,32 @@
+{
+  "subtitle": "Open a lobby, invite your friends and look for a match without touching the client.",
+  "noClient": "Open League and sign in to open a lobby.",
+  "chooseMode": "Choose your lobby mode",
+  "loading": "Reading the client…",
+  "ranked": "Ranked",
+  "created": "Lobby open. Invite your friends or look for a match.",
+  "yourLobby": "Your lobby · {{queue}}",
+  "leader": "Leader",
+  "invited": "Invited, no answer yet: {{names}}",
+  "search": "Find match",
+  "searching": "Looking for a match…",
+  "cancel": "Stop looking",
+  "leave": "Leave lobby",
+  "onlyLeader": "Only the lobby leader can look for a match.",
+  "friends": "Friends online",
+  "refresh": "Refresh",
+  "noFriends": "None of your friends are online now.",
+  "invite": "Invite",
+  "alreadyIn": "In your lobby",
+  "createFirst": "Open a lobby to invite",
+  "inviteSent": "You invited {{name}}.",
+  "status": {
+    "available": "Online",
+    "away": "Away",
+    "busy": "Busy",
+    "inQueue": "In queue",
+    "champSelect": "In champion select",
+    "inGame": "In game"
+  },
+  "inviteDone": "Invitation sent."
+}

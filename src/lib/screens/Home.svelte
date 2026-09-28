@@ -32,6 +32,7 @@
   import EmptyState from '../ui/EmptyState.svelte';
   import Logo from '../ui/Logo.svelte';
   import SegmentedControl from '../ui/SegmentedControl.svelte';
+  import LiveStrip from '../ui/LiveStrip.svelte';
   import Skeleton from '../ui/Skeleton.svelte';
   import StatTile from '../ui/StatTile.svelte';
   import TierBadge from '../ui/TierBadge.svelte';
@@ -263,6 +264,11 @@
           <p class="muted box">{t('meta:loading')}</p>
         {/each}
       </div>
+    {/if}
+
+    {#if engine.live}
+      <h3 class="section-title">{t('home:live.title')}</h3>
+      <LiveStrip live={engine.live} {t} number={format.number} />
     {/if}
 
     {#if engine.tips}

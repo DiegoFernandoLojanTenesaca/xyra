@@ -32,7 +32,17 @@
     'champSelect',
     'champSelectText',
     'testDone',
+    'gameChannel',
+    'loading',
+    'loadingText',
+    'loadingAny',
+    'patchChannel',
+    'patch',
+    'patchText',
+    'patchNone',
   ] as const;
+  /** The phone fills these in itself: the champion being played and the patch with its changes. */
+  const WATCH_PLACEHOLDERS = { champion: '{champion}', patch: '{patch}', changes: '{changes}' };
 
   const t = $derived(mobile.t);
   const Screen = $derived(SCREENS[mobile.tab]);
@@ -45,7 +55,7 @@
   });
 
   $effect(() => {
-    const texts = Object.fromEntries(WATCH_TEXTS.map((key) => [key, t(`mobile:notify.${key}`)])) as WatchTexts;
+    const texts = Object.fromEntries(WATCH_TEXTS.map((key) => [key, t(`mobile:notify.${key}`, WATCH_PLACEHOLDERS)])) as WatchTexts;
     android.follow(link.status === 'codeChanged' ? null : link.pairing, texts);
   });
 </script>

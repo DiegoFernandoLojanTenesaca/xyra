@@ -62,11 +62,14 @@ class MatchWatchService : Service() {
   companion object {
     const val TEST = "com.indagalab.xyra.TEST"
     private const val WATCHING_CHANNEL = "watching"
+    private const val GAME_CHANNEL = "game-start"
+    private const val PATCH_CHANNEL = "patch"
     /** A channel's sound cannot change once created, so the one with League's sound has its own name. */
     private const val MATCH_CHANNEL = "match-found"
     private const val OLD_MATCH_CHANNEL = "match"
     private const val WATCHING_ID = 1
     private const val MATCH_ID = 2
+    private const val PATCH_ID = 3
     private const val ACCEPT = "com.indagalab.xyra.ACCEPT"
     private const val DECLINE = "com.indagalab.xyra.DECLINE"
     /** Marks the accept button of the test notification, which only answers on the phone. */
@@ -83,6 +86,14 @@ class MatchWatchService : Service() {
     private const val CHAMP_SELECT_SHOWN_MS = 120000L
     private const val FORBIDDEN = 403
     private const val CHAMP_SELECT = "champSelect"
+    private const val IN_GAME = "inGame"
+    private const val GAME_SHOWN_MS = 120000L
+    /** The patch is asked every few hours, and again sooner when the PC could not answer. */
+    private const val PATCH_EVERY_MS = 6 * 60 * 60 * 1000L
+    private const val PATCH_RETRY_MS = 30 * 60 * 1000L
+    private const val PATCH_PREFERENCES = "patch"
+    private const val LAST_PATCH = "last"
+    private val VERDICT_MARKS = mapOf("buff" to "↑", "nerf" to "↓", "adjusted" to "↔")
   }
 
   @Volatile private var settings: JSONObject? = null
@@ -127,6 +138,8 @@ class MatchWatchService : Service() {
     var host = 0
     var readyCheck = false
     var canAccept = false
+    var phase: String? = null
+    var patchDue = 0L
     while (running) {
       val current = settings ?: return
       val hosts = current.getJSONArray("hosts")
@@ -138,12 +151,18 @@ class MatchWatchService : Service() {
         val state = answer.getJSONObject("state")
         val found = state.optBoolean("ready_check")
         val texts = current.getJSONObject("texts")
+        val nowPhase = state.optString("phase")
         when {
           found && !readyCheck -> show(matchFound(texts, canAccept))
-          !found && readyCheck && state.optString("phase") == CHAMP_SELECT -> show(notice(texts, "champSelect", "champSelectText", CHAMP_SELECT_SHOWN_MS))
+          !found && readyCheck && nowPhase == CHAMP_SELECT -> show(notice(texts, "champSelect", "champSelectText", CHAMP_SELECT_SHOWN_MS))
           !found && readyCheck -> manager().cancel(MATCH_ID)
+          phase == CHAMP_SELECT && nowPhase == IN_GAME -> gameLoading(texts, state)
         }
         readyCheck = found
+        phase = nowPhase
+        if (System.currentTimeMillis() >= patchDue) {
+          patchDue = System.currentTimeMillis() + if (runCatching { checkPatch(base, current, texts) }.isSuccess) PATCH_EVERY_MS else PATCH_RETRY_MS
+        }
       } catch (e: Unpaired) {
         MatchWatch.stop(this)
         return
@@ -159,6 +178,41 @@ class MatchWatchService : Service() {
         }
       }
     }
+  }
+
+  /** Tells the player the champion select ended and the game is loading, so they head back to the PC. */
+  private fun gameLoading(texts: JSONObject, state: JSONObject) {
+    val champion = state.optJSONObject("game")?.optJSONObject("champion")?.optString("name").orEmpty()
+    val text = if (champion.isEmpty()) texts.optString("loadingAny") else texts.optString("loadingText").replace("{champion}", champion)
+    if (text.isEmpty()) return
+    show(
+      build(GAME_CHANNEL, texts.optString("loading"), text).setPriority(NotificationCompat.PRIORITY_HIGH).setAutoCancel(true).setTimeoutAfter(GAME_SHOWN_MS).build(),
+    )
+  }
+
+  /** Announces a new patch with the player's champions it changes; the first patch seen is only remembered. */
+  private fun checkPatch(base: String, settings: JSONObject, texts: JSONObject) {
+    val answer = request(base, "/api/patch", settings)
+    if (!answer.optBoolean("ok")) throw IOException("patch")
+    val changes = answer.getJSONObject("value")
+    val patch = changes.getString("patch")
+    val saved = getSharedPreferences(PATCH_PREFERENCES, MODE_PRIVATE)
+    val last = saved.getString(LAST_PATCH, null)
+    saved.edit().putString(LAST_PATCH, patch).apply()
+    if (last == null || last == patch || texts.optString("patch").isEmpty()) return
+    val champions = changes.getJSONArray("champions")
+    val yours = (0 until champions.length())
+      .map { champions.getJSONObject(it) }
+      .filter { it.optBoolean("yours") }
+      .joinToString(" · ") { "${it.getJSONObject("champion").optString("name")} ${VERDICT_MARKS[it.optString("verdict")].orEmpty()}".trim() }
+    val text = if (yours.isEmpty()) texts.optString("patchNone") else texts.optString("patchText").replace("{changes}", yours)
+    manager().notify(
+      PATCH_ID,
+      build(PATCH_CHANNEL, texts.optString("patch").replace("{patch}", patch), text)
+        .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+        .setAutoCancel(true)
+        .build(),
+    )
   }
 
   /** Accepts or declines the match on the PC and says how it went. */
@@ -202,6 +256,12 @@ class MatchWatchService : Service() {
     match.setSound(sound, attributes)
     match.enableVibration(true)
     manager().createNotificationChannel(match)
+    texts.optString("gameChannel").takeIf { it.isNotEmpty() }?.let {
+      manager().createNotificationChannel(NotificationChannel(GAME_CHANNEL, it, NotificationManager.IMPORTANCE_HIGH))
+    }
+    texts.optString("patchChannel").takeIf { it.isNotEmpty() }?.let {
+      manager().createNotificationChannel(NotificationChannel(PATCH_CHANNEL, it, NotificationManager.IMPORTANCE_DEFAULT))
+    }
   }
 
   private fun openApp(): PendingIntent =
@@ -212,12 +272,14 @@ class MatchWatchService : Service() {
       PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
     )
 
-  private fun base(channel: String, texts: JSONObject, title: String, text: String) =
+  private fun base(channel: String, texts: JSONObject, title: String, text: String) = build(channel, texts.getString(title), texts.getString(text))
+
+  private fun build(channel: String, title: String, text: String) =
     NotificationCompat.Builder(this, channel)
       .setSmallIcon(R.drawable.ic_notification)
       .setColor(ContextCompat.getColor(this, R.color.accent))
-      .setContentTitle(texts.getString(title))
-      .setContentText(texts.getString(text))
+      .setContentTitle(title)
+      .setContentText(text)
       .setContentIntent(openApp())
 
   private fun watching(texts: JSONObject) =

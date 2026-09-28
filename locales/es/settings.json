@@ -98,7 +98,8 @@
         "accept": "Aceptar partidas",
         "import": "Importar builds",
         "bench": "Tomar de la banca",
-        "settings": "Cambiar ajustes"
+        "settings": "Cambiar ajustes",
+        "lobby": "Crear sala e invitar"
       },
       "forget": "Desconectar",
       "hint": "Todos pueden ver tu partida, builds y estadísticas; los permisos deciden qué más pueden hacer. Al desconectar uno, tendrá que escanear el código otra vez."

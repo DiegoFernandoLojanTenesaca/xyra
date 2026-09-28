@@ -40,6 +40,19 @@
     <StatTile label={t('stats:augmentsUsed')} value={augmentsUsed} format={format.number} />
   </div>
 
+  {@const follow = stats.following}
+  <h3 class="section-title">{t('stats:following.title')}</h3>
+  {#if follow.followed + follow.ignored}
+    <div class="tiles following">
+      <StatTile label={t('stats:following.taken')} value={percent(follow.followed, follow.followed + follow.ignored)} format={format.percent} accent />
+      <StatTile label={t('stats:following.withIt')} value={follow.followed ? percent(follow.followed_wins, follow.followed) : null} format={format.percent} />
+      <StatTile label={t('stats:following.without')} value={follow.ignored ? percent(follow.ignored_wins, follow.ignored) : null} format={format.percent} />
+    </div>
+    <p class="muted note">{t('stats:following.summary', { followed: follow.followed, total: follow.followed + follow.ignored })}</p>
+  {:else}
+    <p class="muted note">{t('stats:following.empty')}</p>
+  {/if}
+
   <div class="pair">
     <section>
       <h3 class="section-title">{t('stats:yourChampions')}</h3>
@@ -78,6 +91,14 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--space-4);
     margin-bottom: var(--space-6);
+  }
+  .tiles.following {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: var(--space-3);
+  }
+  .note {
+    margin: 0 0 var(--space-6);
+    font-size: var(--text-sm);
   }
   .pair {
     display: grid;

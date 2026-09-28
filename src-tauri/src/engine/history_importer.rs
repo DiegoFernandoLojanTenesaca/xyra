@@ -11,6 +11,8 @@ use xyra_core::{
 /// asked this many times, this far apart.
 const READ_ATTEMPTS: u32 = 3;
 const READ_RETRY: Duration = Duration::from_secs(3);
+/// The history lists the last 20 games, so choices of older games waiting for theirs will never find it.
+const PENDING_GAMES: usize = 20;
 
 #[derive(Default)]
 pub struct HistoryImporter {
@@ -21,14 +23,36 @@ pub struct HistoryImporter {
 }
 
 impl HistoryImporter {
-    /// Waits for the game that just ended, to store the augment choices Xyra saw with it.
-    pub fn expect_game(&mut self, game: Option<u64>, mode: GameMode, offers: Vec<Offer>) {
+    /// Picks up the choices kept on disk, of games that ended before Xyra last closed.
+    pub fn restore(shared: &Shared) -> HistoryImporter {
+        let offers = shared.storage.load_pending_offers().unwrap_or_else(|e| {
+            shared.log_error("pending offers", e);
+            HashMap::new()
+        });
+        HistoryImporter { offers, ..HistoryImporter::default() }
+    }
+
+    /// Waits for the game that just ended, to store the augment choices Xyra saw with it; returns whether there were
+    /// choices to keep.
+    pub fn expect_game(&mut self, game: Option<u64>, mode: GameMode, offers: Vec<Offer>) -> bool {
         if !mode.has_augments() {
-            return;
+            return false;
         }
         self.pending = true;
-        if let Some(game) = game.filter(|_| !offers.is_empty()) {
-            self.offers.insert(game, offers);
+        let Some(game) = game.filter(|_| !offers.is_empty()) else { return false };
+        self.offers.insert(game, offers);
+        while self.offers.len() > PENDING_GAMES
+            && let Some(&oldest) = self.offers.keys().min()
+        {
+            self.offers.remove(&oldest);
+        }
+        true
+    }
+
+    /// Keeps the choices still waiting on disk, so a restart does not lose them.
+    pub fn save_offers(&self, shared: &Shared) {
+        if let Err(e) = shared.storage.save_pending_offers(&self.offers) {
+            shared.log_error("save pending offers", e);
         }
     }
 
@@ -95,6 +119,9 @@ impl HistoryImporter {
         let mut games = shared.games.lock().unwrap();
         let added = stats::add_new_games(history, account, &mut games);
         let attached = self.attach_offers(&mut games);
+        if attached {
+            self.save_offers(shared);
+        }
         if added == 0 && !attached {
             return false;
         }
@@ -138,7 +165,17 @@ mod tests {
         let mut later = vec![game(12), game(11), game(10)];
         assert!(importer.attach_offers(&mut later));
         assert_eq!(later[2].offers[0].best, Some(1));
-        importer.expect_game(Some(13), GameMode::SummonersRift, offer(3));
+        assert!(!importer.expect_game(Some(13), GameMode::SummonersRift, offer(3)));
         assert!(!importer.is_pending() || importer.offers.is_empty());
+    }
+
+    #[test]
+    fn keeps_only_the_games_the_history_can_still_list() {
+        let mut importer = HistoryImporter::default();
+        for game in 1..=PENDING_GAMES as u64 + 2 {
+            assert!(importer.expect_game(Some(game), GameMode::Mayhem, vec![Offer { cards: vec![1, 2, 3], best: None }]));
+        }
+        assert_eq!(importer.offers.len(), PENDING_GAMES);
+        assert!(!importer.offers.contains_key(&1) && !importer.offers.contains_key(&2) && importer.offers.contains_key(&3));
     }
 }

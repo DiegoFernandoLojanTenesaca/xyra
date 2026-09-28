@@ -4,10 +4,11 @@ use crate::{
     errors::{AppError, Result},
     model::PhoneDevice,
     profile::Profile,
-    stats::StoredGame,
+    stats::{Offer, StoredGame},
 };
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use std::{
+    collections::HashMap,
     fs::{self, OpenOptions},
     io::Write,
     path::{Path, PathBuf},
@@ -20,6 +21,7 @@ const STATS: &str = "stats.json";
 const CATALOG: &str = "catalog.json";
 const PROFILE: &str = "profile.json";
 const PHONES: &str = "phones.json";
+const PENDING_OFFERS: &str = "offers.json";
 const LOG: &str = "xyra.log";
 const SCREENSHOTS: &str = "screenshots";
 const UPDATES: &str = "updates";
@@ -153,6 +155,15 @@ impl Storage {
         self.write(STATS, &games)
     }
 
+    /// The augment choices of games the match history does not list yet, by game id.
+    pub fn load_pending_offers(&self) -> Result<HashMap<u64, Vec<Offer>>> {
+        Ok(self.read(PENDING_OFFERS)?.unwrap_or_default())
+    }
+
+    pub fn save_pending_offers(&self, offers: &HashMap<u64, Vec<Offer>>) -> Result<()> {
+        self.write(PENDING_OFFERS, offers)
+    }
+
     pub fn load_catalog(&self) -> Result<Option<Catalog>> {
         self.read_cache(CATALOG)
     }
@@ -184,7 +195,7 @@ impl Storage {
 
     /// Deletes the games, profile, screenshots and log; settings and the game data catalog stay.
     pub fn delete_personal_data(&self) -> Result<()> {
-        for path in [STATS, PROFILE, LOG].map(|name| self.file(name)).iter().filter(|path| path.exists()) {
+        for path in [STATS, PENDING_OFFERS, PROFILE, LOG].map(|name| self.file(name)).iter().filter(|path| path.exists()) {
             fs::remove_file(path)?;
         }
         let screenshots = self.file(SCREENSHOTS);
@@ -260,6 +271,18 @@ mod tests {
         assert!(storage.usage().bytes > 0);
         storage.delete_personal_data().unwrap();
         assert!(!storage.file(STATS).exists());
+        fs::remove_dir_all(&storage.dir).unwrap();
+    }
+
+    #[test]
+    fn keeps_the_choices_of_games_waiting_for_the_history() {
+        let storage = storage("xyra-storage-offers");
+        assert!(storage.load_pending_offers().unwrap().is_empty());
+        let offers = HashMap::from([(1751736245, vec![Offer { cards: vec![1, 2, 3], best: Some(2) }])]);
+        storage.save_pending_offers(&offers).unwrap();
+        assert_eq!(storage.load_pending_offers().unwrap(), offers);
+        storage.delete_personal_data().unwrap();
+        assert!(storage.load_pending_offers().unwrap().is_empty());
         fs::remove_dir_all(&storage.dir).unwrap();
     }
 }

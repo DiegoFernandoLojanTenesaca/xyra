@@ -18,5 +18,13 @@
     "champion": "campeón",
     "result": "resultado",
     "augments": "aumentos"
+  },
+  "following": {
+    "title": "Siguiendo a Xyra",
+    "taken": "Tomaste la recomendada",
+    "withIt": "Victorias al tomarla",
+    "without": "Victorias con otra carta",
+    "summary": "De {{total}} elecciones que Xyra vio, tomaste la carta recomendada {{followed}} veces.",
+    "empty": "Juega ARAM: Caos o Arena con Xyra abierto y aquí verás cómo te va cuando tomas la carta recomendada y cuando no."
   }
 }

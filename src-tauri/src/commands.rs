@@ -11,6 +11,7 @@ use xyra_core::{
     config::{self, Config},
     errors::{AppError, Result},
     game_settings::{self, GameOption, GameSetting, SettingValue},
+    lobby::{self, Friend, LobbyQueue},
     model::{
         AppEvent, AugmentRow, Build, BuildMode, ChampionInfo, Choices, EngineState, GameMode, ImportTarget, Meta, MetaChampion, PatchChanges, PhoneDeviceView,
         PhoneLink, PhonePermissions, Position,
@@ -85,6 +86,45 @@ pub fn get_champions(shared: State<App>) -> Vec<ChampionInfo> {
 pub async fn get_augments(shared: State<'_, App>, champion: u32, mode: GameMode) -> Result<Vec<AugmentRow>> {
     let shared = Arc::clone(&shared);
     blocking(move || Ok(opgg::augment_rows(opgg::fetch_augments(&shared.web, champion, mode)?, &shared.catalog()))).await
+}
+
+/// The queues the player can open a lobby for.
+#[tauri::command]
+pub async fn get_lobby_queues(shared: State<'_, App>) -> Result<Vec<LobbyQueue>> {
+    let shared = Arc::clone(&shared);
+    blocking(move || lobby::queues(&shared.lcu()?)).await
+}
+
+/// Friends in the client, those who can join first.
+#[tauri::command]
+pub async fn get_friends(shared: State<'_, App>) -> Result<Vec<Friend>> {
+    let shared = Arc::clone(&shared);
+    blocking(move || lobby::friends(&shared.lcu()?)).await
+}
+
+#[tauri::command]
+pub async fn create_lobby(shared: State<'_, App>, queue: u32) -> Result<()> {
+    let shared = Arc::clone(&shared);
+    blocking(move || lobby::create(&shared.lcu()?, queue)).await
+}
+
+#[tauri::command]
+pub async fn invite_friend(shared: State<'_, App>, puuid: String, summoner_id: u64) -> Result<()> {
+    let shared = Arc::clone(&shared);
+    blocking(move || lobby::invite(&shared.lcu()?, &puuid, summoner_id)).await
+}
+
+/// Starts or stops looking for a match with the lobby.
+#[tauri::command]
+pub async fn search_match(shared: State<'_, App>, start: bool) -> Result<()> {
+    let shared = Arc::clone(&shared);
+    blocking(move || lobby::search(&shared.lcu()?, start)).await
+}
+
+#[tauri::command]
+pub async fn leave_lobby(shared: State<'_, App>) -> Result<()> {
+    let shared = Arc::clone(&shared);
+    blocking(move || lobby::leave(&shared.lcu()?)).await
 }
 
 #[tauri::command]

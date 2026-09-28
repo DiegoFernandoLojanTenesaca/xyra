@@ -63,7 +63,8 @@
     "history": "Historial",
     "mastery": "Maestría",
     "challenges": "Desafíos",
-    "account": "Tu cuenta"
+    "account": "Tu cuenta",
+    "lobby": "Sala"
   },
   "searchChampion": "Buscar campeón…",
   "games_one": "{{count, number}} partida",

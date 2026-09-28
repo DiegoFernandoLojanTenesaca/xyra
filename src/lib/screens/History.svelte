@@ -64,6 +64,13 @@
           <b class="result condensed">{game.win ? t('stats:victory') : t('stats:defeat')}</b>
           <small class="muted facts"><span>{game.champion.name}</span><span>{modeName(game)}</span><span>{format.date(game.date)}</span></small>
         </div>
+        <div class="loadout">
+          {#if game.keystone}<img class="keystone" src={game.keystone.icon} alt={game.keystone.name} title={game.keystone.name} />{/if}
+          <span>
+            {#if game.secondary_style}<img src={game.secondary_style.icon} alt={game.secondary_style.name} title={game.secondary_style.name} />{/if}
+            {#each game.spells as spell (spell.id)}<img src={spell.icon} alt={spell.name} title={spell.name} />{/each}
+          </span>
+        </div>
         <div class="numbers">
           <b>{t('home:kda', { kills: game.kills, deaths: game.deaths, assists: game.assists })}</b>
           <small class="muted">{t('history:ratio', { value: format.number(ratio(game.kills, game.deaths, game.assists), RATIO_DIGITS) })}</small>
@@ -97,7 +104,7 @@
   }
   .game {
     display: grid;
-    grid-template-columns: var(--size-thumbLg) minmax(0, 1.4fr) minmax(0, 0.8fr) minmax(0, 1.2fr) auto;
+    grid-template-columns: var(--size-thumbLg) minmax(0, 1.4fr) auto minmax(0, 0.8fr) minmax(0, 1.2fr) auto;
     align-items: center;
     gap: var(--space-4);
     padding: var(--space-3) var(--space-4);
@@ -128,6 +135,23 @@
   .items {
     display: flex;
     gap: var(--space-1);
+  }
+  .loadout {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .loadout span {
+    display: flex;
+    gap: var(--space-1);
+  }
+  .loadout img {
+    width: var(--size-iconSm);
+    height: var(--size-iconSm);
+  }
+  .loadout .keystone {
+    width: var(--size-thumbSm);
+    height: var(--size-thumbSm);
   }
   .items img {
     width: var(--size-thumbSm);

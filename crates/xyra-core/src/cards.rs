@@ -39,6 +39,12 @@ impl OcrLine {
     }
 }
 
+/// Whether names this long can be similar enough: the edit distance is at least the difference in length, so a larger
+/// difference rules the pair out without comparing it.
+fn could_match(length: usize, other: usize) -> bool {
+    1.0 - length.abs_diff(other) as f64 / length.max(other).max(1) as f64 >= MIN_NAME_SIMILARITY
+}
+
 pub fn normalize(text: &str) -> String {
     let kept: String = text.to_lowercase().nfkd().filter(|c| c.is_alphanumeric() || *c == ' ').collect();
     kept.split_whitespace().collect::<Vec<_>>().join(" ")
@@ -62,10 +68,15 @@ pub fn find_candidates(lines: &[OcrLine], names: &HashMap<String, Vec<u32>>, dx:
         .chain(wrapped)
         .filter_map(|(line, raw)| {
             let text = normalize(&raw);
-            if text.chars().count() < MIN_NAME_CHARS {
+            let length = text.chars().count();
+            if length < MIN_NAME_CHARS {
                 return None;
             }
-            let (name, similarity) = names.keys().map(|known| (known, strsim::normalized_levenshtein(&text, known))).max_by(|a, b| a.1.total_cmp(&b.1))?;
+            let (name, similarity) = names
+                .keys()
+                .filter(|known| could_match(length, known.chars().count()))
+                .map(|known| (known, strsim::normalized_levenshtein(&text, known)))
+                .max_by(|a, b| a.1.total_cmp(&b.1))?;
             (similarity >= MIN_NAME_SIMILARITY).then(|| Candidate { ids: names[name].clone(), x: dx + line.center(), y: dy + line.y1 })
         })
         .collect()
@@ -221,6 +232,15 @@ mod tests {
 
     fn line(text: &str, x: f64, y: f64) -> OcrLine {
         OcrLine { text: text.into(), x0: x, x1: x + 120.0, y0: y, y1: y + 20.0 }
+    }
+
+    #[test]
+    fn skips_only_names_whose_length_rules_them_out() {
+        assert!(could_match(10, 12) && could_match(10, 8) && !could_match(10, 13) && !could_match(20, 15));
+        for (text, known) in [("juguito de hechiceria", "juguito de hechicerio"), ("interes en llamas", "interes llamas")] {
+            let similar = strsim::normalized_levenshtein(text, known) >= MIN_NAME_SIMILARITY;
+            assert!(!similar || could_match(text.chars().count(), known.chars().count()));
+        }
     }
 
     fn candidate(id: u32, x: f64) -> Candidate {

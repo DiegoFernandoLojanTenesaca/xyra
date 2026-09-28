@@ -24,7 +24,7 @@ use tiny_http::{Header, Method, Request, Response, Server};
 use xyra_core::{
     config::{new_phone_token, same_secret},
     errors::{AppError, Result},
-    matchmaking,
+    lobby, matchmaking,
     model::{BuildMode, GameMode, ImportTarget, PcInfo, PhoneDevice, PhoneDeviceView, PhoneLink, PhonePermissions, PhoneSettings, Position},
     opgg,
 };
@@ -230,6 +230,17 @@ fn route(app: &AppHandle, shared: &Shared, method: &Method, path: &str, query: &
         (Method::Post, "/api/decline") => answer(allowed(can.accept).and_then(|()| shared.lcu()).and_then(|lcu| matchmaking::decline_if_waiting(&lcu))),
         (Method::Post, "/api/import") => answer(allowed(can.import).and_then(|()| import(shared, query))),
         (Method::Post, "/api/bench") => answer(allowed(can.bench).and_then(|()| shared.take_bench_pick(query.number("champion")))),
+        (Method::Get, "/api/lobby") => answer(shared.lcu().and_then(|lcu| Ok(json!({ "queues": lobby::queues(&lcu)?, "friends": lobby::friends(&lcu)? })))),
+        (Method::Post, "/api/lobby/create") => {
+            answer(allowed(can.lobby).and_then(|()| lobby::create(&shared.lcu()?, query.number("queue").ok_or(AppError::NoData)?)))
+        }
+        (Method::Post, "/api/lobby/invite") => answer(allowed(can.lobby).and_then(|()| {
+            let (puuid, summoner) = (query.get("puuid").ok_or(AppError::NoData)?, query.number("summoner").ok_or(AppError::NoData)?);
+            lobby::invite(&shared.lcu()?, puuid, summoner)
+        })),
+        (Method::Post, "/api/lobby/search") => answer(allowed(can.lobby).and_then(|()| lobby::search(&shared.lcu()?, true))),
+        (Method::Post, "/api/lobby/cancel") => answer(allowed(can.lobby).and_then(|()| lobby::search(&shared.lcu()?, false))),
+        (Method::Post, "/api/lobby/leave") => answer(allowed(can.lobby).and_then(|()| lobby::leave(&shared.lcu()?))),
         _ => text(404, "not found"),
     }
 }

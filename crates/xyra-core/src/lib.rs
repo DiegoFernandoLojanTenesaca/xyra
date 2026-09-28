@@ -10,6 +10,7 @@ pub mod gameflow;
 pub mod i18n;
 pub mod league;
 pub mod live_game;
+pub mod lobby;
 pub mod matchmaking;
 pub mod model;
 pub mod opgg;

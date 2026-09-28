@@ -1,5 +1,11 @@
 {
-  "live": "Live",
+  "live": {
+    "title": "Live",
+    "kda": "KDA",
+    "farm": "Farm",
+    "gold": "Gold",
+    "level": "Level"
+  },
   "pickCard": "Pick {{card}}",
   "bestOf": "The best of the {{count}} for {{champion}}.",
   "noClient": {

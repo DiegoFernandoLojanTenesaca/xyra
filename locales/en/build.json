@@ -40,5 +40,7 @@
     "adc": "Bot",
     "support": "Support"
   },
-  "importAll": "Import build"
+  "importAll": "Import build",
+  "yourGames": "Your games with {{champion}}",
+  "yourRecord": "({{wins}} of {{games}} won)"
 }

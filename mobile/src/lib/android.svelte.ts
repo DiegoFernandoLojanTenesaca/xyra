@@ -5,6 +5,7 @@ const APK_EXTENSION = '.apk';
 const SHA256_PREFIX = 'sha256:';
 const WATCH_KEY = 'xyra-watch';
 const WATCH_OFF = 'off';
+const RELEASE_TIMEOUT_MS = 15000;
 
 /** The Android side of the app; see MainActivity.kt and MatchWatch.kt. */
 interface WatchBridge {
@@ -54,7 +55,15 @@ export type WatchTexts = Record<
   | 'declined'
   | 'champSelect'
   | 'champSelectText'
-  | 'testDone',
+  | 'testDone'
+  | 'gameChannel'
+  | 'loading'
+  | 'loadingText'
+  | 'loadingAny'
+  | 'patchChannel'
+  | 'patch'
+  | 'patchText'
+  | 'patchNone',
   string
 >;
 
@@ -102,7 +111,7 @@ class Android {
     if (!this.version) return;
     this.checking = true;
     try {
-      const answer: ReleaseAnswer = await (await fetch(`${REPOSITORY_API}/releases/latest`)).json();
+      const answer: ReleaseAnswer = await (await fetch(`${REPOSITORY_API}/releases/latest`, { signal: AbortSignal.timeout(RELEASE_TIMEOUT_MS) })).json();
       const apk = answer.assets.find((asset) => asset.name.toLowerCase().endsWith(APK_EXTENSION));
       this.release =
         apk && isNewer(answer.tag_name, this.version)

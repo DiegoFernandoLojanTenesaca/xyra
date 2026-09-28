@@ -21,4 +21,8 @@ duration: number,
 /**
  * The items the game ended with, in their slots.
  */
-items: Array<Asset>, };
+items: Array<Asset>, 
+/**
+ * The runes' keystone and secondary tree, and the summoner spells, as the game was played.
+ */
+keystone: Asset | null, secondary_style: Asset | null, spells: Array<Asset>, };

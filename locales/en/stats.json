@@ -18,5 +18,13 @@
     "champion": "champion",
     "result": "result",
     "augments": "augments"
+  },
+  "following": {
+    "title": "Following Xyra",
+    "taken": "Took the recommended card",
+    "withIt": "Wins when you took it",
+    "without": "Wins with another card",
+    "summary": "Of {{total}} choices Xyra saw, you took the recommended card {{followed}} times.",
+    "empty": "Play ARAM: Mayhem or Arena with Xyra open and you will see here how you do when you take the recommended card and when you do not."
   }
 }

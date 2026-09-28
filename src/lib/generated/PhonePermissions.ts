@@ -7,4 +7,8 @@ export type PhonePermissions = { accept: boolean, import: boolean,
 /**
  * Take the recommended champion from the ARAM bench.
  */
-bench: boolean, settings: boolean, };
+bench: boolean, settings: boolean, 
+/**
+ * Open a lobby, invite friends and look for a match.
+ */
+lobby: boolean, };

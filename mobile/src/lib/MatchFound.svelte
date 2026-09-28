@@ -7,7 +7,7 @@
   type Answer = 'accepted' | 'declined';
 
   const t = $derived(mobile.t);
-  const found = $derived(!!link.state?.ready_check);
+  const found = $derived(!!link.state?.ready_check && link.status === 'online');
   const can = $derived(link.pc?.permissions.accept ?? false);
   let answered = $state<Answer | null>(null);
   let busy = $state(false);

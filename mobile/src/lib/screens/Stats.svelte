@@ -139,6 +139,19 @@
     <div class="panel cut"><small class="muted">{t('stats:winRate')}</small><b class="accent">{rate(summary.wins, summary.games)}</b></div>
   </div>
 
+  {@const follow = summary.following}
+  {#if follow.followed + follow.ignored}
+    <section class="block panel cut">
+      <h2 class="section-title">{t('stats:following.title')}</h2>
+      <div class="row">
+        <span class="grow">{t('stats:following.taken')}</span><b class="accent">{rate(follow.followed, follow.followed + follow.ignored)}</b>
+      </div>
+      <div class="row"><span class="grow">{t('stats:following.withIt')}</span><b>{follow.followed ? rate(follow.followed_wins, follow.followed) : '—'}</b></div>
+      <div class="row"><span class="grow">{t('stats:following.without')}</span><b>{follow.ignored ? rate(follow.ignored_wins, follow.ignored) : '—'}</b></div>
+      <small class="muted">{t('stats:following.summary', { followed: follow.followed, total: follow.followed + follow.ignored })}</small>
+    </section>
+  {/if}
+
   <section class="block panel cut">
     <h2 class="section-title">{t('stats:yourChampions')}</h2>
     {#each summary.champions.slice(0, TOP_CHAMPIONS) as row (row.id)}

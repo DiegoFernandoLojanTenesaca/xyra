@@ -1,0 +1,32 @@
+{
+  "subtitle": "Crea una sala, invita a tus amigos y busca partida sin tocar el cliente.",
+  "noClient": "Abre el LoL e inicia sesión para crear una sala.",
+  "chooseMode": "Elige el modo de tu sala",
+  "loading": "Leyendo el cliente…",
+  "ranked": "Clasificatoria",
+  "created": "Sala creada. Invita a tus amigos o busca partida.",
+  "yourLobby": "Tu sala · {{queue}}",
+  "leader": "Líder",
+  "invited": "Invitados sin responder: {{names}}",
+  "search": "Buscar partida",
+  "searching": "Buscando partida…",
+  "cancel": "Cancelar búsqueda",
+  "leave": "Salir de la sala",
+  "onlyLeader": "Solo el líder de la sala puede buscar partida.",
+  "friends": "Amigos conectados",
+  "refresh": "Actualizar",
+  "noFriends": "Ninguno de tus amigos está conectado ahora.",
+  "invite": "Invitar",
+  "alreadyIn": "En tu sala",
+  "createFirst": "Crea una sala para invitar",
+  "inviteSent": "Invitaste a {{name}}.",
+  "status": {
+    "available": "Conectado",
+    "away": "Ausente",
+    "busy": "Ocupado",
+    "inQueue": "En cola",
+    "champSelect": "En selección",
+    "inGame": "En partida"
+  },
+  "inviteDone": "Invitación enviada."
+}

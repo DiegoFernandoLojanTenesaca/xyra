@@ -1,7 +1,7 @@
 <script lang="ts">
   import { ChevronRight, Download, Hammer } from '@lucide/svelte';
   import { app } from '../app.svelte';
-  import { getBuild } from '../services/league';
+  import { getBuild, getRecentMatches } from '../services/league';
   import { resource } from '../services/resource.svelte';
   import type { Asset, ImportTarget, Matchup, Position } from '../types';
   import Button from '../ui/Button.svelte';
@@ -35,6 +35,13 @@
   );
 
   const champion = $derived(app.champions.find((c) => c.id === app.selectedChampion) ?? null);
+  /** The account's last games of every mode, to show the ones with this champion. */
+  const history = resource(
+    () => app.state.account,
+    () => getRecentMatches(),
+    (failure) => failure,
+  );
+  const yourGames = $derived((history.value ?? []).filter((game) => game.champion.id === app.selectedChampion));
   const current = $derived(build.value);
   const missingNames = $derived(!!current && !current.runes.primary_style.icon);
   const itemBlocks = $derived(
@@ -218,10 +225,59 @@
     </section>
   {/if}
 
+  {#if yourGames.length}
+    <section class="panel cut box">
+      <h3 class="section-title">
+        {t('build:yourGames', { champion: champion?.name ?? '' })}
+        <small>{t('build:yourRecord', { wins: yourGames.filter((game) => game.win).length, games: yourGames.length })}</small>
+      </h3>
+      <div class="your-games">
+        {#each yourGames as game (game.game_id)}
+          <div class="your-game" class:won={game.win}>
+            <b class="condensed">{game.win ? t('stats:victory') : t('stats:defeat')}</b>
+            <small class="muted">{t(`common:modes.${game.mode}`)} · {format.date(game.date)}</small>
+            <span>{t('home:kda', { kills: game.kills, deaths: game.deaths, assists: game.assists })}</span>
+            <span class="icons">
+              {#if game.keystone}{@render asset(game.keystone, 'var(--size-thumbSm)')}{/if}
+              {#each game.spells as spell (spell.id)}{@render asset(spell, 'var(--size-iconSm)')}{/each}
+            </span>
+            <span class="icons"
+              >{#each game.items as item, i (i)}{@render asset(item, 'var(--size-iconSm)')}{/each}</span
+            >
+          </div>
+        {/each}
+      </div>
+    </section>
+  {/if}
+
   <p class="muted note">{t('build:note')}</p>
 {/if}
 
 <style>
+  .your-games {
+    display: grid;
+    gap: var(--space-2);
+  }
+  .your-game {
+    display: grid;
+    grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.1fr) minmax(0, 0.6fr) auto auto;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-2) var(--space-3);
+    border-left: var(--border-accent) solid var(--color-lineStrong);
+    background: var(--color-panelRaised);
+  }
+  .your-game.won {
+    border-left-color: var(--color-accent);
+  }
+  .your-game.won b {
+    color: var(--color-accentBright);
+  }
+  .icons {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+  }
   .tools {
     display: flex;
     flex-wrap: wrap;

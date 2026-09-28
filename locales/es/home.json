@@ -1,5 +1,11 @@
 {
-  "live": "En vivo",
+  "live": {
+    "title": "En vivo",
+    "kda": "KDA",
+    "farm": "Farm",
+    "gold": "Oro",
+    "level": "Nivel"
+  },
   "pickCard": "Elige {{card}}",
   "bestOf": "La mejor de las {{count}} para {{champion}}.",
   "noClient": {

@@ -63,7 +63,8 @@
     "history": "History",
     "mastery": "Mastery",
     "challenges": "Challenges",
-    "account": "Your account"
+    "account": "Your account",
+    "lobby": "Lobby"
   },
   "searchChampion": "Search champion…",
   "games_one": "{{count, number}} game",

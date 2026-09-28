@@ -86,13 +86,21 @@
     "champSelectText": "Go back to your PC to pick a champion.",
     "testDone": "That is how Xyra will let you know when you find a match.",
     "decline": "Decline",
-    "declined": "Match declined"
+    "declined": "Match declined",
+    "gameChannel": "Game start",
+    "loading": "Your game is loading",
+    "loadingText": "You play {{champion}}. Head back to your PC, good luck!",
+    "loadingAny": "Head back to your PC, good luck!",
+    "patchChannel": "Patches",
+    "patch": "Patch {{patch}} is out",
+    "patchText": "Your champions change: {{changes}}",
+    "patchNone": "None of your champions change. Check the meta in Xyra."
   },
   "phone": {
     "title": "This phone",
     "watch": {
       "title": "Tell me about the match",
-      "description": "Rings when you find a match, even with the app closed. While it waits you will see a pinned notification."
+      "description": "Rings when you find a match, even with the app closed, and tells you when the game starts loading and when a patch is out. While it waits you will see a fixed notification."
     },
     "version": "Xyra for Android {{version}}",
     "test": "Test the notification"

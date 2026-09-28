@@ -98,7 +98,8 @@
         "accept": "Accept matches",
         "import": "Import builds",
         "bench": "Take from the bench",
-        "settings": "Change settings"
+        "settings": "Change settings",
+        "lobby": "Open lobbies and invite"
       },
       "forget": "Disconnect",
       "hint": "Every phone can see your game, builds and stats; permissions decide what else it can do. A disconnected phone has to scan the code again."
