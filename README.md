@@ -10,7 +10,7 @@
 
 <p align="center"><b>Companion de League of Legends para todos los modos.</b> Al elegir campeón te pone runas, hechizos e
 ítems de OP.GG y tu skin, te dice a quién tomar de la banca o contra quién, te marca los buffs y nerfs del parche y, en
-ARAM: Caos y Arena, la mejor carta de aumento en el momento en que sale. Además lleva el LP de cada clasificatoria, ordena
+ARAM: Caos y Arena, el tier de cada carta de aumento en el momento en que sale. Además lleva el LP de cada clasificatoria, ordena
 tu botín, arma la sala con tus amigos y muestra en Discord lo que juegas. Con app para Android que te avisa cuando
 encuentras partida. Liviano, en español e inglés, y sin tocar el juego.</p>
 
@@ -26,13 +26,15 @@ encuentras partida. Liviano, en español e inglés, y sin tocar el juego.</p>
 
 ## Novedades
 
-**1.1.0**
+**1.2.0**
 
-- **Xyra se abre con el LoL:** al abrir el LoL, Xyra aparece solo (Ajustes → General). Ya no abre el LoL al abrirlo.
-- Arreglada la skin al azar o favorita, que a veces no se ponía en la selección.
+- **Etiquetas al día con las reglas de Riot:** la mejor carta dice «Mejor tier» y la voz dice dónde está; la decisión
+  siempre es tuya.
+- «Tus aumentos más usados» en lugar de su winrate, que Riot no permite mostrar.
+- [Términos de uso](https://xyra-app.pages.dev/terminos) y [privacidad](https://xyra-app.pages.dev/privacidad) en la web.
 
-**1.0.0, la primera versión estable:** tu LP por partida, tu skin al azar o favorita, Botín, Discord y una guía de uso.
-**0.9.0:** Sala con tus amigos, KDA en vivo y «Siguiendo a Xyra». Todas las notas en [Releases](../../releases). Las versiones siguen el
+**1.1.0:** Xyra se abre solo al abrir el LoL. **1.0.0, la primera versión estable:** tu LP por partida, tu skin al azar
+o favorita, Botín, Discord y una guía de uso. Todas las notas en [Releases](../../releases). Las versiones siguen el
 [versionado semántico](https://semver.org/lang/es/): el tercer número sube con arreglos y el segundo con funciones
 nuevas.
 
@@ -99,8 +101,8 @@ se actualiza sola desde sus Ajustes.
   campeones que tienes o están gratis, ordenados por tier, maestría o lo que más juegas.
 - **Meta y parche:** los mejores de la Grieta, ARAM y Arena, y los buffs y nerfs del parche con el motivo de Riot,
   empezando por tus 15 campeones con más maestría.
-- **Etiquetas sobre las cartas:** en ARAM: Caos y Arena, en 5 estilos. La mejor queda marcada en rojo y las malas te
-  sugieren cambiarlas, en el momento en que salen.
+- **Etiquetas sobre las cartas:** en ARAM: Caos y Arena, en 5 estilos. Cada carta muestra su tier para tu campeón y la de
+  mejor tier queda marcada en rojo, en el momento en que salen; la decisión siempre es tuya.
 - **Consejos en partida:** qué habilidad subir y tu siguiente ítem, con el oro que te falta, desde la API oficial del juego.
 - **Juego:** opciones oficiales del LoL en un clic y lo aburrido en automático: Sin bordes, aceptar la partida, importar
   la build.
@@ -140,7 +142,7 @@ dibuja encima, y usa las APIs oficiales del cliente para lo que harías tú con 
    mejores del parche.
 4. **En la selección:** tu build y tu skin se ponen solas si lo activas en Juego. En ARAM, tus opciones de la banca con
    la mejor primero.
-5. **En partida:** toma la carta del marco rojo en ARAM: Caos y Arena. En Inicio y en el celular ves tu KDA y qué ítem
+5. **En partida:** en ARAM: Caos y Arena cada carta muestra su tier y la mejor queda en rojo. En Inicio y en el celular ves tu KDA y qué ítem
    sigue.
 6. **Después:** el LP de cada clasificatoria, tu historial, si te va mejor siguiendo a Xyra y tu botín.
 
@@ -193,7 +195,7 @@ Por ahora solo para Android 7 o superior.
 | <img src="https://github.com/DiegoFernandoLojanTenesaca.png" width="48"> | **[@DiegoFernandoLojanTenesaca](https://github.com/DiegoFernandoLojanTenesaca):** creador | IndagaLab |
 | <img src="https://github.com/jahirxtrap.png" width="48"> | **[@jahirxtrap](https://github.com/jahirxtrap):** cocreador | Xynitra |
 
-Gracias a OP.GG por las estadísticas y a CommunityDragon por los íconos. Para contribuir, mira [CLAUDE.md](CLAUDE.md).
+Gracias a OP.GG por las estadísticas y a CommunityDragon por los íconos. [Términos de uso](https://xyra-app.pages.dev/terminos) · [Privacidad](https://xyra-app.pages.dev/privacidad). Para contribuir, mira [CLAUDE.md](CLAUDE.md).
 
 ## Aviso
 

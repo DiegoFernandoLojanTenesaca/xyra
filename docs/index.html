@@ -3,17 +3,17 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Xyra · Tu ventaja en cada partida de LoL</title>
+    <title>Xyra · Tu compañero en cada partida de LoL</title>
     <meta
       name="description"
-      content="Companion gratis para League of Legends: runas, hechizos e ítems que se ponen solos, counters en normales y clasificatorias y la mejor carta de aumento en ARAM: Caos y Arena. Sin tocar el juego."
+      content="Companion gratis para League of Legends: runas, hechizos e ítems que se ponen solos, counters en normales y clasificatorias y el tier de cada carta de aumento en ARAM: Caos y Arena. Sin tocar el juego."
     />
     <meta name="theme-color" content="#060606" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Xyra · Tu ventaja en cada partida de LoL" />
+    <meta property="og:title" content="Xyra · Tu compañero en cada partida de LoL" />
     <meta
       property="og:description"
-      content="Builds que se ponen solas, counters y la mejor carta de aumento en vivo. Para normales, clasificatorias, ARAM y ARAM: Caos. Gratis y de código abierto."
+      content="Builds que se ponen solas, counters y el tier de cada carta de aumento en vivo. Para normales, clasificatorias, ARAM y ARAM: Caos. Gratis y de código abierto."
     />
     <meta property="og:image" content="https://xyra-app.pages.dev/banner.png" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -1030,10 +1030,10 @@
       <div class="wrap hero">
         <div>
           <p class="eyebrow">Companion para League of Legends</p>
-          <h1>Tu ventaja en <span>cada partida</span></h1>
+          <h1>Tu compañero en <span>cada partida</span></h1>
           <p class="lead">
             Elige campeón y Xyra te pone runas, hechizos e ítems de OP.GG al instante, te sugiere counters en normales y clasificatorias, y en ARAM: Caos y
-            Arena marca la mejor carta de aumento para tu campeón en el momento en que sale.
+            Arena marca el tier de cada carta de aumento para tu campeón en el momento en que sale.
           </p>
           <div class="actions">
             <a class="button primary cut download" href="https://github.com/DiegoFernandoLojanTenesaca/xyra/releases/latest">
@@ -1104,11 +1104,13 @@
           <div class="styles">
             <div class="picker" role="group" aria-label="Estilos de etiqueta">
               <button type="button" data-style="none" aria-pressed="false"><b>Sin Xyra</b><span>Así las ves hoy.</span></button>
-              <button type="button" data-style="plate" aria-pressed="true"><b>Placa</b><span>Placa bajo cada carta; la mejor con marco rojo.</span></button>
+              <button type="button" data-style="plate" aria-pressed="true">
+                <b>Placa</b><span>Placa bajo cada carta; la de mejor tier con marco rojo.</span>
+              </button>
               <button type="button" data-style="badge" aria-pressed="false"><b>Insignia</b><span>Rombo con la letra del tier en la esquina.</span></button>
               <button type="button" data-style="ribbon" aria-pressed="false"><b>Cinta</b><span>Franja de color dentro de la carta.</span></button>
               <button type="button" data-style="podium" aria-pressed="false"><b>Podio</b><span>Puestos 1-2-3 en rojo, blanco y gris.</span></button>
-              <button type="button" data-style="focus" aria-pressed="false"><b>Enfoque</b><span>Oscurece las que no conviene elegir.</span></button>
+              <button type="button" data-style="focus" aria-pressed="false"><b>Enfoque</b><span>Resalta la de mejor tier y atenúa las demás.</span></button>
             </div>
             <div class="shot cut preview">
               <img id="style-preview" src="styles/plate.jpg" width="1100" height="672" alt="Cartas de aumento con el estilo Placa" />
@@ -1129,8 +1131,8 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5h10l6 7-6 7H4z" /></svg>
               <h3>Etiquetas en vivo</h3>
               <p>
-                Cada carta muestra qué tan buena es para tu campeón. La mejor queda marcada y las malas te sugieren cambiarlas. Si quieres, te lo dice en voz
-                alta.
+                Cada carta muestra su tier para tu campeón y la de mejor tier queda marcada; la decisión siempre es tuya. Si quieres, te dice en voz alta dónde
+                está.
               </p>
             </article>
             <article class="card cut">
@@ -1480,7 +1482,7 @@
             </div>
             <div class="card cut">
               <h3>En partida</h3>
-              <p>Toma la carta del marco rojo en ARAM: Caos y Arena. En Inicio y en el celular ves tu KDA y qué ítem sigue.</p>
+              <p>En ARAM: Caos y Arena cada carta muestra su tier y la mejor queda en rojo. En Inicio y en el celular ves tu KDA y qué ítem sigue.</p>
             </div>
             <div class="card cut">
               <h3>Después</h3>
@@ -1505,6 +1507,14 @@
               <h3>Versiones</h3>
               <ol class="timeline">
                 <li>
+                  <b>1.2.0</b>
+                  <ul>
+                    <li>Etiquetas al día con las reglas de Riot: la mejor carta dice «Mejor tier» y la decisión siempre es tuya.</li>
+                    <li>Tus aumentos más usados en lugar de su winrate, que Riot no permite mostrar.</li>
+                    <li>Términos de uso y política de privacidad en la web.</li>
+                  </ul>
+                </li>
+                <li>
                   <b>1.1.0</b>
                   <ul>
                     <li>Xyra se abre con el LoL: al abrir el LoL, Xyra aparece solo.</li>
@@ -1518,15 +1528,6 @@
                     <li>Tu skin al azar o tu favorita, sola en la selección.</li>
                     <li>Botín: recompensas olvidadas, cofres y llaves, con confirmación.</li>
                     <li>Tu partida en Discord, y una guía de uso dentro de la app.</li>
-                  </ul>
-                </li>
-                <li>
-                  <b>0.9.0</b>
-                  <ul>
-                    <li>Sala: crea una sala, invita a tus amigos y busca partida desde la PC o el celular.</li>
-                    <li>Tu KDA, farm, oro y nivel en vivo, también en el celular.</li>
-                    <li>Siguiendo a Xyra: cómo te va cuando tomas la carta recomendada.</li>
-                    <li>Avisos en el celular cuando carga tu partida y cuando sale un parche.</li>
                   </ul>
                 </li>
               </ol>
@@ -1685,10 +1686,11 @@
           </a>
         </div>
         <p class="legal">
-          Proyecto de la comunidad. Xyra no está respaldado por Riot Games ni refleja sus opiniones ni las de nadie involucrado oficialmente en producir o
-          gestionar sus propiedades. League of Legends y Riot Games son marcas de Riot Games, Inc. Sin relación con OP.GG. Estadísticas de OP.GG e íconos de
-          CommunityDragon.
+          Proyecto de la comunidad. Xyra isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in
+          producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc. Sin
+          relación con OP.GG. Estadísticas de OP.GG e íconos de CommunityDragon.
         </p>
+        <p class="legal"><a href="terminos">Términos de uso</a> · <a href="privacidad">Privacidad</a></p>
       </div>
     </footer>
 

@@ -1,11 +1,11 @@
 {
   "license": "Licencia MIT",
   "sources": "Datos de OP.GG · íconos de CommunityDragon.",
-  "riot": "Xyra no está respaldado por Riot Games ni refleja sus opiniones. League of Legends es marca de Riot Games, Inc.",
+  "riot": "Xyra no está respaldado por Riot Games y no refleja las opiniones de Riot Games ni de nadie que participe oficialmente en la producción o gestión de las propiedades de Riot Games. Riot Games y todas sus propiedades asociadas son marcas comerciales o marcas registradas de Riot Games, Inc.",
   "whatsNew": "Novedades de esta versión",
   "changes": {
-    "withLeague": "Xyra se abre con el LoL: al abrir el LoL, Xyra aparece solo. Ya no abre el LoL al abrirlo.",
-    "skins": "Arreglada la skin al azar o favorita, que a veces no se ponía en la selección."
+    "labels": "Etiquetas al día con las reglas de Riot: la mejor carta dice «Mejor tier» y la voz dice dónde está; la decisión es tuya.",
+    "augments": "«Tus aumentos más usados» en Inicio y Estadísticas, porque Riot no permite mostrar el winrate de los aumentos."
   },
   "links": "Enlaces",
   "builtWith": "Hecho con Rust, Tauri y Svelte. La capa del juego es nativa: no usa navegador y casi no gasta memoria.",

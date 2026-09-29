@@ -1,11 +1,11 @@
 {
   "license": "MIT license",
   "sources": "Data from OP.GG · icons from CommunityDragon.",
-  "riot": "Xyra isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games. League of Legends is a trademark of Riot Games, Inc.",
+  "riot": "Xyra isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.",
   "whatsNew": "What's new in this version",
   "changes": {
-    "withLeague": "Xyra opens with League: opening League brings Xyra up by itself. It no longer opens League.",
-    "skins": "Fixed the random or favorite skin, which sometimes did not go on in champion select."
+    "labels": "Labels that follow Riot's rules: the top card reads \"Top tier\" and the voice says where it is; the choice is yours.",
+    "augments": "\"Your most used augments\" in Home and Stats, since Riot does not allow win rates of augments."
   },
   "links": "Links",
   "builtWith": "Made with Rust, Tauri and Svelte. The in-game overlay is native: no browser, almost no memory.",
