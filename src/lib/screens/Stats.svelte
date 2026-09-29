@@ -15,16 +15,18 @@
   const augmentsUsed = $derived(new Set((stats?.recent ?? []).flatMap((g) => g.augments.map((a) => a.id))).size);
 </script>
 
-{#snippet statRows(rows: StatRow[], open?: (id: number) => void)}
+{#snippet statRows(rows: StatRow[], open?: (id: number) => void, rated = true)}
   <div class="panel cut list">
     {#each rows as row (row.id)}
       {@const winRate = percent(row.wins, row.games)}
       <button class="row" disabled={!open} onclick={() => open?.(row.id)}>
         {#if row.icon}<img src={row.icon} alt="" />{/if}
         <span class="name">{row.name}</span>
-        <small class="muted">{format.number(row.games)}</small>
-        <div class="bar"><i class:high={winRate >= HIGH_WIN_RATE} style="width:{winRate}%"></i></div>
-        <b class:accent={winRate >= HIGH_WIN_RATE}>{format.percent(winRate)}</b>
+        <small class="muted">{rated ? format.number(row.games) : t('common:games', { count: row.games })}</small>
+        {#if rated}
+          <div class="bar"><i class:high={winRate >= HIGH_WIN_RATE} style="width:{winRate}%"></i></div>
+          <b class:accent={winRate >= HIGH_WIN_RATE}>{format.percent(winRate)}</b>
+        {/if}
       </button>
     {/each}
   </div>
@@ -59,8 +61,8 @@
       {@render statRows(stats.champions.slice(0, TOP_CHAMPIONS), app.openAugments)}
     </section>
     <section>
-      <h3 class="section-title">{t('stats:bestAugments')} <small>({t('stats:minGames', { count: stats.min_augment_games })})</small></h3>
-      {@render statRows(stats.augments)}
+      <h3 class="section-title">{t('stats:usedAugments')}</h3>
+      {@render statRows(stats.augments, undefined, false)}
     </section>
   </div>
 

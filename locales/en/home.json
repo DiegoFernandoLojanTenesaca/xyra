@@ -14,7 +14,7 @@
   },
   "client": {
     "title": "All set. Let's play",
-    "text": "Queue up: in champion select Xyra sets your build and tells you what to take, and in ARAM: Mayhem and Arena it marks the best card."
+    "text": "Queue up: in champion select Xyra sets your build and shows your options, and in ARAM: Mayhem and Arena it marks the tier of each card."
   },
   "paused": {
     "title": "Xyra is paused",
@@ -27,7 +27,7 @@
   "counterPick": "Against {{enemy}}, pick {{champion}}",
   "counterText": "Wins {{value}} of its games against {{enemy}} in {{position}}.",
   "counterPicks": "Counters to {{enemy}}",
-  "bestPick": "Best pick",
+  "bestPick": "Top tier",
   "cardsOnScreen": "Cards on screen",
   "latestCards": "Latest cards",
   "noCards": "When augment cards show up in ARAM: Mayhem or Arena they will appear here.",
@@ -37,9 +37,6 @@
   "settingsUnreadable": "Could not read League settings.",
   "setBorderless": "Switch to Borderless",
   "borderlessDone": "Done: your next game opens in Borderless.",
-  "bestAugments": "Your best augments",
-  "minGames_one": "min. {{count}} game",
-  "minGames_other": "min. {{count}} games",
   "system": "System",
   "screenReading": "Screen reading",
   "noOcr": "Windows has no text recognition for your language: add it in Settings → Time & language.",
@@ -126,5 +123,6 @@
       "solo": "Solo/Duo",
       "flex": "Flex"
     }
-  }
+  },
+  "usedAugments": "Your most used augments"
 }

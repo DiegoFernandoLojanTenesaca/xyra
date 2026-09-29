@@ -6,12 +6,12 @@
   "height": "Height",
   "size": "Size",
   "voice": "Voice hint",
-  "voiceHint": "Says out loud which card to pick, for when you are mid-fight.",
+  "voiceHint": "Says out loud where the top tier card is, for when you are mid-fight.",
   "testVoice": "Test voice",
   "styles": {
     "plate": {
       "name": "Plate",
-      "description": "A plate under each card; the best one gets a red frame."
+      "description": "A plate under each card; the top tier one gets a red frame."
     },
     "badge": {
       "name": "Badge",
@@ -27,7 +27,7 @@
     },
     "focus": {
       "name": "Focus",
-      "description": "Dims the cards you should not pick."
+      "description": "Highlights the top tier card and dims the rest."
     }
   }
 }

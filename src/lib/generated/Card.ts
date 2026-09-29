@@ -5,4 +5,4 @@ export type Card = { id: number, name: string, icon: string,
 /**
  * 0 = S … 6 = F; None when OP.GG has no games of this augment with the champion.
  */
-tier: number | null, quality: Quality, grade: string, performance: number, rank: number, best: boolean, reroll: boolean, x: number, y: number, };
+tier: number | null, quality: Quality, grade: string, performance: number, rank: number, best: boolean, x: number, y: number, };

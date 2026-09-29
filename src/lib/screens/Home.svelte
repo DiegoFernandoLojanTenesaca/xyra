@@ -11,7 +11,6 @@
     Pause,
     Play,
     Radio,
-    RefreshCw,
     Star,
     Swords,
     TrendingUp,
@@ -318,7 +317,6 @@
                 <TierBadge label={card.grade} color={qualityColor(card.quality)} />{t(`common:quality.${card.quality}`)}
               </span>
               <div class="bar"><i style="width:{card.tier === null ? 0 : Math.max(MIN_BAR, Math.min(100, card.performance))}%"></i></div>
-              {#if card.reroll}<small class="reroll"><RefreshCw size={12} />{t('common:reroll')}</small>{/if}
             </div>
           {/each}
         </div>
@@ -529,14 +527,13 @@
     </div>
 
     {#if (mode === 'mayhem' || mode === 'arena') && stats?.augments.length}
-      <h3 class="section-title">{t('home:bestAugments')} <small>({t('home:minGames', { count: stats.min_augment_games })})</small></h3>
+      <h3 class="section-title">{t('home:usedAugments')}</h3>
       <div class="panel cut list">
         {#each stats.augments.slice(0, BEST_AUGMENTS) as augment, i (augment.id)}
           <div class="row appear" style="--i:{i}">
             {#if augment.icon}<img src={augment.icon} alt="" />{/if}
             <span>{augment.name}</span>
-            <small class="muted">{format.number(augment.games)}</small>
-            <b class="accent">{format.percent(percent(augment.wins, augment.games))}</b>
+            <small class="muted">{t('common:games', { count: augment.games })}</small>
           </div>
         {/each}
       </div>
@@ -875,13 +872,6 @@
     display: block;
     height: 100%;
     background: var(--color-accent);
-  }
-  .reroll {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    color: var(--color-warning);
-    font-weight: 600;
   }
   .tips {
     display: grid;

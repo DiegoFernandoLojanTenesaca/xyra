@@ -311,7 +311,6 @@ struct Palette {
     white: u32,
     subtle: u32,
     muted: u32,
-    warning: u32,
     plate_border: u32,
 }
 
@@ -324,7 +323,6 @@ fn palette() -> Palette {
         white: tokens::COLOR_WHITE,
         subtle: tokens::COLOR_TEXT_SUBTLE,
         muted: tokens::COLOR_TEXT_MUTED,
-        warning: tokens::COLOR_WARNING,
         plate_border: tokens::COLOR_LINE,
     }
 }
@@ -494,9 +492,8 @@ impl Painter<'_> {
             LabelStyle::Focus => {
                 if card.best {
                     self.highlight_frame(x0, y0, x1, y1, k, &colors)?;
-                    let pick_this = texts.get("overlay:pickThis");
                     let detail = format!(" · {}", quality.to_lowercase());
-                    let spans = [span(&pick_this, TEXT_MEDIUM * k, bold, colors.white), span(&detail, TEXT_TINY * k, regular, colors.white)];
+                    let spans = [span(&best_pick, TEXT_MEDIUM * k, bold, colors.white), span(&detail, TEXT_TINY * k, regular, colors.white)];
                     self.plate(
                         Plate { center: below, height: FOCUS_PLATE_HEIGHT, spans: &spans, background: (colors.accent, 1.0), stroke: None, gem: None },
                         k,
@@ -517,11 +514,7 @@ impl Painter<'_> {
                         Plate { center: (x, y0 - FRAME_GAP * k), height: TAB_HEIGHT, spans: &spans, background: (colors.accent, 1.0), stroke: None, gem: None };
                     self.plate(tab, k, &colors)?;
                 }
-                let reroll = format!("  {}", texts.get("common:reroll"));
-                let mut spans: Vec<Span> = plate_spans().into_iter().collect();
-                if card.reroll {
-                    spans.push(span(&reroll, TEXT_SMALL * k, bold, colors.warning));
-                }
+                let spans = plate_spans();
                 self.plate(
                     Plate { center: below, height: PLATE_HEIGHT, spans: &spans, background: body, stroke, gem: Some((&card.grade, quality_color)) },
                     k,

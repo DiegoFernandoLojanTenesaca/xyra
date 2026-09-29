@@ -11,8 +11,6 @@ const MIN_NAME_CHARS: usize = 4;
 const MIN_NAME_SIMILARITY: f64 = 0.8;
 const ROW_TOLERANCE: f64 = 0.03;
 const MIN_ROW_CARDS: usize = 2;
-const GOOD_TIER: u8 = 2;
-const REROLL_TIER: u8 = 4;
 const STILL_TOLERANCE_PX: f64 = 8.0;
 /// Two names closer than this horizontally belong to the same card slot.
 const SLOT_TOLERANCE_PX: f64 = 100.0;
@@ -118,7 +116,6 @@ pub struct Card {
     pub performance: f64,
     pub rank: u32,
     pub best: bool,
-    pub reroll: bool,
     pub x: f64,
     pub y: f64,
 }
@@ -140,7 +137,6 @@ pub fn rate_cards(candidates: &[Candidate], stats: &HashMap<u32, AugmentStat>, a
                 performance: stat.map_or(0.0, |s| s.performance),
                 rank: 0,
                 best: false,
-                reroll: false,
                 x: candidate.x,
                 y: candidate.y,
             }
@@ -154,10 +150,8 @@ pub fn rate_cards(candidates: &[Candidate], stats: &HashMap<u32, AugmentStat>, a
     for (position, &index) in order.iter().enumerate() {
         cards[index].rank = position as u32 + 1;
     }
-    let has_good = cards.iter().any(|c| c.tier.is_some_and(|t| t <= GOOD_TIER));
     for card in &mut cards {
         card.best = card.rank == 1 && card.tier.is_some();
-        card.reroll = has_good && card.tier.is_none_or(|t| t >= REROLL_TIER);
     }
     cards
 }
@@ -270,8 +264,8 @@ mod tests {
         let stats: HashMap<u32, AugmentStat> =
             [(2111, AugmentStat { tier: 1, performance: 91.0, pick_rate: 1.0 }), (1129, AugmentStat { tier: 0, performance: 92.0, pick_rate: 1.0 })].into();
         let rated = rate_cards(&row, &stats, &HashMap::new());
-        let summary: Vec<_> = rated.iter().map(|c| (c.id, c.tier, c.rank, c.best, c.reroll)).collect();
-        assert_eq!(summary, vec![(2111, Some(1), 2, false, false), (1129, Some(0), 1, true, false), (1058, None, 3, false, true)]);
+        let summary: Vec<_> = rated.iter().map(|c| (c.id, c.tier, c.rank, c.best)).collect();
+        assert_eq!(summary, vec![(2111, Some(1), 2, false), (1129, Some(0), 1, true), (1058, None, 3, false)]);
     }
 
     #[test]

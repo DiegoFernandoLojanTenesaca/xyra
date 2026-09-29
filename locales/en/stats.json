@@ -5,9 +5,6 @@
   "winRate": "Winrate",
   "augmentsUsed": "Augments used",
   "yourChampions": "Your champions",
-  "bestAugments": "Your best augments",
-  "minGames_one": "min. {{count}} game",
-  "minGames_other": "min. {{count}} games",
   "recentGames": "Recent games",
   "empty": "No ARAM: Mayhem or Arena games recorded yet.",
   "victory": "Victory",
@@ -26,5 +23,6 @@
     "without": "Wins with another card",
     "summary": "Of {{total}} choices Xyra saw, you took the recommended card {{followed}} times.",
     "empty": "Play ARAM: Mayhem or Arena with Xyra open and you will see here how you do when you take the recommended card and when you do not."
-  }
+  },
+  "usedAugments": "Your most used augments"
 }

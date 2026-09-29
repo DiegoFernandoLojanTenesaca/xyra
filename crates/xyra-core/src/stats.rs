@@ -11,7 +11,6 @@ use ts_rs::TS;
 
 const MATCH_HISTORY: &str = "/lol-match-history/v1/products/lol/current-summoner/matches?begIndex=0&endIndex=19";
 pub const END_OF_GAME: &str = "/lol-end-of-game/v1/eog-stats-block";
-const MIN_AUGMENT_GAMES: u32 = 2;
 const TOP_AUGMENTS: usize = 15;
 const RECENT_GAMES: usize = 10;
 /// Solo/duo and flex queues.
@@ -314,8 +313,6 @@ fn following<'a>(games: impl IntoIterator<Item = &'a StoredGame>) -> Following {
 #[ts(export)]
 pub struct StatsSummary {
     pub games: u32,
-    /// Games an augment needs before it is ranked.
-    pub min_augment_games: u32,
     pub wins: u32,
     pub champions: Vec<StatRow>,
     pub augments: Vec<StatRow>,
@@ -352,12 +349,12 @@ pub fn summarize(games: &[StoredGame], account: Option<&str>, catalog: &Catalog)
     }
     let mut champions = rows(champions, &catalog.champions);
     champions.sort_by_key(|r| (Reverse(r.games), Reverse(r.wins)));
-    let mut augments: Vec<StatRow> = rows(augments, &catalog.augments).into_iter().filter(|r| r.games >= MIN_AUGMENT_GAMES).collect();
-    augments.sort_by(|a, b| (b.wins as f64 / b.games as f64).total_cmp(&(a.wins as f64 / a.games as f64)).then(b.games.cmp(&a.games)));
+    // Riot does not allow win rates of augments, so they are listed by use and never ranked by wins.
+    let mut augments = rows(augments, &catalog.augments);
+    augments.sort_by(|a, b| b.games.cmp(&a.games).then_with(|| a.name.cmp(&b.name)));
     augments.truncate(TOP_AUGMENTS);
     StatsSummary {
         games: games.len() as u32,
-        min_augment_games: MIN_AUGMENT_GAMES,
         wins: games.iter().filter(|g| g.win).count() as u32,
         following: following(games.iter().copied()),
         champions,

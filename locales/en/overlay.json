@@ -1,10 +1,9 @@
 {
   "forChampion": "for {{champion}}",
-  "bestPick": "BEST PICK",
-  "pickThis": "PICK THIS",
+  "bestPick": "TOP TIER",
   "voice": {
-    "left": "Pick the left one",
-    "middle": "Pick the middle one",
-    "right": "Pick the right one"
+    "left": "Top tier on the left",
+    "middle": "Top tier in the middle",
+    "right": "Top tier on the right"
   }
 }

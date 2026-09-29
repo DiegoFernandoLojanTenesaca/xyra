@@ -5,9 +5,6 @@
   "winRate": "Winrate",
   "augmentsUsed": "Aumentos usados",
   "yourChampions": "Tus campeones",
-  "bestAugments": "Tus mejores aumentos",
-  "minGames_one": "mín. {{count}} partida",
-  "minGames_other": "mín. {{count}} partidas",
   "recentGames": "Últimas partidas",
   "empty": "Todavía no hay partidas de ARAM: Caos o Arena registradas.",
   "victory": "Victoria",
@@ -26,5 +23,6 @@
     "without": "Victorias con otra carta",
     "summary": "De {{total}} elecciones que Xyra vio, tomaste la carta recomendada {{followed}} veces.",
     "empty": "Juega ARAM: Caos o Arena con Xyra abierto y aquí verás cómo te va cuando tomas la carta recomendada y cuando no."
-  }
+  },
+  "usedAugments": "Tus aumentos más usados"
 }

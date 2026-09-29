@@ -28,7 +28,7 @@
     },
     "grades": {
       "question": "What do S, A, B, C mean?",
-      "answer": "It is the OP.GG tier of that augment with your champion: S is excellent and from C down you should reroll. \"Rare pick\" means almost nobody takes it with that champion, so there is not enough data."
+      "answer": "It is the OP.GG tier of that augment with your champion: S is excellent and C and below are weak options with that champion. \"Rare pick\" means almost nobody takes it with that champion, so there is not enough data."
     },
     "ban": {
       "question": "Can I get banned for using it?",
@@ -91,7 +91,7 @@
     },
     "game": {
       "title": "In game",
-      "text": "In ARAM: Mayhem and Arena take the card with the red frame: it is the best for your champion. Set League to Borderless to see the labels. Home and the phone show your KDA and your next item."
+      "text": "In ARAM: Mayhem and Arena each card shows its tier for your champion, and the top tier one gets a red frame. Set League to Borderless to see the labels. Home and the phone show your KDA and your next item."
     },
     "after": {
       "title": "After the game",

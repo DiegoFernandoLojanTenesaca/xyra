@@ -28,7 +28,7 @@
     },
     "grades": {
       "question": "¿Qué significan S, A, B, C?",
-      "answer": "Es el tier de OP.GG para ese aumento con tu campeón: S es excelente y de C para abajo conviene cambiarla. \"Poco usada\" quiere decir que casi nadie la toma con ese campeón y no hay datos suficientes."
+      "answer": "Es el tier de OP.GG para ese aumento con tu campeón: S es excelente y de C para abajo son opciones flojas con ese campeón. \"Poco usada\" quiere decir que casi nadie la toma con ese campeón y no hay datos suficientes."
     },
     "ban": {
       "question": "¿Me pueden banear por usarlo?",
@@ -91,7 +91,7 @@
     },
     "game": {
       "title": "En partida",
-      "text": "En ARAM: Caos y Arena toma la carta del marco rojo: es la mejor para tu campeón. Pon el LoL en Sin bordes para ver las etiquetas. En Inicio y en el celular ves tu KDA y qué ítem sigue."
+      "text": "En ARAM: Caos y Arena cada carta muestra su tier para tu campeón, y la de mejor tier queda en rojo. Pon el LoL en Sin bordes para ver las etiquetas. En Inicio y en el celular ves tu KDA y qué ítem sigue."
     },
     "after": {
       "title": "Después de la partida",

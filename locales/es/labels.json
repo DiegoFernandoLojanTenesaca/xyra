@@ -6,12 +6,12 @@
   "height": "Altura",
   "size": "Tamaño",
   "voice": "Aviso por voz",
-  "voiceHint": "Dice en voz alta cuál elegir, por si estás en plena pelea.",
+  "voiceHint": "Dice en voz alta dónde está la de mejor tier, por si estás en plena pelea.",
   "testVoice": "Probar voz",
   "styles": {
     "plate": {
       "name": "Placa",
-      "description": "Placa bajo cada carta; la mejor con marco rojo."
+      "description": "Placa bajo cada carta; la de mejor tier con marco rojo."
     },
     "badge": {
       "name": "Insignia",
@@ -27,7 +27,7 @@
     },
     "focus": {
       "name": "Enfoque",
-      "description": "Oscurece las que no conviene elegir."
+      "description": "Resalta la de mejor tier y atenúa las demás."
     }
   }
 }

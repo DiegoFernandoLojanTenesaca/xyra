@@ -1,10 +1,9 @@
 {
   "forChampion": "para {{champion}}",
-  "bestPick": "MEJOR OPCIÓN",
-  "pickThis": "ELIGE ESTA",
+  "bestPick": "MEJOR TIER",
   "voice": {
-    "left": "Elige la de la izquierda",
-    "middle": "Elige la del medio",
-    "right": "Elige la de la derecha"
+    "left": "Mejor tier a la izquierda",
+    "middle": "Mejor tier al medio",
+    "right": "Mejor tier a la derecha"
   }
 }
