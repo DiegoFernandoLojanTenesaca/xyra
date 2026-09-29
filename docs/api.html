@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>How Xyra uses League of Legends · Xyra</title>
+    <link rel="icon" href="logo/xyra-08d-nucleo-grande-rojo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="legal.css" />
+  </head>
+  <body>
+    <header>
+      <a href="./"><img src="logo/xyra-08d-nucleo-grande-rojo.svg" alt="" />XYRA</a>
+      <nav><a href="terminos#en">Terms</a> · <a href="privacidad#en">Privacy</a></nav>
+    </header>
+
+    <main>
+      <h1>How Xyra uses League of Legends</h1>
+      <p class="muted">For Riot Games' product review (App ID 885964). Last updated: September 29, 2026.</p>
+      <p>
+        Xyra is a free, open-source (<a href="https://github.com/DiegoFernandoLojanTenesaca/xyra">MIT</a>) League of Legends companion for Windows, with an
+        optional Android app. It does not use the Riot Games API and ships no API key: it uses the League Client API and the Live Client Data API on the
+        player's own PC. It has no ads, accounts or servers, and all data stays on the player's PC.
+      </p>
+
+      <h2>What it does</h2>
+      <ul>
+        <li>
+          <b>Champion select:</b> shows OP.GG builds (runes, summoner spells, items, skill order) and imports them into the client when the player clicks
+          Import, or automatically if the player turns that on. In ARAM it lists the bench options ordered by tier; a champion is only taken from the bench when
+          the player clicks it. In Summoner's Rift it shows lane counters from public tier lists.
+        </li>
+        <li>
+          <b>ARAM: Mayhem and Arena:</b> reads the augment names the player already sees on screen with Windows text recognition, and labels each card with its
+          static OP.GG tier for that champion in a separate click-through window; the top tier card is highlighted. No win rates of augments or Arena items are
+          shown anywhere in the app, and the player always makes the pick.
+        </li>
+        <li>
+          <b>The player's own data:</b> match history, their own KDA, gold and level during the game (Live Client Data API), the LP each ranked game gave or
+          took (the official LP, no MMR estimate), mastery and challenges.
+        </li>
+        <li>
+          <b>Client actions, only on the player's click:</b> create a lobby and invite friends, start or cancel the queue, put on a random or favorite owned
+          skin in champion select (off by default), and loot: open what needs no key, forge keys, open chests with owned keys and disenchant shards of owned
+          champions, asking for confirmation. It never touches skin shards, emotes or eternals.
+        </li>
+        <li>
+          <b>Ready check:</b> off by default. The player can turn on an automatic accept after a delay they choose, in the Game screen, where the app warns it
+          is at their own risk; otherwise they accept in the client or with a tap on the phone notification. If this setting is not allowed under the current
+          policy, we will remove it.
+        </li>
+        <li><b>Official game settings</b> (such as borderless window) changed from the app with the game closed.</li>
+        <li>
+          <b>Discord Rich Presence</b> (off by default) and an <b>Android app</b> that pairs over the local network only, to follow champion select and accept
+          the match with a tap.
+        </li>
+      </ul>
+
+      <h2>What it does not do</h2>
+      <p>
+        No memory reading, injection or simulated keyboard or mouse input; no enemy cooldown, summoner spell or power spike tracking; no de-anonymization (no
+        lobby reveal, no Riot ID history); no MMR estimates; no ads; no accounts or servers.
+      </p>
+
+      <h2>League Client endpoints</h2>
+      <p class="muted">Reads, and the WebSocket events for them, unless noted.</p>
+      <ul>
+        <li><code>/lol-summoner/v1/current-summoner</code>, <code>/lol-summoner/v2/summoners/puuid/{puuid}</code></li>
+        <li><code>/lol-gameflow/v1/session</code>, <code>/lol-gameflow/v1/gameflow-phase</code></li>
+        <li>
+          <code>/lol-champ-select/v1/session</code>, <code>/lol-champ-select/v1/pickable-champion-ids</code>,
+          <code>/lol-champ-select/v1/skin-carousel-skins</code>
+        </li>
+        <li><code>/lol-champ-select/v1/session/my-selection</code> (PATCH, the skin the player chose)</li>
+        <li><code>/lol-champ-select/v1/session/bench/swap/{championId}</code> (POST, on click)</li>
+        <li><code>/lol-perks/v1/pages</code> (creates or replaces only the page named "Xyra"), <code>/lol-item-sets/v1/item-sets/{summonerId}/sets</code></li>
+        <li>
+          <code>/lol-matchmaking/v1/ready-check</code>, <code>/lol-matchmaking/v1/ready-check/accept</code>,
+          <code>/lol-matchmaking/v1/ready-check/decline</code>
+        </li>
+        <li>
+          <code>/lol-lobby/v2/lobby</code>, <code>/lol-lobby/v2/lobby/invitations</code>, <code>/lol-lobby/v2/lobby/matchmaking/search</code>,
+          <code>/lol-game-queues/v1/queues</code>, <code>/lol-chat/v1/friends</code>
+        </li>
+        <li>
+          <code>/lol-ranked/v1/current-ranked-stats</code>, <code>/lol-match-history/v1/products/lol/current-summoner/matches</code>,
+          <code>/lol-end-of-game/v1/eog-stats-block</code>
+        </li>
+        <li><code>/lol-champions/v1/owned-champions-minimal</code>, <code>/lol-champions/v1/inventories/{summonerId}/champions/{championId}/skins</code></li>
+        <li>
+          <code>/lol-champion-mastery/v1/local-player/champion-mastery</code>, <code>/lol-challenges/v1/challenges/local-player</code>,
+          <code>/lol-challenges/v1/summary-player-data/local-player</code>
+        </li>
+        <li>
+          <code>/lol-loot/v1/player-loot</code>, <code>/lol-loot/v1/recipes/initial-item/{lootId}</code>,
+          <code>/lol-loot/v1/recipes/{recipe}/craft</code> (POST, on click), <code>/lol-rewards/v1/grants</code>
+        </li>
+        <li><code>/lol-game-settings/v1/game-settings</code>, <code>/lol-game-data/assets/…</code>, <code>/riotclient/region-locale</code></li>
+      </ul>
+
+      <h2>Live Client Data API</h2>
+      <p>
+        Port 2999, the player's own data only: <code>/liveclientdata/activeplayer</code>, <code>/liveclientdata/playeritems</code>,
+        <code>/liveclientdata/playerscores</code>.
+      </p>
+
+      <h2>Data sources</h2>
+      <p>OP.GG public statistics, CommunityDragon and Data Dragon assets, and the official patch notes.</p>
+    </main>
+  </body>
+</html>
