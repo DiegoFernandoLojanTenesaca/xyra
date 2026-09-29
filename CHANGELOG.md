@@ -1,2 +1,3 @@
-- Changed "Open League with Xyra" to the other way around, "Open Xyra with League": opening League brings Xyra up by itself, once each time the client opens and never over a game. Xyra no longer opens League.
-- Fixed the random or favorite skin going on one step late in champion select, so it sometimes never went on.
+- Changed the augment labels to follow Riot's third-party policy: the top card now reads "Top tier" instead of "Best pick" or "Pick this", the reroll hint is gone and the voice says where the top tier card is instead of which one to pick. Every card still shows its tier and the top one keeps its red frame.
+- Changed "Your best augments" in Home and Stats to "Your most used augments", listed by how many games you took them, since Riot does not allow win rates of augments.
+- Added terms of use and a privacy policy to the site, with Riot's legal notice.

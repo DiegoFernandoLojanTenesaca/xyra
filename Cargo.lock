@@ -5603,7 +5603,7 @@ dependencies = [
 
 [[package]]
 name = "xyra"
-version = "1.1.0"
+version = "1.2.0"
 dependencies = [
  "base64 0.22.1",
  "discord-rich-presence",
@@ -5625,7 +5625,7 @@ dependencies = [
 
 [[package]]
 name = "xyra-core"
-version = "1.1.0"
+version = "1.2.0"
 dependencies = [
  "base64 0.22.1",
  "include_dir",
