@@ -1,3 +1,2 @@
-- Changed the augment labels to follow Riot's third-party policy: the top card now reads "Top tier" instead of "Best pick" or "Pick this", the reroll hint is gone and the voice says where the top tier card is instead of which one to pick. Every card still shows its tier and the top one keeps its red frame.
-- Changed "Your best augments" in Home and Stats to "Your most used augments", listed by how many games you took them, since Riot does not allow win rates of augments.
-- Added terms of use and a privacy policy to the site, with Riot's legal notice.
+- Fixed the build import failing on items with "413 Payload Too Large": Xyra kept an item set for every champion you played until the client refused the whole list. It now keeps a single one, like the rune page, and the next import removes the old ones.
+- Fixed the patch buffs and nerfs leaving out champions whose block in the notes shows an ability icon instead of the portrait, like Taliyah, Viktor and Wukong in the Spanish notes of 26.21.
