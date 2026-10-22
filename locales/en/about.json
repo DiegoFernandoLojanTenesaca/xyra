@@ -4,8 +4,8 @@
   "riot": "Xyra isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.",
   "whatsNew": "What's new in this version",
   "changes": {
-    "labels": "Labels that follow Riot's rules: the top card reads \"Top tier\" and the voice says where it is; the choice is yours.",
-    "augments": "\"Your most used augments\" in Home and Stats, since Riot does not allow win rates of augments."
+    "items": "Fixed the item import, which failed after playing many champions: Xyra keeps a single item set of its own.",
+    "patch": "Patch buffs and nerfs no longer leave out champions, like Taliyah, Viktor and Wukong in 26.21."
   },
   "links": "Links",
   "builtWith": "Made with Rust, Tauri and Svelte. The in-game overlay is native: no browser, almost no memory.",

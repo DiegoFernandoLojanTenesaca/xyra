@@ -26,6 +26,9 @@ encuentras partida. Liviano, en español e inglés, y sin tocar el juego.</p>
 
 ## Novedades
 
+**1.2.1:** arreglada la importación de ítems, que fallaba después de jugar muchos campeones, y los buffs y nerfs del
+parche que se saltaban campeones.
+
 **1.2.0**
 
 - **Etiquetas al día con las reglas de Riot:** la mejor carta dice «Mejor tier» y la voz dice dónde está; la decisión
