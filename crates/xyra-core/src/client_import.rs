@@ -9,7 +9,7 @@ use crate::{
 use reqwest::Method;
 use serde_json::{Value, json};
 
-/// Prefix of the rune pages and item sets Xyra creates and replaces.
+/// Prefix of the rune page and the item set Xyra creates and replaces.
 const PREFIX: &str = "Xyra · ";
 const RUNE_PAGES: &str = "/lol-perks/v1/pages";
 const MAX_PAGES_ERROR: &str = "max";
@@ -58,16 +58,14 @@ pub fn item_set(build: &Build, champion: &str, language: &str) -> Value {
     })
 }
 
-fn upsert_item_set(sets: &mut Value, set: Value, champion: u32) {
+/// Keeps a single Xyra item set, like the rune page: one per champion piled up until the client refused the whole list
+/// with 413 Payload Too Large.
+fn upsert_item_set(sets: &mut Value, set: Value) {
     if !sets["itemSets"].is_array() {
         sets["itemSets"] = json!([]);
     }
     let list = sets["itemSets"].as_array_mut().expect("itemSets array");
-    list.retain(|s| {
-        let ours = s["title"].as_str().is_some_and(|t| t.starts_with(PREFIX));
-        let same_champion = s["associatedChampions"].as_array().is_some_and(|a| a.iter().any(|c| c.as_u64() == Some(champion as u64)));
-        !(ours && same_champion)
-    });
+    list.retain(|s| !s["title"].as_str().is_some_and(|t| t.starts_with(PREFIX)));
     list.push(set);
 }
 
@@ -93,7 +91,7 @@ pub fn import_items(lcu: &Lcu, build: &Build, champion: &str, language: &str) ->
     let id = lcu.get(CURRENT_SUMMONER)?["summonerId"].as_u64().ok_or(AppError::NoSummoner)?;
     let endpoint = format!("/lol-item-sets/v1/item-sets/{id}/sets");
     let mut sets = lcu.get(&endpoint)?;
-    upsert_item_set(&mut sets, item_set(build, champion, language), build.champion);
+    upsert_item_set(&mut sets, item_set(build, champion, language));
     lcu.request(Method::PUT, &endpoint, Some(&sets)).map(drop)
 }
 
@@ -122,7 +120,7 @@ mod tests {
     }
 
     #[test]
-    fn replaces_only_its_own_item_set() {
+    fn keeps_one_item_set_of_its_own() {
         let build = build();
         let page = rune_page(&build, "Ahri");
         assert_eq!(page["name"], "Xyra · Ahri");
@@ -133,10 +131,10 @@ mod tests {
             { "title": "Mi set", "associatedChampions": [103] },
             { "title": "Xyra · Lux", "associatedChampions": [99] },
         ]});
-        upsert_item_set(&mut sets, item_set(&build, "Ahri", "es"), 103);
+        upsert_item_set(&mut sets, item_set(&build, "Ahri", "es"));
         let titles: Vec<&str> = sets["itemSets"].as_array().unwrap().iter().map(|s| s["title"].as_str().unwrap()).collect();
-        assert_eq!(titles, ["Mi set", "Xyra · Lux", "Xyra · Ahri"]);
-        assert_eq!(sets["itemSets"][2]["blocks"][2]["items"][0]["id"], "6655");
-        assert_eq!(sets["itemSets"][2]["blocks"][2]["type"], "Núcleo");
+        assert_eq!(titles, ["Mi set", "Xyra · Ahri"]);
+        assert_eq!(sets["itemSets"][1]["blocks"][2]["items"][0]["id"], "6655");
+        assert_eq!(sets["itemSets"][1]["blocks"][2]["type"], "Núcleo");
     }
 }

@@ -1,4 +1,5 @@
 use crate::{
+    cards::normalize,
     catalog::Catalog,
     errors::Result,
     model::{ChampionChange, ChangeGroup, ChangeVerdict, PatchChanges},
@@ -14,6 +15,8 @@ const SECTION: &str = "<h2";
 const BLOCK: &str = "<div class=\"patch-change-block";
 const PORTRAIT: &str = "/img/champion/";
 const PORTRAIT_END: &str = ".png";
+const TITLE: &str = "class=\"change-title\"";
+const TITLE_END: &str = "</h3>";
 const CONTEXT: &str = "<blockquote class=\"blockquote context\">";
 const CONTEXT_END: &str = "</blockquote>";
 const GROUP: &str = "<h4";
@@ -62,10 +65,9 @@ fn parse(html: &str, catalog: &Catalog) -> Vec<ChampionChange> {
     section.split(BLOCK).skip(1).filter_map(|block| champion_change(block, catalog)).collect()
 }
 
-/// A champion's block; the portrait names the champion the same way in every language.
+/// A champion's block, named by its portrait or, when it shows only an ability icon, by its title.
 fn champion_change(block: &str, catalog: &Catalog) -> Option<ChampionChange> {
-    let alias = between(block, PORTRAIT, PORTRAIT_END)?;
-    let id = *catalog.champion_aliases.get(&alias.to_lowercase())?;
+    let id = portrayed(block, catalog).or_else(|| titled(block, catalog))?;
     let groups: Vec<ChangeGroup> = block.split(GROUP).enumerate().filter_map(|(i, part)| group(i, part)).collect();
     Some(ChampionChange {
         champion: catalog.champion(id),
@@ -74,6 +76,17 @@ fn champion_change(block: &str, catalog: &Catalog) -> Option<ChampionChange> {
         groups,
         yours: false,
     })
+}
+
+/// The portrait names the champion the same way in every language.
+fn portrayed(block: &str, catalog: &Catalog) -> Option<u32> {
+    catalog.champion_aliases.get(&between(block, PORTRAIT, PORTRAIT_END)?.to_lowercase()).copied()
+}
+
+/// Some blocks carry an ability icon instead of the portrait, like Wukong's in the Spanish notes of 26.21.
+fn titled(block: &str, catalog: &Catalog) -> Option<u32> {
+    let title = normalize(&text(between(block, TITLE, TITLE_END)?.split_once('>')?.1));
+    catalog.champions.iter().find(|(_, (name, _))| normalize(name) == title).map(|(&id, _)| id)
 }
 
 /// An ability or the base stats with its changed lines; the part before the first title has none.
@@ -148,18 +161,22 @@ mod tests {
         <h4 class="change-detail-title ability-title"><img src="e.png">E: Impulso Siniestro</h4>
         <ul><li><strong>Tasa de Curación</strong>: 1.1% ⇒ <strong>1.3%</strong></li></ul></div></div>
         <div class="patch-change-block white-stone accent-before"><div><img src="https://x/img/champion/Unknown.png"><h4 class="t">Q</h4><ul><li>A: 1 ⇒ 2</li></ul></div></div>
+        <div class="patch-change-block white-stone accent-before"><div><p><img src="https://x/img/passive/MonkeyKingStoneSkin.png"></p>
+        <h3 class="change-title" id="patch-wukong"><a href="x">Wukong</a></h3>
+        <h4 class="change-detail-title ability-title">Pasiva</h4><ul><li>Armadura: 10 ⇒ 8</li></ul></div></div>
         <h2 id="patch-items">Objetos</h2>
         <div class="patch-change-block"><img src="https://x/img/champion/Aatrox.png"><h4 class="t">Item</h4><ul><li>A: 1 ⇒ 2</li></ul></div>"#;
 
     #[test]
     fn reads_the_champions_of_the_notes() {
         let catalog = Catalog {
-            champion_aliases: HashMap::from([("aatrox".into(), 266)]),
-            champions: HashMap::from([(266, ("Aatrox".into(), "aatrox.png".into()))]),
+            champion_aliases: HashMap::from([("aatrox".into(), 266), ("monkeyking".into(), 62)]),
+            champions: HashMap::from([(266, ("Aatrox".into(), "aatrox.png".into())), (62, ("Wukong".into(), "wukong.png".into()))]),
             ..Catalog::default()
         };
         let changes = parse(NOTES, &catalog);
-        assert_eq!(changes.len(), 1);
+        assert_eq!(changes.len(), 2);
+        assert_eq!((changes[1].champion.id, changes[1].verdict), (62, ChangeVerdict::Nerf));
         let aatrox = &changes[0];
         assert_eq!((aatrox.champion.id, aatrox.verdict, aatrox.context.as_str()), (266, ChangeVerdict::Buff, "Le daremos una mejora."));
         assert_eq!(aatrox.groups[0].title, "W: Cadenas Infernales");
