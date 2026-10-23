@@ -1,6 +1,6 @@
 [package]
 name = "xyra-mobile"
-version = "1.2.1"
+version = "1.3.0"
 description = "Xyra on your phone: follows the Xyra app of your PC"
 edition = "2024"
 license = "MIT"

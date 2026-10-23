@@ -1,2 +1,2 @@
-- Fixed the build import failing on items with "413 Payload Too Large": Xyra kept an item set for every champion you played until the client refused the whole list. It now keeps a single one, like the rune page, and the next import removes the old ones.
-- Fixed the patch buffs and nerfs leaving out champions whose block in the notes shows an ability icon instead of the portrait, like Taliyah, Viktor and Wukong in the Spanish notes of 26.21.
+- Added Journey to Stardom to Home → ARAM: Mayhem: your fame and rank, how far you went with each band (Pentakill, HEARTSTEEL, True Damage, K/DA and Worlds) and the audition and fame missions you have left, read from the client.
+- Changed the augment labels for the ARAM: Mayhem of patch 26.21: augments almost nobody has taken yet, like the new ones, show as a rare pick instead of a low tier, the Augments screen leaves out retired augments, and the voice says the card's number when the pick has four cards.
