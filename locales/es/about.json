@@ -4,8 +4,8 @@
   "riot": "Xyra no está respaldado por Riot Games y no refleja las opiniones de Riot Games ni de nadie que participe oficialmente en la producción o gestión de las propiedades de Riot Games. Riot Games y todas sus propiedades asociadas son marcas comerciales o marcas registradas de Riot Games, Inc.",
   "whatsNew": "Novedades de esta versión",
   "changes": {
-    "items": "Arreglada la importación de ítems, que fallaba después de jugar muchos campeones: Xyra deja un solo set suyo.",
-    "patch": "Los buffs y nerfs del parche ya no se saltan campeones, como Taliyah, Viktor y Wukong en el 26.21."
+    "stardom": "Camino al Estrellato en Inicio → ARAM: Caos: tu fama, tu rango y tus misiones con cada banda.",
+    "mayhem": "Etiquetas al día con el ARAM: Caos del 26.21: los aumentos nuevos sin datos salen como «Poco usada» y ya no aparecen los retirados."
   },
   "links": "Enlaces",
   "builtWith": "Hecho con Rust, Tauri y Svelte. La capa del juego es nativa: no usa navegador y casi no gasta memoria.",

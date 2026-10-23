@@ -15,7 +15,7 @@
 
     <main>
       <h1>How Xyra uses League of Legends</h1>
-      <p class="muted">For Riot Games' product review (App ID 885964). Last updated: September 29, 2026.</p>
+      <p class="muted">For Riot Games' product review (App ID 885964). Last updated: October 22, 2026.</p>
       <p>
         Xyra is a free, open-source (<a href="https://github.com/DiegoFernandoLojanTenesaca/xyra">MIT</a>) League of Legends companion for Windows, with an
         optional Android app. It does not use the Riot Games API and ships no API key: it uses the League Client API and the Live Client Data API on the
@@ -94,7 +94,14 @@
           <code>/lol-loot/v1/player-loot</code>, <code>/lol-loot/v1/recipes/initial-item/{lootId}</code>,
           <code>/lol-loot/v1/recipes/{recipe}/craft</code> (POST, on click), <code>/lol-rewards/v1/grants</code>
         </li>
-        <li><code>/lol-game-settings/v1/game-settings</code>, <code>/lol-game-data/assets/…</code>, <code>/riotclient/region-locale</code></li>
+        <li>
+          <code>/lol-progression/v1/groups/{trackId}/instanceData</code> and <code>/lol-missions/v1/missions</code> (reads, the player's own ARAM: Mayhem
+          Journey to Stardom progress: fame, band milestones and missions)
+        </li>
+        <li>
+          <code>/lol-game-settings/v1/game-settings</code>, <code>/lol-game-data/assets/…</code> (including <code>v1/kiwi-hub.json</code> and
+          <code>v1/augment-lists.json</code>), <code>/riotclient/region-locale</code>
+        </li>
       </ul>
 
       <h2>Live Client Data API</h2>

@@ -4,8 +4,8 @@
   "riot": "Xyra isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.",
   "whatsNew": "What's new in this version",
   "changes": {
-    "items": "Fixed the item import, which failed after playing many champions: Xyra keeps a single item set of its own.",
-    "patch": "Patch buffs and nerfs no longer leave out champions, like Taliyah, Viktor and Wukong in 26.21."
+    "stardom": "Journey to Stardom in Home → ARAM: Mayhem: your fame, rank and missions with each band.",
+    "mayhem": "Labels up to date with the ARAM: Mayhem of 26.21: new augments without data show as \"Rare pick\" and retired ones are gone."
   },
   "links": "Links",
   "builtWith": "Made with Rust, Tauri and Svelte. The in-game overlay is native: no browser, almost no memory.",

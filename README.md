@@ -26,6 +26,14 @@ encuentras partida. Liviano, en español e inglés, y sin tocar el juego.</p>
 
 ## Novedades
 
+**1.3.0**
+
+- **Camino al Estrellato** en Inicio → ARAM: Caos: tu fama y tu rango, cuánto llevas con cada banda (Pentakill,
+  HEARTSTEEL, True Damage, K/DA y Worlds) y las misiones de audición y de fama que te faltan.
+- Etiquetas al día con el ARAM: Caos del 26.21: los aumentos nuevos que casi nadie tomó salen como «Poco usada» en vez
+  de un tier bajo, la pantalla de Aumentos ya no muestra los retirados y la voz dice el número de carta cuando salen
+  cuatro.
+
 **1.2.1:** arreglada la importación de ítems, que fallaba después de jugar muchos campeones, y los buffs y nerfs del
 parche que se saltaban campeones.
 
@@ -113,6 +121,7 @@ se actualiza sola desde sus Ajustes.
   celular; cada celular con su propia llave y sus permisos, y se desconecta desde la PC.
 - **Sala:** crea una sala para cualquier modo, invita a tus amigos conectados y busca partida sin tocar el cliente,
   también desde el celular.
+- **Camino al Estrellato:** en ARAM: Caos, tu fama, tu rango y las misiones que te faltan con cada banda.
 - **Tu LP, tu skin y tu botín:** el LP de cada clasificatoria, tu skin al azar o favorita al tener campeón, y
   recompensas, cofres y llaves en orden.
 - **Discord:** tu perfil muestra lo que juegas, si lo activas.
