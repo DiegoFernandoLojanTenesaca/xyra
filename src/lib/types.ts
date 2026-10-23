@@ -42,6 +42,7 @@ export type { PendingReward } from './generated/PendingReward';
 export type { LpGame } from './generated/LpGame';
 export type { RankedQueue } from './generated/RankedQueue';
 export type { Standing } from './generated/Standing';
+export type { Stardom } from './generated/Stardom';
 export type { Lobby } from './generated/Lobby';
 export type { LobbyMember } from './generated/LobbyMember';
 export type { LobbyQueue } from './generated/LobbyQueue';

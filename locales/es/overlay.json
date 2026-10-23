@@ -4,6 +4,7 @@
   "voice": {
     "left": "Mejor tier a la izquierda",
     "middle": "Mejor tier al medio",
-    "right": "Mejor tier a la derecha"
+    "right": "Mejor tier a la derecha",
+    "position": "Mejor tier en la carta {{number}}"
   }
 }

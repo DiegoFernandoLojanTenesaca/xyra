@@ -129,6 +129,7 @@ pub fn run() {
             commands::get_challenges,
             commands::take_bench_pick,
             commands::get_lp_games,
+            commands::get_stardom,
             commands::get_owned_skins,
             commands::set_favorite_skin,
             commands::random_skin,

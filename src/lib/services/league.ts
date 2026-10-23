@@ -19,11 +19,13 @@ import type {
   Position,
   Profile,
   SettingValue,
+  Stardom,
 } from '../types';
 
 export const getChampions = () => invoke<ChampionInfo[]>('get_champions');
 export const getAugments = (champion: number, mode: GameMode) => invoke<AugmentRow[]>('get_augments', { champion, mode });
 export const getMeta = () => invoke<Meta>('get_meta');
+export const getStardom = () => invoke<Stardom | null>('get_stardom');
 export const getRecentMatches = () => invoke<MatchSummary[]>('get_recent_matches');
 export const getMasteries = () => invoke<MasteryProgress[]>('get_masteries');
 export const getChallenges = () => invoke<Challenges>('get_challenges');

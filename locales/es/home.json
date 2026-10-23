@@ -124,5 +124,15 @@
       "flex": "Flexible"
     }
   },
-  "usedAugments": "Tus aumentos más usados"
+  "usedAugments": "Tus aumentos más usados",
+  "stardom": {
+    "title": "Camino al Estrellato",
+    "fame": "{{fame}} de fama",
+    "next": "Te faltan {{points}} para {{rank}}",
+    "milestones": "{{done}}/{{total}} hitos",
+    "done_one": "{{count}} misión hecha",
+    "done_other": "{{count}} misiones hechas",
+    "locked": "Aún bloqueada",
+    "fameMissions": "Misiones de fama"
+  }
 }

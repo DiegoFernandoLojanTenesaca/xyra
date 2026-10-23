@@ -22,7 +22,7 @@
   import { championTierColor, championTierLabel, qualityColor } from '../design/theme';
   import { around } from '../i18n';
   import { setBorderless, testOverlay } from '../services/engine';
-  import { getAugments, getMeta, getModeChampions, getPatchChanges, getRecentMatches, takeBenchPick } from '../services/league';
+  import { getAugments, getMeta, getModeChampions, getPatchChanges, getRecentMatches, getStardom, takeBenchPick } from '../services/league';
   import { resource } from '../services/resource.svelte';
   import type { ChampionInfo, ChampionOrder, ChangeVerdict } from '../types';
   import AugmentChip from '../ui/AugmentChip.svelte';
@@ -34,6 +34,7 @@
   import LiveStrip from '../ui/LiveStrip.svelte';
   import LpChart from '../ui/LpChart.svelte';
   import Skeleton from '../ui/Skeleton.svelte';
+  import StardomPanel from '../ui/Stardom.svelte';
   import StatTile from '../ui/StatTile.svelte';
   import TierBadge from '../ui/TierBadge.svelte';
 
@@ -158,6 +159,7 @@
   const modeChampions = resource(() => (mode === 'aram' || mode === 'arena' ? mode : null), getModeChampions);
   const patch = resource(() => app.language, getPatchChanges);
   const matches = resource(() => (engine.phase === 'noClient' ? null : engine.phase), getRecentMatches);
+  const stardom = resource(() => (mode === 'mayhem' && engine.phase !== 'noClient' && engine.phase !== 'inGame' ? engine.phase : null), getStardom);
   const yourChanges = $derived((patch.value?.champions ?? []).filter((change) => change.yours).slice(0, PATCH_CHANGES_SHOWN));
   const modeHistory = $derived((matches.value ?? []).filter((game) => inHomeMode(game, mode)));
   const modeMatches = $derived(modeHistory.slice(0, RECENT_GAMES));
@@ -439,6 +441,11 @@
           </AugmentChip>
         {/each}
       </div>
+    {/if}
+
+    {#if mode === 'mayhem' && stardom.value}
+      <h3 class="section-title">{t('home:stardom.title')}</h3>
+      <StardomPanel stardom={stardom.value} {t} number={format.number} />
     {/if}
 
     <div class="pair">

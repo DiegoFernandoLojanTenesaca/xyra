@@ -124,5 +124,15 @@
       "flex": "Flex"
     }
   },
-  "usedAugments": "Your most used augments"
+  "usedAugments": "Your most used augments",
+  "stardom": {
+    "title": "Journey to Stardom",
+    "fame": "{{fame}} fame",
+    "next": "{{points}} to go for {{rank}}",
+    "milestones": "{{done}}/{{total}} milestones",
+    "done_one": "{{count}} mission done",
+    "done_other": "{{count}} missions done",
+    "locked": "Still locked",
+    "fameMissions": "Fame missions"
+  }
 }

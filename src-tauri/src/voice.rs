@@ -6,6 +6,8 @@ use windows::{
 use xyra_core::{cards::Card, i18n};
 
 const SIDES: [&str; 3] = ["overlay:voice.left", "overlay:voice.middle", "overlay:voice.right"];
+/// With four cards, which ARAM: Mayhem can offer since 26.21, the voice says the card's number.
+const POSITION: &str = "overlay:voice.position";
 /// League's match found sound, © Riot Games.
 const MATCH_FOUND: &[u8] = include_bytes!("../sounds/match_found.mp3");
 const MP3: &str = "audio/mpeg";
@@ -61,6 +63,39 @@ pub fn best_card_phrase(cards: &[Card], language: &str) -> Option<String> {
     let mut ordered: Vec<&Card> = cards.iter().collect();
     ordered.sort_by(|a, b| a.x.total_cmp(&b.x));
     let index = ordered.iter().position(|c| c.best)?;
-    let side = if ordered.len() == 2 { [0, 2][index] } else { index.min(2) };
+    let side = match ordered.len() {
+        2 => [0, 2][index],
+        1 | 3 => index,
+        _ => return Some(i18n::t_with(language, POSITION, &[("number", &(index + 1).to_string())])),
+    };
     Some(i18n::t(language, SIDES[side]))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use xyra_core::model::Quality;
+
+    fn card(x: f64, best: bool) -> Card {
+        Card {
+            id: 0,
+            name: String::new(),
+            icon: String::new(),
+            tier: Some(0),
+            quality: Quality::of(Some(0)),
+            grade: String::new(),
+            performance: 0.0,
+            rank: 0,
+            best,
+            x,
+            y: 0.0,
+        }
+    }
+
+    #[test]
+    fn names_the_top_card_of_four_by_number() {
+        let cards = [0.0, 1.0, 2.0, 3.0].map(|x| card(x, x == 2.0));
+        assert_eq!(best_card_phrase(&cards, "es").as_deref(), Some("Mejor tier en la carta 3"));
+        assert_eq!(best_card_phrase(&cards[1..], "es").as_deref(), Some("Mejor tier al medio"));
+    }
 }

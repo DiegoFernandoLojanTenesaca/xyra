@@ -21,6 +21,7 @@ use xyra_core::{
     opgg,
     profile::{self, MasteryProgress, Profile},
     skins::{self, OwnedSkin},
+    stardom::{self, Stardom},
     stats::{self, MatchSummary, StatsSummary},
     storage::{DataFolder, DataUsage},
     updates::{self, Release},
@@ -88,7 +89,14 @@ pub fn get_champions(shared: State<App>) -> Vec<ChampionInfo> {
 #[tauri::command]
 pub async fn get_augments(shared: State<'_, App>, champion: u32, mode: GameMode) -> Result<Vec<AugmentRow>> {
     let shared = Arc::clone(&shared);
-    blocking(move || Ok(opgg::augment_rows(opgg::fetch_augments(&shared.web, champion, mode)?, &shared.catalog()))).await
+    blocking(move || Ok(opgg::augment_rows(opgg::fetch_augments(&shared.web, champion, mode)?, &shared.catalog(), mode))).await
+}
+
+/// The player's road to stardom in ARAM: Mayhem, or None between seasons.
+#[tauri::command]
+pub async fn get_stardom(shared: State<'_, App>) -> Result<Option<Stardom>> {
+    let shared = Arc::clone(&shared);
+    blocking(move || stardom::read(&shared.lcu()?)).await
 }
 
 /// The signed-in account's ranked games with the LP each gave or took, newest first.

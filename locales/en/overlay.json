@@ -4,6 +4,7 @@
   "voice": {
     "left": "Top tier on the left",
     "middle": "Top tier in the middle",
-    "right": "Top tier on the right"
+    "right": "Top tier on the right",
+    "position": "Top tier on card {{number}}"
   }
 }

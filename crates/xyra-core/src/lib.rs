@@ -19,6 +19,7 @@ pub mod opgg;
 pub mod patch_notes;
 pub mod profile;
 pub mod skins;
+pub mod stardom;
 pub mod stats;
 pub mod storage;
 pub mod theme;

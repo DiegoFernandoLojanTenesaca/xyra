@@ -38,6 +38,10 @@ pub(crate) fn decode<T: DeserializeOwned>(source: &str, text: &str) -> Result<T>
     response.data.ok_or(AppError::NoData)
 }
 
+/// OP.GG gives tier 5 to augments almost nobody took, new ones included; below this pick rate, in percent, the tier
+/// says nothing and the card shows as a rare pick.
+const MIN_PICK_RATE: f64 = 0.05;
+
 #[derive(Deserialize)]
 struct MayhemAugment {
     id: u32,
@@ -208,6 +212,7 @@ pub fn fetch_augments(http: &Client, champion: u32, mode: GameMode) -> Result<Ha
 fn mayhem_stats(augments: Vec<MayhemAugment>) -> HashMap<u32, AugmentStat> {
     augments
         .into_iter()
+        .filter(|augment| augment.popular >= MIN_PICK_RATE)
         .filter_map(|augment| Some((augment.id, AugmentStat { tier: augment.tier?, performance: augment.performance, pick_rate: augment.popular })))
         .collect()
 }
@@ -238,9 +243,11 @@ fn tiers_by_percentile(sorted: &[(u32, f64, f64)]) -> HashMap<u32, AugmentStat> 
 }
 
 /// Augment tier list of a champion, best first, for the augments the catalog knows.
-pub fn augment_rows(stats: HashMap<u32, AugmentStat>, catalog: &Catalog) -> Vec<AugmentRow> {
+/// The tier list of the augments the mode offers now: OP.GG keeps retired ones for a while.
+pub fn augment_rows(stats: HashMap<u32, AugmentStat>, catalog: &Catalog, mode: GameMode) -> Vec<AugmentRow> {
     let mut rows: Vec<AugmentRow> = stats
         .into_iter()
+        .filter(|(id, _)| catalog.offers(mode, *id))
         .filter_map(|(id, stat)| {
             let (name, icon) = catalog.augments.get(&id)?.clone();
             Some(AugmentRow {
@@ -532,5 +539,24 @@ mod tests {
         let unranked = decode::<Vec<MayhemAugment>>("augments", r#"{"data":[{"id":1,"tier":null,"performance":90,"popular":2}]}"#).unwrap();
         assert!(mayhem_stats(unranked).is_empty());
         assert_eq!(parse_build(&ranked(json!([]), json!([])), 157, &Catalog::default()).err(), Some(AppError::NoData));
+    }
+
+    #[test]
+    fn leaves_out_rare_and_retired_augments() {
+        let augments = decode::<Vec<MayhemAugment>>(
+            "augments",
+            r#"{"data":[{"id":1,"tier":0,"performance":90,"popular":2},{"id":2,"tier":5,"performance":10,"popular":0.01},{"id":3,"tier":1,"performance":80,"popular":1}]}"#,
+        )
+        .unwrap();
+        let stats = mayhem_stats(augments);
+        assert_eq!(stats.len(), 2, "almost nobody took augment 2, so its tier says nothing");
+        let catalog = Catalog {
+            augments: [1, 3].map(|id| (id, (format!("A{id}"), String::new()))).into(),
+            augment_pools: [("KIWI".to_string(), vec![3])].into(),
+            ..Catalog::default()
+        };
+        let ids: Vec<u32> = augment_rows(stats, &catalog, GameMode::Mayhem).iter().map(|row| row.id).collect();
+        assert_eq!(ids, [3], "augment 1 is retired from ARAM: Mayhem");
+        assert!(catalog.offers(GameMode::Arena, 1), "without a list for the mode, every augment counts");
     }
 }

@@ -2,13 +2,14 @@ use crate::{
     cards::normalize,
     errors::{AppError, Result},
     league::{Lcu, asset_url},
-    model::{Asset, Rarity},
+    model::{Asset, GameMode, Rarity},
 };
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, ops::Range};
 
 const PLAYABLE_CHAMPION_IDS: Range<i64> = 1..10_000;
 const AUGMENTS: &str = "/lol-game-data/assets/v1/cherry-augments.json";
+const AUGMENT_LISTS: &str = "/lol-game-data/assets/v1/augment-lists.json";
 const CHAMPIONS: &str = "/lol-game-data/assets/v1/champion-summary.json";
 const ITEMS: &str = "/lol-game-data/assets/v1/items.json";
 const RUNES: &str = "/lol-game-data/assets/v1/perks.json";
@@ -22,6 +23,9 @@ pub type NamedAssets = HashMap<u32, (String, String)>;
 pub struct Catalog {
     pub augments: NamedAssets,
     pub augment_names: HashMap<String, Vec<u32>>,
+    /// Augment ids each mode offers now, by the client's mode name, which leaves out retired augments.
+    #[serde(default)]
+    pub augment_pools: HashMap<String, Vec<u32>>,
     pub champions: NamedAssets,
     /// Champion ids by their lowercase internal name, like "masteryi", which the official sites use.
     #[serde(default)]
@@ -65,6 +69,15 @@ struct AugmentEntry {
     name: String,
     augment_small_icon_path: String,
     rarity: String,
+    #[serde(default)]
+    augment_name_id: String,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct AugmentList {
+    mode_name: String,
+    augment_list: Vec<String>,
 }
 
 #[derive(Deserialize)]
@@ -85,6 +98,13 @@ impl Catalog {
     pub fn read(lcu: &Lcu) -> Result<Catalog> {
         let mut catalog = Catalog::default();
         let augments: Vec<AugmentEntry> = lcu.get_as(AUGMENTS)?;
+        let by_name_id: HashMap<String, u32> = augments.iter().map(|a| (a.augment_name_id.clone(), a.id)).collect();
+        if let Ok(lists) = lcu.get_as::<Vec<AugmentList>>(AUGMENT_LISTS) {
+            catalog.augment_pools = lists
+                .into_iter()
+                .map(|list| (list.mode_name, list.augment_list.iter().filter_map(|path| by_name_id.get(path.rsplit('/').next()?).copied()).collect()))
+                .collect();
+        }
         for augment in augments.into_iter().filter(|a| !a.name.is_empty()) {
             catalog.augment_names.entry(normalize(&augment.name)).or_default().push(augment.id);
             if let Some(rarity) = Rarity::from_client(&augment.rarity) {
@@ -107,6 +127,12 @@ impl Catalog {
         catalog.runes.extend(assets(lcu.get_as::<RuneStyles>(RUNE_STYLES)?.styles));
         catalog.spells = assets(lcu.get_as(SPELLS)?);
         Ok(catalog)
+    }
+
+    /// Whether the mode offers the augment now; true when the client did not list the mode.
+    pub fn offers(&self, mode: GameMode, id: u32) -> bool {
+        let pool = if mode == GameMode::Arena { "CHERRY" } else { "KIWI" };
+        self.augment_pools.get(pool).is_none_or(|ids| ids.is_empty() || ids.contains(&id))
     }
 
     pub fn is_empty(&self) -> bool {

@@ -338,7 +338,7 @@ fn build(shared: &Shared, query: &Query) -> Result<xyra_core::model::Build> {
 fn augments(shared: &Shared, query: &Query) -> Result<Vec<xyra_core::model::AugmentRow>> {
     let champion = query.number("champion").ok_or(AppError::NoData)?;
     let mode: GameMode = query.parse("mode").unwrap_or(GameMode::Mayhem);
-    Ok(opgg::augment_rows(opgg::fetch_augments(&shared.web, champion, mode)?, &shared.catalog()))
+    Ok(opgg::augment_rows(opgg::fetch_augments(&shared.web, champion, mode)?, &shared.catalog(), mode))
 }
 
 /// Applies the settings the phone sends; any the request leaves out keep their value.
